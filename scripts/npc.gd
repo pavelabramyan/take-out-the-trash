@@ -1,6 +1,6 @@
 class_name StairNpc
 extends CharacterBody3D
-## Сосед: бабушка-детектор или собака. Простые триггеры.
+## Сосед: бабушка-детектор или собака. Только во дворе, не сквозь этажи.
 
 enum Kind { BABUSHKA, DOG }
 
@@ -8,18 +8,21 @@ signal spotted(kind: Kind)
 signal barked
 
 var kind: Kind = Kind.BABUSHKA
-var aggro_range: float = 6.0
-var vision_angle: float = 70.0
+var aggro_range: float = 4.5
+var vision_angle: float = 50.0
 var patrol_a: Vector3
 var patrol_b: Vector3
 var speed: float = 1.4
 var active: bool = true
 var game: Node = null
+## Задержка, чтобы не ловить игрока в момент выхода из подъезда
+var grace: float = 2.5
 
 var _target_player: Node3D = null
 var _t: float = 0.0
 var _mesh: MeshInstance3D
 var _caught: bool = false
+var _alive: float = 0.0
 
 func setup(k: Kind, a: Vector3, b: Vector3, g: Node) -> void:
 	kind = k
@@ -31,11 +34,15 @@ func setup(k: Kind, a: Vector3, b: Vector3, g: Node) -> void:
 	collision_mask = 1
 	_build()
 	if kind == Kind.DOG:
-		speed = 3.2
-		aggro_range = 5.0
+		speed = 3.0
+		aggro_range = 4.0
+		vision_angle = 80.0
+		grace = 1.5
 	else:
-		speed = 1.1
-		aggro_range = 7.5
+		speed = 1.0
+		aggro_range = 4.2
+		vision_angle = 45.0
+		grace = 2.5
 
 func _build() -> void:
 	var col := CollisionShape3D.new()
@@ -67,12 +74,16 @@ func _build() -> void:
 func set_player(p: Node3D) -> void:
 	_target_player = p
 
+func _player_in_yard(p: Node3D) -> bool:
+	## Бабушки/собаки не видят сквозь этажи — только двор у земли.
+	return p.global_position.y < 1.6 and p.global_position.z > 4.0
+
 func _physics_process(delta: float) -> void:
 	if not active or _caught:
 		return
+	_alive += delta
 	_t += delta
-	# Патруль туда-сюда
-	var phase := (sin(_t * speed * 0.4) + 1.0) * 0.5
+	var phase := (sin(_t * speed * 0.35) + 1.0) * 0.5
 	var dest := patrol_a.lerp(patrol_b, phase)
 	var to := dest - global_position
 	to.y = 0.0
@@ -84,29 +95,31 @@ func _physics_process(delta: float) -> void:
 	velocity.y = -2.0
 	move_and_slide()
 
-	if _target_player == null:
+	if _target_player == null or _alive < grace:
 		return
+	if not _player_in_yard(_target_player):
+		return
+
 	var dist := global_position.distance_to(_target_player.global_position)
 	if dist > aggro_range:
 		return
 	var to_p := (_target_player.global_position - global_position)
-	to_p.y = 0
+	to_p.y = 0.0
 	var forward := -global_transform.basis.z
-	forward.y = 0
+	forward.y = 0.0
 	if forward.length() < 0.01 or to_p.length() < 0.01:
 		return
 	var ang := rad_to_deg(forward.normalized().angle_to(to_p.normalized()))
 	if kind == Kind.DOG:
-		if dist < 2.2:
+		if dist < 2.0:
 			_caught = true
 			Svc.audio().play_sfx("bark")
 			barked.emit()
 			spotted.emit(kind)
-		elif dist < aggro_range and ang < 90.0:
-			# Бежит к игроку
-			velocity = to_p.normalized() * speed * 1.4
+		elif dist < aggro_range and ang < vision_angle:
+			velocity = to_p.normalized() * speed * 1.5
 	else:
-		# Бабушка: конус зрения
+		# Бабушка: узкий конус, только если смотрит на тебя
 		if ang < vision_angle and dist < aggro_range:
 			_caught = true
 			Svc.audio().play_sfx("babushka")

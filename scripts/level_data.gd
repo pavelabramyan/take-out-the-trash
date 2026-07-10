@@ -38,7 +38,7 @@ const LEVELS := [
 		"wind": 0.0,
 		"elevator": false,
 		"dogs": 0,
-		"babushkas": 1,
+		"babushkas": 0,
 		"basement": false,
 		"light_timer": 0.0,
 	},
