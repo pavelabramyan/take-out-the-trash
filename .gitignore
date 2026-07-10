@@ -1,0 +1,12 @@
+Godot.app/
+Godot.app
+.godot/
+build/
+*.tmp
+.DS_Store
+steam_appid.txt
+**/steam_appid.txt
+*.pdb
+marketing/clip/*.avi
+.import/
+*.translation
