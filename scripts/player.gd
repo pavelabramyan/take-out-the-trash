@@ -41,12 +41,47 @@ var _max_fall_speed: float = 0.0
 func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 1
-	_ensure_gamepad_bindings()
 	invert_y = bool(Svc.meta().settings.get("invert_y", false))
 	base_fov = float(Svc.meta().settings.get("fov", 75.0))
+	_ensure_gamepad_bindings()
+	_build_body()
+
+func _build_body() -> void:
+	_col = CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.radius = 0.32
+	shape.height = 1.5
+	_col.shape = shape
+	_col.position = Vector3(0, 0.95, 0)
+	add_child(_col)
+
+	camera = Camera3D.new()
+	camera.fov = base_fov
+	camera.position = Vector3(0, 1.55, 0)
+	add_child(camera)
+
+	hold_point = Node3D.new()
+	hold_point.name = "HoldPoint"
+	hold_point.position = Vector3(0.35, -0.25, -0.55)
+	camera.add_child(hold_point)
+
+	_build_hands()
+
+	flashlight = SpotLight3D.new()
+	flashlight.light_color = Color(0.95, 0.97, 1.0)
+	flashlight.light_energy = 3.5
+	flashlight.spot_range = 14.0
+	flashlight.spot_angle = 28.0
+	flashlight.shadow_enabled = false
+	flashlight.visible = false
+	flashlight.position = Vector3(0.1, -0.05, -0.1)
+	camera.add_child(flashlight)
+
+	floor_snap_length = 0.25
+	# Пандус лестницы ~40° — запас выше
+	floor_max_angle = deg_to_rad(55.0)
 
 func _ensure_gamepad_bindings() -> void:
-	## Один раз добавляем кнопки геймпада к существующим действиям.
 	_add_joy_button("interact", JOY_BUTTON_A)
 	_add_joy_button("jump", JOY_BUTTON_B)
 	_add_joy_button("sprint", JOY_BUTTON_LEFT_STICK)
@@ -87,38 +122,6 @@ func _add_joy_axis(action: String, axis: int, value: float) -> void:
 	ev.axis = axis
 	ev.axis_value = value
 	InputMap.action_add_event(action, ev)
-	_col = CollisionShape3D.new()
-	var shape := CapsuleShape3D.new()
-	shape.radius = 0.32
-	shape.height = 1.5
-	_col.shape = shape
-	_col.position = Vector3(0, 0.95, 0)
-	add_child(_col)
-
-	camera = Camera3D.new()
-	camera.fov = base_fov
-	camera.position = Vector3(0, 1.55, 0)
-	add_child(camera)
-
-	hold_point = Node3D.new()
-	hold_point.name = "HoldPoint"
-	hold_point.position = Vector3(0.35, -0.25, -0.55)
-	camera.add_child(hold_point)
-
-	_build_hands()
-
-	flashlight = SpotLight3D.new()
-	flashlight.light_color = Color(0.95, 0.97, 1.0)
-	flashlight.light_energy = 3.5
-	flashlight.spot_range = 14.0
-	flashlight.spot_angle = 28.0
-	flashlight.shadow_enabled = false
-	flashlight.visible = false
-	flashlight.position = Vector3(0.1, -0.05, -0.1)
-	camera.add_child(flashlight)
-
-	floor_snap_length = 0.15
-	floor_max_angle = deg_to_rad(48.0)
 
 func _build_hands() -> void:
 	var skin := StandardMaterial3D.new()
@@ -142,7 +145,7 @@ func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 func _apply_gamepad_look(delta: float) -> void:
-	if not InputMap.has_action("look_left"):
+	if camera == null or not InputMap.has_action("look_left"):
 		return
 	var lx := Input.get_action_strength("look_right") - Input.get_action_strength("look_left")
 	var ly := Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
@@ -161,8 +164,11 @@ func set_cargo_feel(speed_m: float, fov_off: float, yaw_m: float) -> void:
 	cargo_fov = fov_off
 	cargo_yaw_mult = yaw_m
 
+func clear_cargo_feel() -> void:
+	set_cargo_feel(1.0, 0.0, 1.0)
+
 func _unhandled_input(event: InputEvent) -> void:
-	if not active:
+	if not active or camera == null:
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var motion := event as InputEventMouseMotion
@@ -182,7 +188,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		drop_pressed.emit()
 
 func _physics_process(delta: float) -> void:
-	if not active:
+	if not active or camera == null or _col == null:
 		return
 	careful = Input.is_action_pressed("careful")
 	_apply_gamepad_look(delta)

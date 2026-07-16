@@ -188,13 +188,15 @@ func _build_burst_particles() -> void:
 func grab(hold: Node3D) -> void:
 	_hold_target = hold
 	held = true
-	# Spring-follow: не freeze, гравитацию гасим, коллизия с миром остаётся
+	# Follow к hold_point без борьбы с миром; урон — от raycast при упоре
 	freeze = false
 	gravity_scale = 0.0
-	linear_damp = 8.0
-	angular_damp = 10.0
+	linear_damp = 12.0
+	angular_damp = 14.0
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
 	collision_layer = 4
-	collision_mask = 1
+	collision_mask = 0
 
 func release(impulse: Vector3 = Vector3.ZERO) -> void:
 	held = false
@@ -206,14 +208,12 @@ func release(impulse: Vector3 = Vector3.ZERO) -> void:
 	collision_layer = 4
 	collision_mask = 1
 	linear_velocity = impulse
-	if impulse.length() > 0.1:
-		apply_central_impulse(impulse)
 
 func throw_forward(dir: Vector3, strength: float = 7.0) -> void:
 	release(dir.normalized() * strength + Vector3(0, 1.5, 0))
 
 func drop_gentle() -> void:
-	release(Vector3(0, -0.5, 0))
+	release(Vector3(0, -0.8, 0))
 
 func apply_fall_damage(speed: float) -> void:
 	if speed < 6.0:
@@ -246,47 +246,57 @@ func _carry_follow(delta: float) -> void:
 	target_xf.origin += target_xf.basis * _hold_offset
 	var sway := 0.012 if careful else 0.028
 	target_xf.basis = target_xf.basis.rotated(Vector3.RIGHT, sin(Time.get_ticks_msec() * 0.008) * sway)
-	var prev := global_position
-	var desired := target_xf.origin
-	var to := desired - prev
-	var max_step := (14.0 if careful else 22.0) * delta
-	if to.length() > max_step:
-		to = to.normalized() * max_step
-	# Двигаем тело скоростью — контакты дают импульсы
-	linear_velocity = to / maxf(delta, 0.0001)
-	# Ориентация к hold
+	var desired: Vector3 = target_xf.origin
+	# Плавный follow без физики-борьбы
+	global_position = global_position.lerp(desired, clampf(18.0 * delta, 0.0, 1.0))
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
 	var q_from := global_transform.basis.get_rotation_quaternion()
 	var q_to := target_xf.basis.get_rotation_quaternion()
 	global_transform.basis = Basis(q_from.slerp(q_to, clampf(12.0 * delta, 0.0, 1.0)))
-	# Урон от «втискивания» в стены
-	var blocked := (desired - global_position).length()
-	if blocked > 0.12 and to.length() > 0.05:
-		var wall_dmg := blocked * (18.0 if not careful else 9.0)
-		# Только при реальном упоре (скорость мала относительно желаемой)
-		if linear_velocity.length() < to.length() / delta * 0.5:
-			_apply_damage(wall_dmg * delta * 8.0)
-	if wind_force > 0.0 and randf() < 0.02 * wind_force * delta * 60.0:
-		var yank := Vector3(randf_range(-1, 1), 0.2, randf_range(-1, 1)).normalized() * wind_force * 0.15
-		_apply_damage(wind_force * 0.08)
-		if hp < max_hp * 0.35 and randf() < 0.08:
-			release(yank * 2.0)
+	# Урон: если hold упирается в стену (ray от игрока к пакету / вокруг)
+	_carry_wall_damage(delta, desired)
+	if wind_force > 0.0 and randf() < 0.015 * wind_force * delta * 60.0:
+		_apply_damage(wind_force * 0.06)
+		if hp < max_hp * 0.3 and randf() < 0.05:
+			release(Vector3(randf_range(-1, 1), 0.4, randf_range(-1, 1)) * wind_force * 0.3)
 	_last_vel = linear_velocity
 
+func _carry_wall_damage(delta: float, desired: Vector3) -> void:
+	var space := get_world_3d().direct_space_state
+	if space == null:
+		return
+	# Короткие лучи от центра пакета наружу
+	var dirs := [
+		Vector3.FORWARD, Vector3.BACK, Vector3.LEFT, Vector3.RIGHT, Vector3.UP, Vector3.DOWN
+	]
+	var hit_n := 0
+	for d in dirs:
+		var from := desired
+		var to := desired + (d as Vector3).normalized() * 0.38
+		var rq := PhysicsRayQueryParameters3D.create(from, to)
+		rq.collision_mask = 1
+		rq.exclude = [get_rid()]
+		var hit := space.intersect_ray(rq)
+		if not hit.is_empty():
+			hit_n += 1
+	if hit_n >= 2:
+		var dmg := float(hit_n) * (14.0 if not careful else 6.0) * delta
+		_apply_damage(dmg)
+
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-	if bursted:
+	if bursted or held:
 		return
 	var contact_count := state.get_contact_count()
 	var thr := impact_threshold * (2.0 if careful else 1.6)
 	for i in range(contact_count):
 		var impulse := state.get_contact_impulse(i).length()
-		# Урон и в руках, и на свободе
 		if impulse > thr:
-			var dmg := impulse * (1.2 if held else 1.5)
+			var dmg := impulse * 1.5
 			if careful:
 				dmg *= 0.55
 			_apply_damage(dmg)
-			if held and impulse > thr * 1.8:
-				Svc.audio().play_sfx("impact", 1.0)
+			Svc.audio().play_sfx("impact", 0.95 + randf() * 0.1)
 
 func _apply_damage(amount: float) -> void:
 	if bursted or amount <= 0.0:

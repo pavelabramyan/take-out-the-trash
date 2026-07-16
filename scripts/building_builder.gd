@@ -161,7 +161,7 @@ func _build_stairwell(floors: int, basement: bool) -> void:
 
 	if basement:
 		_box(Vector3(0, -FLOOR_H - 0.1, 1.2), Vector3(5.0, 0.2, 5.2), "concrete")
-		_add_flight(1, true)  # с 1 на 0 (подвал): считаем from=1 down to 0
+		_add_flight(1, true)  # с 1 на подвал (y=0 → y=-FLOOR_H через from=1)
 		var bl := OmniLight3D.new()
 		bl.light_color = Color(0.9, 0.7, 0.4)
 		bl.light_energy = 1.0
@@ -174,7 +174,9 @@ func _build_stairwell(floors: int, basement: bool) -> void:
 		var y := float(f) * FLOOR_H
 		var left := (f % 2 == 1)
 		_add_floor_landing(y, left)
-		_add_flight(f, left)
+		# При подвале марш 1→0 уже добавлен выше — не дублируем
+		if not (basement and f == 1):
+			_add_flight(f, left)
 		_add_simple_rail(y, left)
 		_add_stair_marker(y, left)
 
@@ -192,30 +194,29 @@ func _build_stairwell(floors: int, basement: bool) -> void:
 	_box(Vector3(0, top + 0.2, 1.2), Vector3(5.3, 0.3, 5.4), "concrete")
 
 func _add_floor_landing(y: float, left_stair: bool) -> void:
-	## Площадка = три плиты вокруг прямоугольной дырки под лестницу.
-	## Дырка: x≈±1.0 (сторона марша), z от 0.7 до 2.6
+	## Площадка = плиты вокруг дырки под лестницу.
+	## Дырка: сторона марша, z примерно 0.55–2.7
 	var sx := -1.0 if left_stair else 1.0
-	# 1) Задняя площадка у квартир (всегда)
-	_box(Vector3(0, y - 0.1, -0.55), Vector3(5.0, 0.2, 1.5), "tile")
+	# 1) Задняя площадка у квартир — чуть длиннее, стык с пандусом
+	_box(Vector3(0, y - 0.1, -0.45), Vector3(5.0, 0.2, 1.8), "tile")
 	# 2) Полоса на противоположной от лестницы стороне
 	var other_x := -sx
 	_box(Vector3(other_x * 1.5, y - 0.1, 1.55), Vector3(2.0, 0.2, 2.5), "tile")
-	# 3) Узкая полоса с той же стороны, но у стены (не перекрывает марш)
+	# 3) Узкая полоса с той же стороны у стены
 	_box(Vector3(sx * 2.05, y - 0.1, 1.55), Vector3(0.9, 0.2, 2.5), "tile")
 	# 4) Передняя перемычка у фасада
 	_box(Vector3(0, y - 0.1, 2.95), Vector3(5.0, 0.2, 0.4), "tile")
 
 func _add_flight(from_floor: int, left_side: bool) -> void:
-	## Широкие ступени from_floor → from_floor-1 + пандус-коллизия.
+	## Визуальные ступени + пологий пандус (угол ~40°, ходим по коллизии).
 	var y0 := float(from_floor) * FLOOR_H
 	var y1 := float(from_floor - 1) * FLOOR_H
 	var x := -1.0 if left_side else 1.0
-	## Визуальные ступени без коллизии — игрок ходит по одному пандусу (#87 батч).
 	var steps := 16
 	for i in range(steps):
 		var t := (float(i) + 0.5) / float(steps)
 		var y := lerpf(y0, y1, t)
-		var z := lerpf(0.45, 2.45, t)
+		var z := lerpf(0.35, 2.55, t)
 		_box(Vector3(x, y - 0.06, z), Vector3(STAIR_W, 0.12, 0.34), "concrete", false)
 	_add_ramp(x, y0, y1)
 
@@ -225,10 +226,11 @@ func _add_ramp(x: float, y_top: float, y_bot: float) -> void:
 	body.collision_mask = 0
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
-	var run := 2.1
+	# run 3.5 → atan2(3, 3.5) ≈ 40.6° < floor_max 55°
+	var run := 3.5
 	var rise := y_top - y_bot
 	var length := sqrt(run * run + rise * rise)
-	sh.size = Vector3(STAIR_W - 0.15, 0.1, length)
+	sh.size = Vector3(STAIR_W - 0.1, 0.12, length)
 	cs.shape = sh
 	body.add_child(cs)
 	body.position = Vector3(x, (y_top + y_bot) * 0.5 - 0.02, 1.45)

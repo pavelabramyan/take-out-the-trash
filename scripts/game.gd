@@ -216,41 +216,55 @@ func _on_throw() -> void:
 	if state != State.PLAY or builder.bag.bursted or not builder.bag.held:
 		return
 	var dir: Vector3 = -builder.player.camera.global_transform.basis.z
-	builder.bag.throw_forward(dir, 8.0 if not builder.player.careful else 4.0)
+	builder.bag.throw_forward(dir, 6.0 if not builder.player.careful else 3.0)
+	builder.player.clear_cargo_feel()
 
 func _on_drop() -> void:
 	if state != State.PLAY or builder.bag.bursted or not builder.bag.held:
 		return
 	builder.bag.drop_gentle()
+	builder.player.clear_cargo_feel()
 
 func _try_elevator() -> void:
 	if elevator_used:
 		return
 	elevator_used = true
 	Svc.audio().play_sfx("elevator")
-	# Анимация: двери + сдвиг (не мгновенный warp)
+	builder.player.active = false
 	var jam := randf() < 0.4
 	prompt_label.text = "…"
 	var start_y: float = float(builder.player.global_position.y)
 	var target_y: float = 0.2
+	# Всегда сажаем на заднюю площадку (твёрдый пол), не в дыру лестницы
+	var land_z: float = -0.4
 	if jam:
 		elevator_jammed = true
 		Svc.steam().unlock("elevator_fail")
 		target_y = float(maxi(1, int(level.get("floors", 2)) / 2)) * 3.0 + 0.2
 	else:
 		Svc.steam().unlock("elevator_luck")
+	var start_xz: Vector3 = builder.player.global_position
 	var t: float = 0.0
 	while t < 1.4:
 		await get_tree().process_frame
+		if state != State.PLAY:
+			builder.player.active = true
+			return
 		t += get_process_delta_time()
 		var k: float = clampf(t / 1.4, 0.0, 1.0)
 		var y: float = lerpf(start_y, target_y, k)
-		builder.player.global_position.y = y
-		if builder.bag.held:
-			builder.bag.grab(builder.player.hold_point)
+		builder.player.global_position = Vector3(
+			lerpf(start_xz.x, 0.0, k),
+			y,
+			lerpf(start_xz.z, land_z, k)
+		)
+		if builder.bag.held and builder.player.hold_point:
+			builder.bag.global_position = builder.player.hold_point.global_position
 		else:
 			builder.bag.global_position = builder.player.global_position + Vector3(0.3, 0.4, 0)
-	builder.player.global_position = Vector3(0.0, target_y, 1.2 if not jam else 0.5)
+	builder.player.global_position = Vector3(0.0, target_y, land_z)
+	builder.player.velocity = Vector3.ZERO
+	builder.player.active = true
 	prompt_label.text = Svc.loc().t("elevator") + (" ✕" if jam else " ✓")
 
 func _try_dump() -> void:
@@ -379,6 +393,7 @@ func _on_bag_burst() -> void:
 	burst_count += 1
 	_shake = 1.2
 	_slow_t = 0.22
+	builder.player.clear_cargo_feel()
 	Svc.steam().unlock("burst_once")
 	Svc.audio().yell_mom()
 	prompt_label.text = Svc.loc().t("fail_burst") + "\n" + Svc.loc().t("pick_trash")
@@ -408,6 +423,7 @@ func _on_slipped() -> void:
 	_shake = 0.6
 	if builder.bag.held:
 		builder.bag.release(builder.player.velocity + Vector3(0, 1.5, 0))
+		builder.player.clear_cargo_feel()
 
 func _on_fell_hard(fall_speed: float) -> void:
 	_shake = 0.8
