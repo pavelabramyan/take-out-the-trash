@@ -49,7 +49,7 @@ func _ready() -> void:
 func _build_body() -> void:
 	_col = CollisionShape3D.new()
 	var shape := CapsuleShape3D.new()
-	shape.radius = 0.32
+	shape.radius = 0.28
 	shape.height = 1.5
 	_col.shape = shape
 	_col.position = Vector3(0, 0.95, 0)
@@ -77,11 +77,11 @@ func _build_body() -> void:
 	flashlight.position = Vector3(0.1, -0.05, -0.1)
 	camera.add_child(flashlight)
 
-	floor_snap_length = 0.35
-	# Ступени + пандус ~52° в шахте — нужен запас
-	floor_max_angle = deg_to_rad(60.0)
-	# Небольшие уступы ступеней
-	floor_block_on_wall = true
+	floor_snap_length = 0.45
+	# Пандус в шахте ~50° — запас с головой
+	floor_max_angle = deg_to_rad(70.0)
+	floor_block_on_wall = false
+	floor_constant_speed = true
 
 func _ensure_gamepad_bindings() -> void:
 	_add_joy_button("interact", JOY_BUTTON_A)

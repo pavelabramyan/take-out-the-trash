@@ -21,5 +21,7 @@ jobs:
         run: godot --headless --path . --script res://tools/test_carry.gd
       - name: Stairs walkability
         run: godot --headless --path . --script res://tools/test_stairs.gd
+      - name: Stairs CharacterBody walk
+        run: godot --headless --path . --script res://tools/test_stair_walk.gd
       - name: Gameplay smoke
         run: godot --headless --path . --script res://tools/test_gameplay.gd
