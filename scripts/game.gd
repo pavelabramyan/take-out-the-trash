@@ -194,7 +194,7 @@ func _check_interactions() -> void:
 		if builder.elevator_area and player.global_position.distance_to(builder.elevator_area.global_position) < 2.0:
 			_try_elevator()
 			return
-		if builder.dumpster and player.global_position.distance_to(builder.dumpster.global_position) < 2.8:
+		if builder.dumpster and player.global_position.distance_to(builder.dumpster.global_position) < 3.6:
 			_try_dump()
 			return
 		if _babushka_listening:
@@ -202,7 +202,7 @@ func _check_interactions() -> void:
 
 	if not bag.held and not bag.bursted and player.global_position.distance_to(bag.global_position) < 2.4:
 		prompt = Svc.loc().t("pick_bag")
-	elif builder.dumpster and player.global_position.distance_to(builder.dumpster.global_position) < 3.0:
+	elif builder.dumpster and player.global_position.distance_to(builder.dumpster.global_position) < 4.0:
 		if not bag.bursted or get_tree().get_nodes_in_group("trash_piece").is_empty() or armful > 0:
 			prompt = Svc.loc().t("dumpster")
 	elif builder.elevator_area and player.global_position.distance_to(builder.elevator_area.global_position) < 2.2:

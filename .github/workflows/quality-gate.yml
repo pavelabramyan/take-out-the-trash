@@ -23,5 +23,7 @@ jobs:
         run: godot --headless --path . --script res://tools/test_stairs.gd
       - name: Stairs CharacterBody walk
         run: godot --headless --path . --script res://tools/test_stair_walk.gd
+      - name: Exit to yard and dumpster
+        run: godot --headless --path . --script res://tools/test_exit_dump.gd
       - name: Gameplay smoke
         run: godot --headless --path . --script res://tools/test_gameplay.gd

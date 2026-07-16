@@ -38,7 +38,7 @@ const T := {
 	"next": {"ru": "Дальше", "en": "Next"},
 	"pick_trash": {"ru": "E — поднять мусор в охапку", "en": "E — pick trash into armful"},
 	"pick_bag": {"ru": "E — поднять пакет", "en": "E — pick up bag"},
-	"dumpster": {"ru": "E — выбросить", "en": "E — dump"},
+	"dumpster": {"ru": "E — выбросить в помойку", "en": "E — throw in the dumpster"},
 	"elevator": {"ru": "E — лифт", "en": "E — elevator"},
 	"mom_yell": {"ru": "ВЫНЕСИ МУСОР!!!", "en": "TAKE OUT THE TRASH!!!"},
 	"paused": {"ru": "Пауза", "en": "Paused"},

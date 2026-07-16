@@ -181,8 +181,8 @@ func _build_stairwell(floors: int, basement: bool) -> void:
 		bl.position = Vector3(0, -FLOOR_H + 1.8, 1.0)
 		add_child(bl)
 	else:
-		_box(Vector3(0, -0.1, 1.1), Vector3(5.0, 0.2, 4.8), "tile")
-	_box(Vector3(0, 0.02, 2.9), Vector3(0.75, 0.04, 1.0), "mark", false)
+		_box(Vector3(0, -0.05, 1.1), Vector3(5.0, 0.25, 4.8), "tile")
+	_box(Vector3(0, 0.08, 2.9), Vector3(0.85, 0.05, 1.1), "mark", false)
 	_add_entrance_door()
 
 	for f in range(1, floors + 1):
@@ -196,28 +196,38 @@ func _build_stairwell(floors: int, basement: bool) -> void:
 	_box(Vector3(0, top + 2.6, 1.1), Vector3(5.5, 0.28, 5.0), "concrete")
 
 func _build_entrance_facade(floors: int, top: float) -> void:
-	# Наружная стена-панель с швами
-	_box(Vector3(-1.85, 1.45, 3.55), Vector3(1.5, 2.9, 0.2), "panel")
-	_box(Vector3(1.85, 1.45, 3.55), Vector3(1.5, 2.9, 0.2), "panel")
-	_box(Vector3(0, 2.95, 3.55), Vector3(5.4, 0.35, 0.2), "panel")
-	# Швы панелей
+	## Внутренний фасад клетки с ПРОЁМОМ двери (ширина 1.6м).
+	_box(Vector3(-1.95, 1.4, 3.55), Vector3(1.7, 2.8, 0.18), "panel")
+	_box(Vector3(1.95, 1.4, 3.55), Vector3(1.7, 2.8, 0.18), "panel")
+	_box(Vector3(0, 2.9, 3.55), Vector3(5.4, 0.4, 0.18), "panel")
 	for i in range(3):
 		var py := 3.5 + float(i) * 2.8
 		if py < top + 1.0:
 			_box(Vector3(0, py, 3.58), Vector3(5.2, 0.04, 0.04), "concrete", false)
 	if floors >= 2:
 		var uh := top - 2.9
-		_box(Vector3(0, 3.0 + uh * 0.5, 3.55), Vector3(5.4, maxf(uh, 0.2), 0.2), "panel")
-		# Окна клетки на фасаде
+		_box(Vector3(0, 3.0 + uh * 0.5, 3.55), Vector3(5.4, maxf(uh, 0.2), 0.18), "panel")
 		for f in range(2, floors + 1):
 			var wy := float(f) * FLOOR_H + 1.3
 			_box(Vector3(0, wy, 3.62), Vector3(1.1, 1.0, 0.06), "glass", false)
 			_box(Vector3(0, wy, 3.58), Vector3(1.2, 1.1, 0.04), "metal", false)
 
 func _add_entrance_door() -> void:
-	_box(Vector3(0, 1.15, 3.45), Vector3(1.15, 2.2, 0.08), "metal", false)
-	_box(Vector3(0.35, 1.15, 3.42), Vector3(0.08, 0.35, 0.06), "metal", false)  # ручка
-	_box(Vector3(-0.55, 1.5, 3.42), Vector3(0.25, 0.35, 0.05), "metal", false)  # домофон
+	## Дверь ОТКРЫТА (створка сбоку) — проход свободный, коллизии нет.
+	_box(Vector3(-0.95, 1.15, 3.35), Vector3(0.08, 2.2, 0.9), "metal", false)
+	_box(Vector3(-0.7, 1.5, 3.48), Vector3(0.22, 0.3, 0.05), "metal", false)  # домофон
+	# Рама проёма
+	_box(Vector3(-0.85, 1.15, 3.52), Vector3(0.1, 2.3, 0.12), "metal", false)
+	_box(Vector3(0.85, 1.15, 3.52), Vector3(0.1, 2.3, 0.12), "metal", false)
+	_box(Vector3(0, 2.35, 3.52), Vector3(1.8, 0.12, 0.12), "metal", false)
+	# Свет над дверью
+	var el := OmniLight3D.new()
+	el.light_color = Color(1.0, 0.9, 0.65)
+	el.light_energy = 1.8
+	el.omni_range = 5.0
+	el.position = Vector3(0, 2.5, 3.8)
+	add_child(el)
+	lights.append(el)
 
 func _add_floor_landing(y: float, left_stair: bool, floor_num: int) -> void:
 	var sx := _stair_x(left_stair)
@@ -337,39 +347,50 @@ func _build_apartment_door(start_floor: int) -> void:
 
 func _build_yard(ice: bool, night: bool) -> void:
 	var mat_key := "ice" if ice else "concrete"
-	_box(Vector3(0, -0.15, 11.0), Vector3(22.0, 0.3, 16.0), mat_key)
-	# Фасад дома с двора — сетка окон панельки
-	_box(Vector3(0, 8.0, 3.9), Vector3(14.0, 16.0, 0.35), "panel")
+	_box(Vector3(0, -0.08, 11.5), Vector3(22.0, 0.28, 17.0), mat_key)
+	# Фасад с ДЫРКОЙ под дверь — раньше была глухая стена на весь дом
+	_box(Vector3(-4.2, 8.0, 3.95), Vector3(6.6, 16.0, 0.32), "panel")  # слева от двери
+	_box(Vector3(4.2, 8.0, 3.95), Vector3(6.6, 16.0, 0.32), "panel")   # справа
+	_box(Vector3(0, 9.3, 3.95), Vector3(1.8, 13.4, 0.32), "panel")      # над дверью (низ ≈ y=2.6)
+	# Окна на фасаде (не на проёме)
 	for row in range(5):
 		for col in range(4):
-			var wx := -4.5 + float(col) * 3.0
-			var wy := 2.0 + float(row) * 2.8
-			_box(Vector3(wx, wy, 4.15), Vector3(1.2, 1.3, 0.08), "glass", false)
-			_box(Vector3(wx, wy, 4.05), Vector3(1.35, 1.45, 0.05), "metal", false)
-	# Козырёк подъезда
-	_box(Vector3(0, 2.6, 4.6), Vector3(3.2, 0.12, 1.8), "concrete")
-	_box(Vector3(-1.4, 1.3, 4.6), Vector3(0.15, 2.5, 0.15), "metal")
-	_box(Vector3(1.4, 1.3, 4.6), Vector3(0.15, 2.5, 0.15), "metal")
-	# Двор
-	_box(Vector3(-9.5, 0.7, 11.0), Vector3(1.0, 1.4, 14.0), "panel")
-	_box(Vector3(9.5, 0.7, 11.0), Vector3(1.0, 1.4, 14.0), "panel")
-	_box(Vector3(0, 0.9, 18.5), Vector3(19.0, 1.8, 1.0), "panel")
-	# Лавочка, урна, машина
-	_box(Vector3(-4.0, 0.35, 8.5), Vector3(1.6, 0.12, 0.45), "prop")
-	_box(Vector3(-4.5, 0.45, 8.5), Vector3(0.12, 0.45, 0.4), "prop")
-	_box(Vector3(-3.5, 0.45, 8.5), Vector3(0.12, 0.45, 0.4), "prop")
-	_box(Vector3(5.5, 0.55, 10.0), Vector3(2.4, 1.0, 1.15), "prop")
-	_box(Vector3(-6.0, 1.3, 13.0), Vector3(0.3, 2.5, 0.3), "prop")
-	_box(Vector3(-6.0, 2.7, 13.0), Vector3(1.5, 0.5, 1.5), "wall")
+			var wx := -5.2 + float(col) * 3.4
+			if absf(wx) < 1.2:
+				continue  # не рисовать поверх двери
+			var wy := 2.2 + float(row) * 2.8
+			_box(Vector3(wx, wy, 4.18), Vector3(1.15, 1.25, 0.07), "glass", false)
+			_box(Vector3(wx, wy, 4.08), Vector3(1.3, 1.4, 0.05), "metal", false)
+	# Крыльцо / козырёк — столбы по бокам проёма, не в центре
+	_box(Vector3(0, 2.65, 4.8), Vector3(3.4, 0.12, 2.2), "concrete")
+	_box(Vector3(-1.35, 1.25, 4.7), Vector3(0.14, 2.4, 0.14), "metal")
+	_box(Vector3(1.35, 1.25, 4.7), Vector3(0.14, 2.4, 0.14), "metal")
+	# Непрерывный пол: подъезд → крыльцо → двор
+	_box(Vector3(0, -0.05, 4.6), Vector3(2.6, 0.2, 2.8), "concrete")
+	# Жёлтый путь к помойке
+	_box(Vector3(0, 0.08, 6.5), Vector3(0.95, 0.05, 3.5), "mark", false)
+	_box(Vector3(1.5, 0.08, 10.5), Vector3(0.95, 0.05, 4.0), "mark", false)
+	_box(Vector3(3.2, 0.08, 13.5), Vector3(2.2, 0.05, 2.5), "mark", false)
+	# Ограда двора
+	_box(Vector3(-9.5, 0.7, 11.5), Vector3(1.0, 1.4, 15.0), "panel")
+	_box(Vector3(9.5, 0.7, 11.5), Vector3(1.0, 1.4, 15.0), "panel")
+	_box(Vector3(0, 0.9, 19.0), Vector3(19.0, 1.8, 1.0), "panel")
+	# Пропсы (не на пути)
+	_box(Vector3(-4.5, 0.35, 8.0), Vector3(1.6, 0.12, 0.45), "prop")
+	_box(Vector3(-5.0, 0.45, 8.0), Vector3(0.12, 0.45, 0.4), "prop")
+	_box(Vector3(-4.0, 0.45, 8.0), Vector3(0.12, 0.45, 0.4), "prop")
+	_box(Vector3(-6.5, 0.55, 11.0), Vector3(2.2, 1.0, 1.1), "prop")
+	_box(Vector3(6.5, 1.3, 12.0), Vector3(0.3, 2.5, 0.3), "prop")
+	_box(Vector3(6.5, 2.7, 12.0), Vector3(1.4, 0.45, 1.4), "wall")
 	if ice:
-		_box(Vector3(0, 0.02, 9.5), Vector3(3.5, 0.05, 1.0), "ice")
-		yard_ice_zones.append(Rect2(Vector2(-8, 6), Vector2(16, 11)))
+		_box(Vector3(0, 0.02, 9.0), Vector3(3.0, 0.05, 1.0), "ice")
+		yard_ice_zones.append(Rect2(Vector2(-7, 7), Vector2(14, 10)))
 	if night:
 		var yl := OmniLight3D.new()
 		yl.light_color = Color(1.0, 0.85, 0.55)
-		yl.light_energy = 2.2
-		yl.omni_range = 12.0
-		yl.position = Vector3(0, 4.5, 7.0)
+		yl.light_energy = 2.4
+		yl.omni_range = 14.0
+		yl.position = Vector3(0, 4.2, 7.5)
 		add_child(yl)
 
 func _build_detour_path() -> void:
@@ -382,19 +403,21 @@ func _build_basement_props() -> void:
 
 func _build_dumpster() -> void:
 	_box(Vector3(4.0, 0.75, 14.5), Vector3(2.4, 1.5, 1.5), "dumpster")
-	_box(Vector3(4.0, 1.55, 14.5), Vector3(2.5, 0.12, 1.55), "metal", false)  # крышка
+	_box(Vector3(4.0, 1.55, 14.5), Vector3(2.5, 0.12, 1.55), "metal", false)
 	dumpster = Area3D.new()
 	dumpster.name = "Dumpster"
 	dumpster.collision_layer = 0
 	dumpster.collision_mask = 2 | 4
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
-	sh.size = Vector3(2.8, 2.0, 2.2)
+	sh.size = Vector3(3.4, 2.4, 3.0)
 	cs.shape = sh
 	dumpster.add_child(cs)
 	dumpster.position = Vector3(4.0, 1.0, 14.5)
 	add_child(dumpster)
-	_box(Vector3(4.0, 2.3, 14.5), Vector3(0.4, 0.25, 0.4), "mark", false)
+	_box(Vector3(4.0, 2.35, 14.5), Vector3(0.55, 0.35, 0.55), "mark", false)
+	# Табличка «Мусор»
+	_box(Vector3(4.0, 1.9, 13.6), Vector3(0.8, 0.35, 0.05), "number", false)
 
 func _build_elevator(floors: int) -> void:
 	var start_f: int = int(_level.get("start_floor", floors))
@@ -455,14 +478,14 @@ func is_on_ice(pos: Vector3) -> bool:
 
 func guide_hint(player_pos: Vector3) -> String:
 	var lang: String = Svc.loc().lang
-	if player_pos.z > 8.0 and player_pos.y < 1.5:
-		return "Помойка — подойди и нажми E" if lang == "ru" else "Dumpster — walk up and press E"
-	if player_pos.y < 1.2 and player_pos.z > 2.5:
-		return "Выход во двор — дверь подъезда" if lang == "ru" else "Exit to the yard — entrance door"
-	var left := true
-	# На чётном этаже марш справа
-	var fl := int(round(player_pos.y / FLOOR_H))
-	left = (fl % 2 == 1)
+	if dumpster and player_pos.distance_to(dumpster.global_position) < 4.5:
+		return "E — выбросить мусор" if lang == "ru" else "E — dump the trash"
+	if player_pos.y < 1.3 and player_pos.z > 5.5:
+		return "По жёлтой дорожке к помойке" if lang == "ru" else "Follow yellow path to dumpster"
+	if player_pos.y < 1.3 and player_pos.z > 2.2:
+		return "Выходи в открытую дверь во двор" if lang == "ru" else "Go through the open door to the yard"
+	var fl := int(floor((player_pos.y + 0.2) / FLOOR_H))
+	var left := (fl % 2 == 1)
 	if lang == "ru":
-		return "Спуск: %s марш (жёлтая метка у проёма)" % ("левый" if left else "правый")
-	return "Stairs: %s flight (yellow mark)" % ("left" if left else "right")
+		return "Вниз: %s проём (жёлтая метка)" % ("левый" if left else "правый")
+	return "Down: %s opening (yellow mark)" % ("left" if left else "right")

@@ -19,6 +19,7 @@ python3 tools/gen_environment_textures.py
 "$GODOT" --headless --path . --script res://tools/test_carry.gd -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_stairs.gd -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_stair_walk.gd -- --test-mode
+"$GODOT" --headless --path . --script res://tools/test_exit_dump.gd -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_gameplay.gd -- --test-mode
 
 mkdir -p build/win
