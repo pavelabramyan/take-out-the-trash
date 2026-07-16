@@ -78,8 +78,27 @@ def main() -> None:
         env = min(1.0, t * 8) * max(0.0, 1.0 - (t - 0.5) * 2)
         mom.append(saw * 0.35 * env)
     write_wav(SFX / "mom.wav", mom)
+    # Варианты VO мамы
+    mom2 = []
+    for i in range(int(SR * 0.7)):
+        t = i / SR
+        f = 420 + 60 * math.sin(t * 22)
+        saw = (t * f) % 1.0 * 2 - 1
+        env = min(1.0, t * 10) * max(0.0, 1.0 - (t - 0.35) * 2.5)
+        mom2.append(saw * 0.32 * env)
+    write_wav(SFX / "mom2.wav", mom2)
+    mom3 = []
+    for i in range(int(SR * 1.1)):
+        t = i / SR
+        f = 340 + 120 * math.sin(t * 14)
+        sq = 1.0 if (t * f) % 1.0 < 0.5 else -1.0
+        env = min(1.0, t * 6) * max(0.0, 1.0 - (t - 0.6) * 2)
+        mom3.append(sq * 0.28 * env)
+    write_wav(SFX / "mom3.wav", mom3)
     write_wav(SFX / "elevator.wav", mix(tone(440, 0.15, 0.2), tone(330, 0.2, 0.2)))
     write_wav(SFX / "win.wav", mix(tone(523, 0.15, 0.3), tone(659, 0.2, 0.28), tone(784, 0.35, 0.25)))
+    write_wav(SFX / "fail.wav", mix(tone(180, 0.25, 0.35), tone(90, 0.4, 0.3), noise(0.3, 0.2)))
+    write_wav(SFX / "step.wav", mix(noise(0.06, 0.25), tone(90, 0.05, 0.15)))
 
     # Короткий loop меню
     loop = []
@@ -94,6 +113,37 @@ def main() -> None:
         s *= 0.7 + 0.3 * math.sin(2 * math.pi * 0.5 * t)
         loop.append(s)
     write_wav(MUSIC / "menu_loop.wav", loop)
+
+    # Gameplay / danger / ambient loops
+    game = []
+    for i in range(SR * 6):
+        t = i / SR
+        s = (
+            0.1 * math.sin(2 * math.pi * 98 * t)
+            + 0.06 * math.sin(2 * math.pi * 147 * t)
+            + 0.04 * math.sin(2 * math.pi * 196 * t)
+        )
+        s *= 0.75 + 0.25 * math.sin(2 * math.pi * 0.33 * t)
+        game.append(s)
+    write_wav(MUSIC / "game_loop.wav", game)
+    danger = []
+    for i in range(SR * 4):
+        t = i / SR
+        s = (
+            0.14 * math.sin(2 * math.pi * 70 * t)
+            + 0.08 * math.sin(2 * math.pi * 140 * t)
+            + 0.05 * ((t * 8) % 1.0 * 2 - 1) * 0.3
+        )
+        s *= 0.6 + 0.4 * math.sin(2 * math.pi * 1.2 * t)
+        danger.append(s)
+    write_wav(MUSIC / "danger_loop.wav", danger)
+    ambient = []
+    for i in range(SR * 8):
+        t = i / SR
+        s = 0.04 * math.sin(2 * math.pi * 55 * t) + 0.03 * math.sin(2 * math.pi * 82.5 * t)
+        s += 0.02 * math.sin(2 * math.pi * 0.2 * t)
+        ambient.append(s)
+    write_wav(MUSIC / "ambient_hall.wav", ambient)
     print("SFX_OK")
 
 

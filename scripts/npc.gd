@@ -78,6 +78,14 @@ func _player_in_yard(p: Node3D) -> bool:
 	## Бабушки/собаки не видят сквозь этажи — только двор у земли.
 	return p.global_position.y < 1.6 and p.global_position.z > 4.0
 
+func _player_stealthed(p: Node3D) -> bool:
+	## Присед режет конус зрения.
+	if p.get("careful") == true:
+		return true
+	if p.get("_crouching") == true:
+		return true
+	return false
+
 func _physics_process(delta: float) -> void:
 	if not active or _caught:
 		return
@@ -101,7 +109,12 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var dist := global_position.distance_to(_target_player.global_position)
-	if dist > aggro_range:
+	var range_m := aggro_range
+	var ang_m := vision_angle
+	if _player_stealthed(_target_player):
+		range_m *= 0.45
+		ang_m *= 0.55
+	if dist > range_m:
 		return
 	var to_p := (_target_player.global_position - global_position)
 	to_p.y = 0.0
@@ -110,17 +123,23 @@ func _physics_process(delta: float) -> void:
 	if forward.length() < 0.01 or to_p.length() < 0.01:
 		return
 	var ang := rad_to_deg(forward.normalized().angle_to(to_p.normalized()))
+	# Поведения собак: 0 трусливая, 1 злая, 2 хочет пакет
+	var dog_mood := int(abs(get_instance_id())) % 3
 	if kind == Kind.DOG:
+		Svc.audio().set_danger(dist < range_m)
+		if dog_mood == 0 and dist < 3.0:
+			# Трусливая — отбегает
+			velocity = -to_p.normalized() * speed
+			return
 		if dist < 2.0:
 			_caught = true
 			Svc.audio().play_sfx("bark")
 			barked.emit()
 			spotted.emit(kind)
-		elif dist < aggro_range and ang < vision_angle:
-			velocity = to_p.normalized() * speed * 1.5
+		elif dist < range_m and ang < ang_m:
+			velocity = to_p.normalized() * speed * (1.8 if dog_mood == 1 else 1.3)
 	else:
-		# Бабушка: узкий конус, только если смотрит на тебя
-		if ang < vision_angle and dist < aggro_range:
+		if ang < ang_m and dist < range_m:
 			_caught = true
 			Svc.audio().play_sfx("babushka")
 			spotted.emit(kind)

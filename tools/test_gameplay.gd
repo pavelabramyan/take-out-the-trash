@@ -13,22 +13,23 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	await create_timer(0.8).timeout
-	var game = null
+	var game: Node = null
 	for c in get_root().get_children():
 		if c is Node3D and c.get("builder") != null:
 			game = c
 			break
 	if game == null:
-		push_error("Game node not found")
+		push_error("Game node not found — script parse/runtime error?")
 		quit(1)
 		return
-	if game.builder == null or game.builder.bag == null:
+	var builder = game.get("builder")
+	if builder == null or builder.get("bag") == null:
 		push_error("Builder/bag missing")
 		quit(1)
 		return
-	if not game.builder.bag.held:
+	if not bool(builder.bag.held):
 		push_error("Bag not held")
 		quit(1)
 		return
-	print("TEST_GAMEPLAY_PASS bag_hp=", game.builder.bag.hp)
+	print("TEST_GAMEPLAY_PASS bag_hp=", builder.bag.hp)
 	quit(0)

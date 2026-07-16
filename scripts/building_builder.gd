@@ -36,31 +36,57 @@ func build(level: Dictionary) -> void:
 	_build_stairwell(floors, has_basement)
 	_build_apartment_door(start_floor)
 	_build_yard(ice)
+	if bool(level.get("detour", false)):
+		_build_detour_path()
 	_build_dumpster()
 	if has_elevator:
 		_build_elevator(floors)
+	if has_basement:
+		_build_basement_props()
 	_spawn_npcs(level)
 	_spawn_player_and_bag(start_floor, level)
+	Svc.audio().play_ambient()
+	Svc.audio().play_music("game_music")
 
 func _make_materials() -> void:
-	_mats["wall"] = _mat(Color(0.78, 0.74, 0.68))
-	_mats["tile"] = _mat(Color(0.58, 0.6, 0.62))
+	var style: String = str(_level.get("style", "khrushchev"))
+	var wall_c := Color(0.78, 0.74, 0.68)
+	var tile_c := Color(0.58, 0.6, 0.62)
+	match style:
+		"brezhnev":
+			wall_c = Color(0.62, 0.66, 0.7)
+			tile_c = Color(0.45, 0.48, 0.5)
+		"courtyard":
+			wall_c = Color(0.72, 0.62, 0.55)
+			tile_c = Color(0.5, 0.48, 0.42)
+		_:
+			pass
+	_mats["wall"] = _tex_mat("res://assets/textures/wall.png", wall_c)
+	_mats["tile"] = _tex_mat("res://assets/textures/tile.png", tile_c)
 	_mats["rail"] = _mat(Color(0.45, 0.28, 0.18))
-	_mats["door"] = _mat(Color(0.42, 0.28, 0.2))
-	_mats["concrete"] = _mat(Color(0.48, 0.48, 0.46))
-	_mats["ice"] = _mat(Color(0.75, 0.85, 0.95), 0.15)
-	_mats["dumpster"] = _mat(Color(0.2, 0.45, 0.25))
+	_mats["door"] = _tex_mat("res://assets/textures/door.png", Color(0.42, 0.28, 0.2))
+	_mats["concrete"] = _tex_mat("res://assets/textures/concrete.png", Color(0.48, 0.48, 0.46))
+	_mats["ice"] = _mat(Color(0.75, 0.85, 0.95), 0.25)
+	_mats["dumpster"] = _tex_mat("res://assets/textures/dumpster.png", Color(0.2, 0.45, 0.25))
 	_mats["mail"] = _mat(Color(0.55, 0.35, 0.2))
 	_mats["mark"] = _mat(Color(0.15, 0.95, 0.35))
 	(_mats["mark"] as StandardMaterial3D).emission_enabled = true
 	(_mats["mark"] as StandardMaterial3D).emission = Color(0.15, 0.95, 0.35)
 	(_mats["mark"] as StandardMaterial3D).emission_energy_multiplier = 2.5
+	_mats["prop"] = _mat(Color(0.35, 0.38, 0.4))
 
 func _mat(c: Color, metallic: float = 0.0) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = c
 	m.roughness = 0.9 - metallic * 0.5
 	m.metallic = metallic
+	return m
+
+func _tex_mat(path: String, fallback: Color) -> StandardMaterial3D:
+	var m := _mat(fallback)
+	if ResourceLoader.exists(path):
+		m.albedo_texture = load(path)
+		m.uv1_scale = Vector3(2, 2, 2)
 	return m
 
 func _add_world_env(night: bool) -> void:
@@ -75,6 +101,13 @@ func _add_world_env(night: bool) -> void:
 	if night:
 		env.fog_light_color = Color(0.08, 0.1, 0.15)
 		env.fog_density = 0.02
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 1.05
+	env.adjustment_contrast = 1.06
+	# Лёгкий виньет через glow
+	env.glow_enabled = true
+	env.glow_intensity = 0.15
+	env.glow_strength = 0.6
 	we.environment = env
 	add_child(we)
 	var sun := DirectionalLight3D.new()
@@ -177,12 +210,13 @@ func _add_flight(from_floor: int, left_side: bool) -> void:
 	var y0 := float(from_floor) * FLOOR_H
 	var y1 := float(from_floor - 1) * FLOOR_H
 	var x := -1.0 if left_side else 1.0
+	## Визуальные ступени без коллизии — игрок ходит по одному пандусу (#87 батч).
 	var steps := 16
 	for i in range(steps):
 		var t := (float(i) + 0.5) / float(steps)
 		var y := lerpf(y0, y1, t)
 		var z := lerpf(0.45, 2.45, t)
-		_box(Vector3(x, y - 0.06, z), Vector3(STAIR_W, 0.12, 0.34), "concrete")
+		_box(Vector3(x, y - 0.06, z), Vector3(STAIR_W, 0.12, 0.34), "concrete", false)
 	_add_ramp(x, y0, y1)
 
 func _add_ramp(x: float, y_top: float, y_bot: float) -> void:
@@ -225,8 +259,32 @@ func _build_yard(ice: bool) -> void:
 	_box(Vector3(8.0, 0.6, 10.0), Vector3(1.0, 1.2, 12.0), "wall")
 	_box(Vector3(0, 0.8, 16.5), Vector3(16.0, 1.6, 1.0), "wall")
 	_box(Vector3(0, 6.0, -2.6), Vector3(14.0, 14.0, 1.0), "wall")
+	# Декор двора: машины/деревья-примитивы
+	_box(Vector3(-5.5, 0.55, 8.0), Vector3(2.2, 1.0, 1.1), "prop")
+	_box(Vector3(6.0, 1.2, 11.0), Vector3(0.35, 2.4, 0.35), "prop")
+	_box(Vector3(6.0, 2.5, 11.0), Vector3(1.6, 0.5, 1.6), "wall")
+	# Объявления / щит
+	_box(Vector3(-2.3, 1.6, 3.5), Vector3(0.05, 0.7, 0.5), "mail", false)
 	if ice:
+		# Видимые ледяные полосы
+		_box(Vector3(0, 0.02, 9.0), Vector3(4.0, 0.06, 1.2), "ice")
+		_box(Vector3(2.5, 0.02, 12.0), Vector3(3.0, 0.06, 1.0), "ice")
 		yard_ice_zones.append(Rect2(Vector2(-7, 4), Vector2(14, 12)))
+
+func _build_detour_path() -> void:
+	## Длинный обход вокруг двора — безопаснее собак.
+	_box(Vector3(-6.5, -0.05, 10.0), Vector3(2.5, 0.15, 10.0), "concrete")
+	_box(Vector3(-6.5, 0.05, 14.5), Vector3(0.6, 0.08, 0.6), "mark", false)
+
+func _build_basement_props() -> void:
+	_box(Vector3(1.5, -FLOOR_H + 0.4, 1.0), Vector3(0.3, 0.3, 2.5), "prop")
+	_box(Vector3(-1.2, -FLOOR_H + 0.15, 2.0), Vector3(1.2, 0.08, 1.2), "ice")
+	var bl := OmniLight3D.new()
+	bl.light_color = Color(0.7, 0.5, 0.3)
+	bl.light_energy = 0.8
+	bl.omni_range = 5.0
+	bl.position = Vector3(0, -FLOOR_H + 2.0, 0.5)
+	add_child(bl)
 
 func _build_dumpster() -> void:
 	_box(Vector3(3.5, 0.7, 13.5), Vector3(2.2, 1.4, 1.4), "dumpster")

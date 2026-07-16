@@ -35,3 +35,13 @@
 ## Тексты
 
 См. `marketing/STEAM-PAGE-RU.md` и `marketing/STEAM-PAGE-EN.md`.
+
+## IARC / AI
+
+См. `launch/IARC-AND-AI.md`.
+
+## Cloud save (#90)
+
+В Steamworks Autocloud: синхронизировать `meta.json` из user-папки Godot
+(`user://meta.json` → обычно `~/.local/share/godot/app_userdata/...` / `%APPDATA%/Godot/...`).
+Флаг готовности: создать `user://steam_cloud_ok.txt` после проверки.

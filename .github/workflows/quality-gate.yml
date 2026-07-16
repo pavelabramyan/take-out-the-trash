@@ -1,0 +1,23 @@
+name: quality-gate
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+jobs:
+  headless:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.4.1
+          use-dotnet: false
+      - name: Generate audio assets
+        run: python3 tools/gen_sfx.py
+      - name: Level tests
+        run: godot --headless --path . --script res://tools/test_levels.gd
+      - name: Carry tests
+        run: godot --headless --path . --script res://tools/test_carry.gd
+      - name: Gameplay smoke
+        run: godot --headless --path . --script res://tools/test_gameplay.gd

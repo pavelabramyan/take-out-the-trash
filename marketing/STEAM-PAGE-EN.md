@@ -1,22 +1,21 @@
 # TAKE OUT THE TRASH! — Steam page (EN)
 
 **Short description**  
-Mom yelled. The bag tears. Neighbors stare.
+Mom yelled. The bag tears. Neighbors stare. Chore physics comedy.
 
-**Description**
+**About**
 
-Mom shouted from the kitchen. You grab the trash bag and walk the Soviet stairwell: elevator lottery, dark landings, icy yard, dumpster dogs, and babushkas with vision cones.
+A short physics comedy about the universal chore: take out the trash through a Soviet stairwell. Elevator lottery, icy yard, dumpster dogs, babushkas with vision cones. The bag is physical — slam a railing and it bursts. Pick up the mess. Carry on.
 
-The bag is physics. Hit the railing — it bursts. Trash everywhere. Pick it up while neighbors watch. It gets worse: buckets, a carpet, a fridge.
-
-A short meme chore simulator for one evening. 12 levels of shame. Three stars for speed, an intact bag, and stealth.
+About 1–2 hours. 12 levels of shame. Three stars for speed, an intact bag, and stealth.
 
 **Features**
 
-- Physics bag that tears and spills trash
-- 12 escalating levels — bag to fridge
+- Physics bag that takes damage while carried
+- Throw / drop / careful mode
 - Elevator lottery, night, ice, wind, dogs, babushkas
-- Stars and meme achievements
-- English and Russian
+- Carpet and fridge finales
+- Stars, achievements, RU + EN
 
-**Price:** $2.99
+**Price:** $2.99  
+**Tags:** Simulation, Physics, Comedy, Casual, Short, Funny, Singleplayer

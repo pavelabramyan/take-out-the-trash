@@ -1,5 +1,5 @@
 extends Node
-## Steam-ачивки через GodotSteam (если AppID задан). Иначе — только локальный прогресс.
+## Steam-ачивки, Rich Presence. AppID из project.godot.
 
 const ACHIEVEMENTS := {
 	"first_dump": {"ru": "Первый вынос", "en": "First dump"},
@@ -33,7 +33,6 @@ func _ready() -> void:
 func _init_steam() -> void:
 	if not ClassDB.class_exists("Steam"):
 		return
-	# AppID 0 = offline / ещё не зарегистрирован
 	var app_id := int(ProjectSettings.get_setting("steam/initialization/app_id", 0))
 	if app_id <= 0:
 		return
@@ -55,6 +54,17 @@ func unlock(id: String) -> void:
 		steam.setAchievement(id)
 		steam.storeStats()
 
+func set_rich_presence(level_1based: int, cargo: String) -> void:
+	if not _steam_ok:
+		return
+	var steam = Engine.get_singleton("Steam")
+	if steam == null:
+		return
+	# Steam Rich Presence keys (настроить в Steamworks партнёрке)
+	steam.setRichPresence("steam_display", "#StatusInGame")
+	steam.setRichPresence("level", str(level_1based))
+	steam.setRichPresence("cargo", cargo)
+
 func note_restart() -> void:
 	_restart_streak += 1
 	if _restart_streak >= 10:
@@ -65,3 +75,12 @@ func note_win_reset_restarts() -> void:
 
 func list_ids() -> Array:
 	return ACHIEVEMENTS.keys()
+
+func ach_label(id: String, lang: String) -> String:
+	if not ACHIEVEMENTS.has(id):
+		return id
+	var name: Dictionary = ACHIEVEMENTS[id]
+	return str(name.get(lang, name.get("en", id)))
+
+func is_steam_ok() -> bool:
+	return _steam_ok
