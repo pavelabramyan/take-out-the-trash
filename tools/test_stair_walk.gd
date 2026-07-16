@@ -1,5 +1,5 @@
 extends SceneTree
-## U-лестница: этаж 2 → mid → этаж 1 → mid → земля (правый/+Z, левый/−Z).
+## U-лестница узкой клетки: правый/+Z → mid → левый/−Z.
 
 const LevelDataScr = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
@@ -32,9 +32,9 @@ func _run() -> void:
 	p.floor_snap_length = 0.45
 	var H: float = BuildingBuilderScr.FLOOR_H
 	var HH: float = BuildingBuilderScr.HALF_H
+	var sx: float = BuildingBuilderScr.STAIR_X
 
-	# Этаж 2: правый марш (+Z) → mid
-	p.global_position = Vector3(1.20, H * 2.0 + 0.4, 0.2)
+	p.global_position = Vector3(sx, H * 2.0 + 0.4, 0.15)
 	p.velocity = Vector3.ZERO
 	await _walk(p, Vector3(0, 0, 1), 160)
 	print("MID2 y=%.2f z=%.2f x=%.2f" % [p.global_position.y, p.global_position.z, p.global_position.x])
@@ -43,8 +43,7 @@ func _run() -> void:
 		quit(1)
 		return
 
-	# Mid → левый марш (−Z) → этаж 1
-	p.global_position = Vector3(-1.20, H * 2.0 - HH + 0.35, 2.6)
+	p.global_position = Vector3(-sx, H * 2.0 - HH + 0.35, 2.4)
 	await _walk(p, Vector3(0, 0, -1), 160)
 	print("FL1 y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
 	if p.global_position.y > H + 0.9:
@@ -52,8 +51,7 @@ func _run() -> void:
 		quit(1)
 		return
 
-	# Этаж 1: снова правый (+Z) → mid
-	p.global_position = Vector3(1.20, H + 0.4, 0.2)
+	p.global_position = Vector3(sx, H + 0.4, 0.15)
 	await _walk(p, Vector3(0, 0, 1), 160)
 	print("MID1 y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
 	if p.global_position.y > H - HH + 0.9:
@@ -61,8 +59,7 @@ func _run() -> void:
 		quit(1)
 		return
 
-	# Mid → левый (−Z) → земля
-	p.global_position = Vector3(-1.20, H - HH + 0.35, 2.6)
+	p.global_position = Vector3(-sx, H - HH + 0.35, 2.4)
 	await _walk(p, Vector3(0, 0, -1), 180)
 	print("GROUND y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
 	if p.global_position.y > 1.2:

@@ -1,5 +1,5 @@
 extends SceneTree
-## Полный путь: U-лестница → дверь во двор → помойка.
+## Полный путь узкой клетки → двор → помойка.
 
 const LevelDataScr = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
@@ -32,14 +32,15 @@ func _run() -> void:
 	p.floor_snap_length = 0.45
 	var H: float = BuildingBuilderScr.FLOOR_H
 	var HH: float = BuildingBuilderScr.HALF_H
+	var sx: float = BuildingBuilderScr.STAIR_X
 
-	p.global_position = Vector3(1.20, H * 2.0 + 0.4, 0.15)
+	p.global_position = Vector3(sx, H * 2.0 + 0.4, 0.1)
 	await _walk(p, Vector3(0, 0, 1), 150)
-	p.global_position = Vector3(-1.20, H * 2.0 - HH + 0.35, 2.6)
+	p.global_position = Vector3(-sx, H * 2.0 - HH + 0.35, 2.4)
 	await _walk(p, Vector3(0, 0, -1), 150)
-	p.global_position = Vector3(1.20, H + 0.4, 0.15)
+	p.global_position = Vector3(sx, H + 0.4, 0.1)
 	await _walk(p, Vector3(0, 0, 1), 150)
-	p.global_position = Vector3(-1.20, H - HH + 0.35, 2.6)
+	p.global_position = Vector3(-sx, H - HH + 0.35, 2.4)
 	await _walk(p, Vector3(0, 0, -1), 170)
 	print("AT_GROUND y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
 	if p.global_position.y > 1.2:
@@ -47,7 +48,7 @@ func _run() -> void:
 		quit(1)
 		return
 
-	p.global_position = Vector3(0.0, 0.4, 3.2)
+	p.global_position = Vector3(0.0, 0.4, 3.1)
 	await _walk(p, Vector3(0, 0, 1), 200)
 	print("AFTER_DOOR y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
 	if p.global_position.z < 4.5:

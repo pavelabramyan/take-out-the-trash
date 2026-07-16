@@ -22,6 +22,8 @@ var _slow_t: float = 0.0
 var _replay: Array = []
 var _babushka_listen_t: float = 0.0
 var _babushka_listening: bool = false
+var _mom_yelled: bool = false
+var _music_started: bool = false
 
 @onready var ui: CanvasLayer = $UI
 @onready var hud_label: Label = $UI/HUD/Info
@@ -46,7 +48,6 @@ func _ready() -> void:
 	end_panel.visible = false
 	pause_panel.visible = false
 	_localize_panels()
-	Svc.audio().yell_mom()
 
 func _apply_difficulty_hp() -> void:
 	level = level.duplicate(true)
@@ -104,6 +105,8 @@ func _start_level() -> void:
 	elevator_used = false
 	elevator_jammed = false
 	_babushka_listening = false
+	_mom_yelled = false
+	_music_started = false
 	_replay.clear()
 	state = State.PLAY
 	title_label.text = "%s %d — %s" % [Svc.loc().t("level"), level_index + 1, level.get("title_%s" % Svc.loc().lang, level.get("title_en", ""))]
@@ -126,6 +129,7 @@ func _process(delta: float) -> void:
 		_check_interactions()
 		_update_shake(delta)
 		_record_replay()
+		_atmosphere_cues()
 		if _slow_t > 0.0:
 			_slow_t -= delta
 			Engine.time_scale = 0.35 if _slow_t > 0.0 else 1.0
@@ -137,6 +141,19 @@ func _process(delta: float) -> void:
 		_toggle_pause()
 	if Input.is_action_just_pressed("photo_mode"):
 		_photo_snap()
+
+func _atmosphere_cues() -> void:
+	if builder == null or builder.player == null:
+		return
+	if not _mom_yelled and builder.player.velocity.length() > 0.55:
+		_mom_yelled = true
+		get_tree().create_timer(2.2).timeout.connect(func() -> void:
+			if state == State.PLAY:
+				Svc.audio().yell_mom()
+		)
+	if not _music_started and elapsed > 14.0:
+		_music_started = true
+		Svc.audio().play_music("game_music")
 
 func _update_shake(delta: float) -> void:
 	_shake = maxf(0.0, _shake - delta * 4.0)

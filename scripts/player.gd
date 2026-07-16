@@ -37,6 +37,7 @@ var _crouching: bool = false
 var _slip_cd: float = 0.0
 var _air_time: float = 0.0
 var _max_fall_speed: float = 0.0
+var _step_acc: float = 0.0
 
 func _ready() -> void:
 	collision_layer = 2
@@ -243,6 +244,15 @@ func _physics_process(delta: float) -> void:
 		velocity.y = JUMP_V * (0.7 if _crouching else 1.0)
 
 	move_and_slide()
+
+	var horiz := Vector2(velocity.x, velocity.z).length()
+	if is_on_floor() and horiz > 0.7:
+		_step_acc += horiz * delta
+		if _step_acc >= 0.48:
+			_step_acc = 0.0
+			Svc.audio().play_step()
+	else:
+		_step_acc = 0.0
 
 	var target_h := 1.1 if _crouching else 1.5
 	var sh: CapsuleShape3D = _col.shape

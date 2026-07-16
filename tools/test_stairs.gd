@@ -1,5 +1,5 @@
 extends SceneTree
-## Верхний марш 2→mid: поверхность понижается по +Z (правый, f=2).
+## Верхний марш 2→mid: понижается по +Z (правый, STAIR_X).
 
 const LevelDataScr = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
@@ -16,7 +16,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var space := root.get_world_3d().direct_space_state
-	var x := 1.20
+	var x: float = BuildingBuilderScr.STAIR_X
 	var prev := 99.0
 	for i in range(10):
 		var t := (float(i) + 0.5) / 10.0
@@ -28,9 +28,8 @@ func _run() -> void:
 		assert(hit.position.y <= prev + 0.08)
 		prev = hit.position.y
 	print("TEST_STAIRS_PASS last_y=", prev)
-	# Нижний марш mid→1: понижается по −Z (левый)
 	prev = 99.0
-	x = -1.20
+	x = -BuildingBuilderScr.STAIR_X
 	for i in range(10):
 		var t := (float(i) + 0.5) / 10.0
 		var z := lerpf(BuildingBuilderScr.FLIGHT_Z_A1, BuildingBuilderScr.FLIGHT_Z_A0, t)
