@@ -1,18 +1,16 @@
 class_name BuildingBuilder
 extends Node3D
-## Подъезд: читаемые площадки + широкий марш в проёме + двор.
+## Подъезд для игры: всегда вперёд и вниз по зелёной дорожке. Без дыр, без змейки внахлёст.
 
 const TrashPlayerScr = preload("res://scripts/player.gd")
 const TrashBagScr = preload("res://scripts/trash_bag.gd")
 const StairNpcScr = preload("res://scripts/npc.gd")
 
-const FLOOR_H := 3.0
-const SHAFT_W := 5.0
-const STAIR_W := 2.2
-## Проём лестницы (достаточно широкий под капсулу игрока)
-const HOLE_Z0 := 0.35
-const HOLE_Z1 := 2.85
-const HOLE_W := 2.4
+const FLOOR_H := 2.6
+const RAMP_RUN := 5.0
+const LAND_LEN := 3.2
+const STAIR_W := 3.6
+const SEG := RAMP_RUN + LAND_LEN  # длина одного этажа по Z
 
 var player: CharacterBody3D
 var bag: RigidBody3D
@@ -22,6 +20,7 @@ var spawn_pos: Vector3 = Vector3.ZERO
 var yard_ice_zones: Array = []
 var npcs: Array = []
 var lights: Array = []
+var _floors: int = 2
 
 var _mats: Dictionary = {}
 var _level: Dictionary = {}
@@ -29,28 +28,32 @@ var _level: Dictionary = {}
 func build(level: Dictionary) -> void:
 	_level = level
 	_make_materials()
-	var floors: int = int(level.get("floors", 2))
-	var start_floor: int = int(level.get("start_floor", floors))
+	_floors = int(level.get("floors", 2))
+	var start_floor: int = int(level.get("start_floor", _floors))
 	var night: bool = bool(level.get("night", false))
 	var has_basement: bool = bool(level.get("basement", false))
 	var has_elevator: bool = bool(level.get("elevator", false))
 	var ice: bool = bool(level.get("ice", false))
 
 	_add_world_env(night)
-	_build_stairwell(floors, has_basement)
+	_build_stairwell(_floors, has_basement)
 	_build_apartment_door(start_floor)
 	_build_yard(ice)
 	if bool(level.get("detour", false)):
 		_build_detour_path()
 	_build_dumpster()
 	if has_elevator:
-		_build_elevator(floors)
+		_build_elevator(_floors)
 	if has_basement:
 		_build_basement_props()
 	_spawn_npcs(level)
 	_spawn_player_and_bag(start_floor, level)
 	Svc.audio().play_ambient()
 	Svc.audio().play_music("game_music")
+
+func _floor_z0(floor_1based: int) -> float:
+	## Этаж 0 у z=0, каждый выше — дальше в −Z (старт сзади, спуск в +Z к выходу).
+	return -float(floor_1based) * SEG
 
 func _make_materials() -> void:
 	var style: String = str(_level.get("style", "khrushchev"))
@@ -67,16 +70,20 @@ func _make_materials() -> void:
 			pass
 	_mats["wall"] = _tex_mat("res://assets/textures/wall.png", wall_c)
 	_mats["tile"] = _tex_mat("res://assets/textures/tile.png", tile_c)
-	_mats["rail"] = _mat(Color(0.45, 0.28, 0.18))
+	_mats["rail"] = _mat(Color(0.5, 0.32, 0.2))
 	_mats["door"] = _tex_mat("res://assets/textures/door.png", Color(0.42, 0.28, 0.2))
 	_mats["concrete"] = _tex_mat("res://assets/textures/concrete.png", Color(0.48, 0.48, 0.46))
 	_mats["ice"] = _mat(Color(0.75, 0.85, 0.95), 0.25)
 	_mats["dumpster"] = _tex_mat("res://assets/textures/dumpster.png", Color(0.2, 0.45, 0.25))
 	_mats["mail"] = _mat(Color(0.55, 0.35, 0.2))
-	_mats["mark"] = _mat(Color(0.15, 0.95, 0.35))
+	_mats["mark"] = _mat(Color(0.12, 0.95, 0.35))
 	(_mats["mark"] as StandardMaterial3D).emission_enabled = true
-	(_mats["mark"] as StandardMaterial3D).emission = Color(0.15, 0.95, 0.35)
-	(_mats["mark"] as StandardMaterial3D).emission_energy_multiplier = 2.5
+	(_mats["mark"] as StandardMaterial3D).emission = Color(0.12, 0.95, 0.35)
+	(_mats["mark"] as StandardMaterial3D).emission_energy_multiplier = 3.2
+	_mats["path"] = _mat(Color(0.15, 0.9, 0.4))
+	(_mats["path"] as StandardMaterial3D).emission_enabled = true
+	(_mats["path"] as StandardMaterial3D).emission = Color(0.1, 0.85, 0.3)
+	(_mats["path"] as StandardMaterial3D).emission_energy_multiplier = 2.2
 	_mats["prop"] = _mat(Color(0.35, 0.38, 0.4))
 
 func _mat(c: Color, metallic: float = 0.0) -> StandardMaterial3D:
@@ -99,26 +106,19 @@ func _add_world_env(night: bool) -> void:
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.05, 0.06, 0.1) if night else Color(0.55, 0.65, 0.8)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.2, 0.22, 0.28) if night else Color(0.5, 0.52, 0.55)
-	env.ambient_light_energy = 0.45 if night else 0.85
+	env.ambient_light_color = Color(0.22, 0.24, 0.3) if night else Color(0.52, 0.54, 0.56)
+	env.ambient_light_energy = 0.5 if night else 0.95
 	env.fog_enabled = night
 	if night:
-		env.fog_light_color = Color(0.08, 0.1, 0.15)
-		env.fog_density = 0.02
-	env.adjustment_enabled = true
-	env.adjustment_saturation = 1.05
-	env.adjustment_contrast = 1.06
-	# Лёгкий виньет через glow
+		env.fog_density = 0.018
 	env.glow_enabled = true
-	env.glow_intensity = 0.15
-	env.glow_strength = 0.6
+	env.glow_intensity = 0.22
 	we.environment = env
 	add_child(we)
 	var sun := DirectionalLight3D.new()
-	sun.light_energy = 0.2 if night else 1.15
-	sun.light_color = Color(0.6, 0.7, 1.0) if night else Color(1, 0.98, 0.92)
+	sun.light_energy = 0.25 if night else 1.2
 	sun.shadow_enabled = true
-	sun.rotation_degrees = Vector3(-50, 35, 0)
+	sun.rotation_degrees = Vector3(-48, 30, 0)
 	add_child(sun)
 
 func _box(pos: Vector3, size: Vector3, mat_key: String, with_collision: bool = true) -> StaticBody3D:
@@ -142,194 +142,137 @@ func _box(pos: Vector3, size: Vector3, mat_key: String, with_collision: bool = t
 	return body
 
 func _build_stairwell(floors: int, basement: bool) -> void:
+	var z_min := _floor_z0(floors) - 1.0
+	var z_max := LAND_LEN + 2.0
+	var depth := z_max - z_min
+	var mid_z := (z_min + z_max) * 0.5
 	var top := float(floors) * FLOOR_H
 
-	# Наружные стены шахты
-	_box(Vector3(-2.55, top * 0.5 + 0.5, 1.2), Vector3(0.2, top + 3.0, 5.6), "wall")
-	_box(Vector3(2.55, top * 0.5 + 0.5, 1.2), Vector3(0.2, top + 3.0, 5.6), "wall")
-	_box(Vector3(0, top * 0.5 + 0.5, -1.5), Vector3(5.3, top + 3.0, 0.2), "wall")
+	# Боковые стены на всю длину
+	_box(Vector3(-4.3, top * 0.5 + 1.0, mid_z), Vector3(0.3, top + 4.0, depth + 2.0), "wall")
+	_box(Vector3(4.3, top * 0.5 + 1.0, mid_z), Vector3(0.3, top + 4.0, depth + 2.0), "wall")
+	# Задняя стена
+	_box(Vector3(0, top * 0.5 + 1.0, z_min - 0.2), Vector3(8.8, top + 4.0, 0.3), "wall")
+	# Крыша высоко
+	_box(Vector3(0, top + 2.8, mid_z), Vector3(8.8, 0.3, depth + 1.0), "concrete")
 
-	# Фасад: дверной проём только на 1 этаже
-	_box(Vector3(-1.75, 1.5, 3.85), Vector3(1.7, 3.0, 0.2), "wall")
-	_box(Vector3(1.75, 1.5, 3.85), Vector3(1.7, 3.0, 0.2), "wall")
-	_box(Vector3(0, 2.9, 3.85), Vector3(5.3, 0.4, 0.2), "wall")
-	if floors >= 2:
-		var uh := top - 3.0
-		_box(Vector3(0, 3.0 + uh * 0.5, 3.85), Vector3(5.3, maxf(uh, 0.2), 0.2), "wall")
-
-	# Пол 1 этажа с проёмом под марш с f=1 (левый), иначе ступени упираются в плиту
-	_add_ground_floor_with_stair_hole()
-	_box(Vector3(0, 1.1, 3.7), Vector3(1.05, 2.2, 0.05), "door", false)
-	# Стрелка к выходу на 1 этаже
-	_box(Vector3(0, 0.05, 3.2), Vector3(0.5, 0.06, 0.8), "mark", false)
-
-	if basement:
-		_box(Vector3(0, -FLOOR_H - 0.1, 1.2), Vector3(5.0, 0.2, 5.2), "concrete")
-		_add_flight(1, true)  # с 1 на подвал (y=0 → y=-FLOOR_H через from=1)
-		var bl := OmniLight3D.new()
-		bl.light_color = Color(0.9, 0.7, 0.4)
-		bl.light_energy = 1.0
-		bl.omni_range = 7.0
-		bl.position = Vector3(0, -FLOOR_H + 2.0, 1.0)
-		add_child(bl)
-		lights.append(bl)
+	# Этаж 0 — выход
+	_add_landing(0, 0.0)
+	_box(Vector3(0, 1.25, LAND_LEN + 0.05), Vector3(1.6, 2.4, 0.1), "door", false)
+	_box(Vector3(-2.2, 1.4, LAND_LEN + 0.15), Vector3(2.4, 2.8, 0.25), "wall")
+	_box(Vector3(2.2, 1.4, LAND_LEN + 0.15), Vector3(2.4, 2.8, 0.25), "wall")
+	_box(Vector3(0, 2.95, LAND_LEN + 0.15), Vector3(8.8, 0.4, 0.25), "wall")
 
 	for f in range(1, floors + 1):
 		var y := float(f) * FLOOR_H
-		var left := (f % 2 == 1)
-		_add_floor_landing(y, left)
-		# При подвале марш 1→0 уже добавлен выше — не дублируем
-		if not (basement and f == 1):
-			_add_flight(f, left)
-		_add_simple_rail(y, left)
-		_add_stair_marker(y, left)
-
-		if f == 1:
-			_box(Vector3(-2.15, 1.15, -0.85), Vector3(0.35, 1.3, 0.12), "mail")
-
+		_add_landing(f, y)
+		_add_ramp_down(f, y, y - FLOOR_H)
 		var lamp := OmniLight3D.new()
-		lamp.light_color = Color(1.0, 0.93, 0.8)
-		lamp.light_energy = 1.6
-		lamp.omni_range = 8.0
-		lamp.position = Vector3(0, y + 2.5, 0.3)
+		lamp.light_color = Color(1.0, 0.95, 0.85)
+		lamp.light_energy = 1.9
+		lamp.omni_range = 11.0
+		lamp.position = Vector3(0, y + 2.2, _floor_z0(f) + LAND_LEN * 0.5)
 		add_child(lamp)
 		lights.append(lamp)
 
-	# Крыша ВЫШЕ головы на последнем этаже — раньше сидела на y=top и запечатывала проём лестницы
-	_box(Vector3(0, top + 2.7, 1.2), Vector3(5.3, 0.3, 5.4), "concrete")
+	if basement:
+		_box(Vector3(0, -FLOOR_H - 0.1, mid_z), Vector3(8.0, 0.2, depth), "concrete")
+		_add_ramp_custom(0.0, -FLOOR_H, 0.0, RAMP_RUN)
 
-func _add_ground_floor_with_stair_hole() -> void:
-	## y=0: проём слева (марш f=1), остальное — пол к выходу.
-	var y := 0.0
-	var hx := -1.0
-	var hole_l := hx - HOLE_W * 0.5
-	var hole_r := hx + HOLE_W * 0.5
-	var back_z0 := -1.35
-	var back_depth := HOLE_Z0 - back_z0
-	_box(Vector3(0, y - 0.1, back_z0 + back_depth * 0.5), Vector3(5.0, 0.2, back_depth), "tile")
-	var front_z1 := 3.2
-	var front_depth := front_z1 - HOLE_Z1
-	_box(Vector3(0, y - 0.1, HOLE_Z1 + front_depth * 0.5), Vector3(5.0, 0.2, front_depth), "tile")
-	var mid_z := (HOLE_Z0 + HOLE_Z1) * 0.5
-	var mid_depth := HOLE_Z1 - HOLE_Z0
-	var left_w := hole_l - (-2.5)
-	if left_w > 0.15:
-		_box(Vector3(-2.5 + left_w * 0.5, y - 0.1, mid_z), Vector3(left_w, 0.2, mid_depth), "tile")
-	var right_w := 2.5 - hole_r
-	if right_w > 0.15:
-		_box(Vector3(hole_r + right_w * 0.5, y - 0.1, mid_z), Vector3(right_w, 0.2, mid_depth), "tile")
+func _add_landing(floor_i: int, y: float) -> void:
+	var z0 := _floor_z0(floor_i)
+	_box(Vector3(0, y - 0.1, z0 + LAND_LEN * 0.5), Vector3(8.0, 0.22, LAND_LEN), "tile")
+	# Зелёная дорожка на всю площадку → к пандусу
+	_box(Vector3(0, y + 0.04, z0 + LAND_LEN * 0.5), Vector3(1.4, 0.06, LAND_LEN - 0.4), "path", false)
+	_box(Vector3(0, y + 0.06, z0 + LAND_LEN - 0.25), Vector3(1.8, 0.08, 0.55), "mark", false)
+	# Низкие бортики по бокам
+	_box(Vector3(-3.9, y + 0.35, z0 + LAND_LEN * 0.5), Vector3(0.12, 0.6, LAND_LEN), "rail")
+	_box(Vector3(3.9, y + 0.35, z0 + LAND_LEN * 0.5), Vector3(0.12, 0.6, LAND_LEN), "rail")
 
-func _add_floor_landing(y: float, left_stair: bool) -> void:
-	## Площадка с прямоугольным проёмом ровно под пандус.
-	var hx := -1.0 if left_stair else 1.0
-	var hole_l := hx - HOLE_W * 0.5
-	var hole_r := hx + HOLE_W * 0.5
-	var back_z0 := -1.35
-	var back_depth := HOLE_Z0 - back_z0
-	_box(Vector3(0, y - 0.1, back_z0 + back_depth * 0.5), Vector3(5.0, 0.2, back_depth), "tile")
-	var front_z1 := 3.2
-	var front_depth := front_z1 - HOLE_Z1
-	_box(Vector3(0, y - 0.1, HOLE_Z1 + front_depth * 0.5), Vector3(5.0, 0.2, front_depth), "tile")
-	var mid_z := (HOLE_Z0 + HOLE_Z1) * 0.5
-	var mid_depth := HOLE_Z1 - HOLE_Z0
-	var left_w := hole_l - (-2.5)
-	if left_w > 0.15:
-		_box(Vector3(-2.5 + left_w * 0.5, y - 0.1, mid_z), Vector3(left_w, 0.2, mid_depth), "tile")
-	var right_w := 2.5 - hole_r
-	if right_w > 0.15:
-		_box(Vector3(hole_r + right_w * 0.5, y - 0.1, mid_z), Vector3(right_w, 0.2, mid_depth), "tile")
+func _add_ramp_down(from_floor: int, y_top: float, y_bot: float) -> void:
+	## Пандус от края площадки этажа в +Z вниз на следующий.
+	var z0 := _floor_z0(from_floor) + LAND_LEN
+	var z1 := z0 + RAMP_RUN
+	_add_ramp_custom(y_top, y_bot, z0, z1)
 
-func _add_flight(from_floor: int, left_side: bool) -> void:
-	## Только визуальные ступени + ОДИН гладкий пандус (коробки-ступени блокировали CharacterBody).
-	var y0 := float(from_floor) * FLOOR_H
-	var y1 := float(from_floor - 1) * FLOOR_H
-	var x := -1.0 if left_side else 1.0
+func _add_ramp_custom(y_top: float, y_bot: float, z0: float, z1: float) -> void:
+	var run := z1 - z0
+	var rise := y_top - y_bot
+	var length := sqrt(run * run + rise * rise)
+	var angle := atan2(rise, run)
+
+	var body := StaticBody3D.new()
+	body.collision_layer = 1
+	var cs := CollisionShape3D.new()
+	var sh := BoxShape3D.new()
+	sh.size = Vector3(STAIR_W, 0.24, length)
+	cs.shape = sh
+	body.add_child(cs)
+	body.position = Vector3(0.0, (y_top + y_bot) * 0.5, (z0 + z1) * 0.5)
+	body.rotation.x = angle
+	add_child(body)
+
 	var steps := 14
 	for i in range(steps):
 		var t := (float(i) + 0.5) / float(steps)
-		var y := lerpf(y0, y1, t)
-		var z := lerpf(HOLE_Z0 + 0.1, HOLE_Z1 - 0.1, t)
-		_box(Vector3(x, y, z), Vector3(STAIR_W, 0.1, 0.28), "concrete", false)
-	_add_ramp(x, y0, y1)
+		var y := lerpf(y_top, y_bot, t)
+		var z := lerpf(z0, z1, t)
+		_box(Vector3(0, y + 0.02, z), Vector3(STAIR_W - 0.2, 0.07, 0.3), "concrete", false)
+		if i % 2 == 0:
+			_box(Vector3(0, y + 0.07, z), Vector3(0.85, 0.04, 0.4), "path", false)
 
-func _add_ramp(x: float, y_top: float, y_bot: float) -> void:
-	## Гладкий пол лестницы. Верх = малый z (квартиры), низ = большой z (фасад).
-	var run := HOLE_Z1 - HOLE_Z0
-	var rise := y_top - y_bot
-	var angle := atan2(rise, run)
-	var length := sqrt(run * run + rise * rise)
-	var body := StaticBody3D.new()
-	body.collision_layer = 1
-	body.collision_mask = 0
-	var cs := CollisionShape3D.new()
-	var sh := BoxShape3D.new()
-	sh.size = Vector3(STAIR_W, 0.2, length)
-	cs.shape = sh
-	body.add_child(cs)
-	# Центр пандуса: середина проёма по z и по высоте
-	body.position = Vector3(x, (y_top + y_bot) * 0.5, (HOLE_Z0 + HOLE_Z1) * 0.5)
-	body.rotation.x = angle
-	add_child(body)
-	# Короткие «губы» наверху/внизу — стык с площадкой без щели
-	_box(Vector3(x, y_top - 0.05, HOLE_Z0 + 0.12), Vector3(STAIR_W, 0.12, 0.35), "concrete", true)
-	_box(Vector3(x, y_bot + 0.05, HOLE_Z1 - 0.12), Vector3(STAIR_W, 0.12, 0.35), "concrete", true)
+	_box(Vector3(0, y_top - 0.02, z0 + 0.2), Vector3(STAIR_W, 0.14, 0.5), "concrete", true)
+	_box(Vector3(0, y_bot + 0.02, z1 - 0.2), Vector3(STAIR_W, 0.14, 0.5), "concrete", true)
 
-func _add_simple_rail(y: float, left_stair: bool) -> void:
-	## Перила ТОЛЬКО на площадке (короткие), не вдоль всего марша — иначе капсула клинит.
-	var hx := -1.0 if left_stair else 1.0
-	var hole_l := hx - HOLE_W * 0.5
-	var hole_r := hx + HOLE_W * 0.5
-	# Боковые поручни у входа (не на всю глубину дыры)
-	_box(Vector3(hole_l, y + 0.55, HOLE_Z0 + 0.25), Vector3(0.07, 1.0, 0.5), "rail")
-	_box(Vector3(hole_r, y + 0.55, HOLE_Z0 + 0.25), Vector3(0.07, 1.0, 0.5), "rail")
-	# Дальний край — низкий бортик, чтобы не шагнуть в шахту с площадки
-	_box(Vector3(hx, y + 0.45, HOLE_Z1), Vector3(HOLE_W - 0.1, 0.8, 0.07), "rail")
-
-func _add_stair_marker(y: float, left_stair: bool) -> void:
-	var x := -1.0 if left_stair else 1.0
-	_box(Vector3(x, y + 0.04, HOLE_Z0 - 0.05), Vector3(1.0, 0.07, 0.45), "mark", false)
+	# Бортики пандуса
+	for side_i in [-1, 1]:
+		var sx: float = float(side_i) * (STAIR_W * 0.5 + 0.1)
+		var rail := StaticBody3D.new()
+		rail.collision_layer = 1
+		var rcs := CollisionShape3D.new()
+		var rsh := BoxShape3D.new()
+		rsh.size = Vector3(0.14, 0.5, length)
+		rcs.shape = rsh
+		rail.add_child(rcs)
+		var rmi := MeshInstance3D.new()
+		var rbm := BoxMesh.new()
+		rbm.size = rsh.size
+		rmi.mesh = rbm
+		rmi.material_override = _mats["rail"]
+		rail.add_child(rmi)
+		rail.position = Vector3(sx, (y_top + y_bot) * 0.5 + 0.2, (z0 + z1) * 0.5)
+		rail.rotation.x = angle
+		add_child(rail)
 
 func _build_apartment_door(start_floor: int) -> void:
 	var y := float(start_floor) * FLOOR_H
-	_box(Vector3(-2.4, y + 1.1, -0.55), Vector3(0.08, 2.1, 0.85), "door", false)
-	spawn_pos = Vector3(0.0, y + 0.3, -0.4)
+	var z0 := _floor_z0(start_floor)
+	_box(Vector3(-3.7, y + 1.1, z0 + 1.0), Vector3(0.08, 2.1, 0.9), "door", false)
+	spawn_pos = Vector3(0.0, y + 0.4, z0 + 1.0)
 
 func _build_yard(ice: bool) -> void:
 	var mat_key := "ice" if ice else "concrete"
-	_box(Vector3(0, -0.15, 10.0), Vector3(18.0, 0.3, 14.0), mat_key)
-	_box(Vector3(-8.0, 0.6, 10.0), Vector3(1.0, 1.2, 12.0), "wall")
-	_box(Vector3(8.0, 0.6, 10.0), Vector3(1.0, 1.2, 12.0), "wall")
-	_box(Vector3(0, 0.8, 16.5), Vector3(16.0, 1.6, 1.0), "wall")
-	_box(Vector3(0, 6.0, -2.6), Vector3(14.0, 14.0, 1.0), "wall")
-	# Декор двора: машины/деревья-примитивы
-	_box(Vector3(-5.5, 0.55, 8.0), Vector3(2.2, 1.0, 1.1), "prop")
-	_box(Vector3(6.0, 1.2, 11.0), Vector3(0.35, 2.4, 0.35), "prop")
-	_box(Vector3(6.0, 2.5, 11.0), Vector3(1.6, 0.5, 1.6), "wall")
-	# Объявления / щит
-	_box(Vector3(-2.3, 1.6, 3.5), Vector3(0.05, 0.7, 0.5), "mail", false)
+	_box(Vector3(0, -0.15, 12.0), Vector3(20.0, 0.3, 18.0), mat_key)
+	_box(Vector3(-9.0, 0.6, 12.0), Vector3(1.0, 1.2, 16.0), "wall")
+	_box(Vector3(9.0, 0.6, 12.0), Vector3(1.0, 1.2, 16.0), "wall")
+	_box(Vector3(0, 0.8, 20.5), Vector3(18.0, 1.6, 1.0), "wall")
+	_box(Vector3(0, -0.05, 6.5), Vector3(3.2, 0.15, 6.0), "concrete")
+	_box(Vector3(0, 0.04, 6.5), Vector3(1.2, 0.06, 5.5), "path", false)
+	_box(Vector3(-5.5, 0.55, 10.0), Vector3(2.2, 1.0, 1.1), "prop")
+	_box(Vector3(6.0, 1.2, 13.0), Vector3(0.35, 2.4, 0.35), "prop")
 	if ice:
-		# Видимые ледяные полосы
-		_box(Vector3(0, 0.02, 9.0), Vector3(4.0, 0.06, 1.2), "ice")
-		_box(Vector3(2.5, 0.02, 12.0), Vector3(3.0, 0.06, 1.0), "ice")
-		yard_ice_zones.append(Rect2(Vector2(-7, 4), Vector2(14, 12)))
+		_box(Vector3(0, 0.02, 11.0), Vector3(4.0, 0.06, 1.2), "ice")
+		yard_ice_zones.append(Rect2(Vector2(-8, 6), Vector2(16, 12)))
 
 func _build_detour_path() -> void:
-	## Длинный обход вокруг двора — безопаснее собак.
-	_box(Vector3(-6.5, -0.05, 10.0), Vector3(2.5, 0.15, 10.0), "concrete")
-	_box(Vector3(-6.5, 0.05, 14.5), Vector3(0.6, 0.08, 0.6), "mark", false)
+	_box(Vector3(-7.0, -0.05, 12.0), Vector3(2.5, 0.15, 12.0), "concrete")
+	_box(Vector3(-7.0, 0.05, 16.0), Vector3(0.6, 0.08, 0.6), "mark", false)
 
 func _build_basement_props() -> void:
-	_box(Vector3(1.5, -FLOOR_H + 0.4, 1.0), Vector3(0.3, 0.3, 2.5), "prop")
-	_box(Vector3(-1.2, -FLOOR_H + 0.15, 2.0), Vector3(1.2, 0.08, 1.2), "ice")
-	var bl := OmniLight3D.new()
-	bl.light_color = Color(0.7, 0.5, 0.3)
-	bl.light_energy = 0.8
-	bl.omni_range = 5.0
-	bl.position = Vector3(0, -FLOOR_H + 2.0, 0.5)
-	add_child(bl)
+	_box(Vector3(1.5, -FLOOR_H + 0.4, 2.0), Vector3(0.3, 0.3, 2.5), "prop")
 
 func _build_dumpster() -> void:
-	_box(Vector3(3.5, 0.7, 13.5), Vector3(2.2, 1.4, 1.4), "dumpster")
+	_box(Vector3(3.5, 0.7, 15.0), Vector3(2.2, 1.4, 1.4), "dumpster")
 	dumpster = Area3D.new()
 	dumpster.name = "Dumpster"
 	dumpster.collision_layer = 0
@@ -339,47 +282,50 @@ func _build_dumpster() -> void:
 	sh.size = Vector3(2.8, 2.0, 2.0)
 	cs.shape = sh
 	dumpster.add_child(cs)
-	dumpster.position = Vector3(3.5, 1.0, 13.5)
+	dumpster.position = Vector3(3.5, 1.0, 15.0)
 	add_child(dumpster)
-	_box(Vector3(3.5, 2.15, 13.5), Vector3(0.35, 0.35, 0.35), "mark", false)
+	_box(Vector3(3.5, 2.2, 15.0), Vector3(0.5, 0.5, 0.5), "mark", false)
+	_box(Vector3(1.5, 0.04, 12.0), Vector3(1.0, 0.06, 5.0), "path", false)
 
 func _build_elevator(floors: int) -> void:
-	_box(Vector3(2.2, floors * FLOOR_H * 0.5, -0.75), Vector3(0.9, floors * FLOOR_H, 0.9), "wall")
+	var start_f: int = int(_level.get("start_floor", floors))
+	var y := float(start_f) * FLOOR_H
+	var z := _floor_z0(start_f) + 0.8
+	_box(Vector3(3.3, floors * FLOOR_H * 0.5, z), Vector3(1.0, floors * FLOOR_H, 1.0), "wall")
 	elevator_area = Area3D.new()
 	elevator_area.name = "Elevator"
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
-	sh.size = Vector3(1.1, 2.4, 1.1)
+	sh.size = Vector3(1.2, 2.4, 1.2)
 	cs.shape = sh
 	elevator_area.add_child(cs)
-	elevator_area.position = Vector3(2.2, float(_level.get("start_floor", 1)) * FLOOR_H + 1.0, -0.75)
+	elevator_area.position = Vector3(3.3, y + 1.0, z)
 	add_child(elevator_area)
-	_box(Vector3(2.2, float(_level.get("start_floor", 1)) * FLOOR_H + 1.1, -0.25), Vector3(0.85, 2.1, 0.06), "door", false)
 
 func _spawn_npcs(level: Dictionary) -> void:
-	var dogs: int = int(level.get("dogs", 0))
-	var babushkas: int = int(level.get("babushkas", 0))
-	for i in range(babushkas):
+	for i in range(int(level.get("babushkas", 0))):
 		var npc = StairNpcScr.new()
 		add_child(npc)
-		npc.setup(0, Vector3(-3.5 + i * 0.8, 0.2, 9.0 + i * 1.2), Vector3(1.5 + i * 0.5, 0.2, 12.0 + i * 0.8), null)
+		npc.setup(0, Vector3(-3.0 + i, 0.2, 10.0 + i), Vector3(2.0, 0.2, 14.0 + i), null)
 		npcs.append(npc)
-	for i in range(dogs):
+	for i in range(int(level.get("dogs", 0))):
 		var dog = StairNpcScr.new()
 		add_child(dog)
-		dog.setup(1, Vector3(2.0 + i, 0.2, 12.5), Vector3(5.5 + i * 0.3, 0.2, 14.5), null)
+		dog.setup(1, Vector3(2.0 + i, 0.2, 14.0), Vector3(5.0, 0.2, 16.5), null)
 		npcs.append(dog)
 
-func _spawn_player_and_bag(_start_floor: int, level: Dictionary) -> void:
+func _spawn_player_and_bag(start_floor: int, level: Dictionary) -> void:
 	var p = TrashPlayerScr.new()
 	add_child(p)
 	p.global_position = spawn_pos
+	# Лицом к выходу / спуску (+Z)
+	p.set_look_yaw(PI)
 	player = p
 	var trash = TrashBagScr.new()
 	add_child(trash)
 	trash.setup(str(level.get("cargo", "bag")), float(level.get("bag_hp", 100.0)))
 	trash.wind_force = float(level.get("wind", 0.0))
-	trash.global_position = spawn_pos + Vector3(0.35, 0.7, 0.15)
+	trash.global_position = spawn_pos + Vector3(0.4, 0.7, 0.25)
 	bag = trash
 
 func set_light_flicker(enabled: bool, period: float) -> void:
@@ -388,11 +334,19 @@ func set_light_flicker(enabled: bool, period: float) -> void:
 	for lamp in lights:
 		if lamp is OmniLight3D:
 			var tw := create_tween().set_loops()
-			tw.tween_property(lamp, "light_energy", 0.25, period * 0.5)
-			tw.tween_property(lamp, "light_energy", 1.6, period * 0.5)
+			tw.tween_property(lamp, "light_energy", 0.3, period * 0.5)
+			tw.tween_property(lamp, "light_energy", 1.9, period * 0.5)
 
 func is_on_ice(pos: Vector3) -> bool:
 	for r in yard_ice_zones:
 		if (r as Rect2).has_point(Vector2(pos.x, pos.z)):
 			return true
 	return false
+
+func guide_hint(player_pos: Vector3) -> String:
+	var lang: String = Svc.loc().lang
+	if player_pos.z > 10.0 and player_pos.y < 1.5:
+		return "Зелёный куб — нажми E" if lang == "ru" else "Green cube — press E"
+	if player_pos.y < 1.3 and player_pos.z > LAND_LEN - 0.5:
+		return "Выходи во двор по зелёной дорожке" if lang == "ru" else "Exit to the yard on the green path"
+	return "Иди вперёд по зелёной дорожке вниз" if lang == "ru" else "Walk forward on the green path down"

@@ -209,6 +209,8 @@ func _check_interactions() -> void:
 		prompt = Svc.loc().t("elevator")
 	elif bag.bursted and get_tree().get_nodes_in_group("trash_piece").size() > 0:
 		prompt = Svc.loc().t("pick_trash")
+	else:
+		prompt = builder.guide_hint(player.global_position)
 	if prompt != "":
 		prompt_label.text = prompt
 
@@ -235,12 +237,11 @@ func _try_elevator() -> void:
 	prompt_label.text = "…"
 	var start_y: float = float(builder.player.global_position.y)
 	var target_y: float = 0.2
-	# Всегда сажаем на заднюю площадку (твёрдый пол), не в дыру лестницы
-	var land_z: float = -0.4
+	var land_z: float = 1.0
 	if jam:
 		elevator_jammed = true
 		Svc.steam().unlock("elevator_fail")
-		target_y = float(maxi(1, int(level.get("floors", 2)) / 2)) * 3.0 + 0.2
+		target_y = float(maxi(1, int(level.get("floors", 2)) / 2)) * BuildingBuilder.FLOOR_H + 0.25
 	else:
 		Svc.steam().unlock("elevator_luck")
 	var start_xz: Vector3 = builder.player.global_position

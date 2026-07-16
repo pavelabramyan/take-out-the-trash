@@ -77,9 +77,9 @@ func _build_body() -> void:
 	flashlight.position = Vector3(0.1, -0.05, -0.1)
 	camera.add_child(flashlight)
 
-	floor_snap_length = 0.45
-	# Пандус в шахте ~50° — запас с головой
-	floor_max_angle = deg_to_rad(70.0)
+	floor_snap_length = 0.35
+	# Пандусы ~29° — запас
+	floor_max_angle = deg_to_rad(50.0)
 	floor_block_on_wall = false
 	floor_constant_speed = true
 
@@ -168,6 +168,10 @@ func set_cargo_feel(speed_m: float, fov_off: float, yaw_m: float) -> void:
 
 func clear_cargo_feel() -> void:
 	set_cargo_feel(1.0, 0.0, 1.0)
+
+func set_look_yaw(yaw: float) -> void:
+	_yaw = yaw
+	rotation.y = yaw
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not active or camera == null:
