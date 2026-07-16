@@ -237,7 +237,7 @@ func _try_elevator() -> void:
 	prompt_label.text = "…"
 	var start_y: float = float(builder.player.global_position.y)
 	var target_y: float = 0.2
-	var land_z: float = 1.0
+	var land_z: float = -0.5
 	if jam:
 		elevator_jammed = true
 		Svc.steam().unlock("elevator_fail")

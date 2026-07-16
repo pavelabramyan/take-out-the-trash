@@ -77,9 +77,9 @@ func _build_body() -> void:
 	flashlight.position = Vector3(0.1, -0.05, -0.1)
 	camera.add_child(flashlight)
 
-	floor_snap_length = 0.35
-	# Пандусы ~29° — запас
-	floor_max_angle = deg_to_rad(50.0)
+	floor_snap_length = 0.4
+	# Пандус клетки ~47°
+	floor_max_angle = deg_to_rad(55.0)
 	floor_block_on_wall = false
 	floor_constant_speed = true
 

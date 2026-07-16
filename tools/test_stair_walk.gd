@@ -1,5 +1,5 @@
 extends SceneTree
-## Спуск только вперёд (+Z) со старта до земли.
+## Спуск с этажа 2 по правому маршу (f=2 → right) на этаж 1, затем налево вниз.
 
 const LevelDataScr = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
@@ -18,25 +18,40 @@ func _run() -> void:
 
 	var p: CharacterBody3D = b.player
 	p.active = false
-	p.global_position = b.spawn_pos
+	p.floor_max_angle = deg_to_rad(55.0)
+	p.floor_snap_length = 0.4
+	# Этаж 2, у правого проёма
+	p.global_position = Vector3(1.15, BuildingBuilderScr.FLOOR_H * 2.0 + 0.4, 0.2)
 	p.velocity = Vector3.ZERO
-	p.floor_max_angle = deg_to_rad(50.0)
-	p.floor_snap_length = 0.35
 
-	var y0 := p.global_position.y
-	for i in range(500):
-		p.velocity.x = 0.0
-		p.velocity.z = 4.5
+	# Вперёд на пандус (+Z)
+	for i in range(220):
+		p.velocity = Vector3(0, p.velocity.y, 3.8)
 		if not p.is_on_floor():
-			p.velocity.y -= 24.0 / 60.0
+			p.velocity.y -= 22.0 / 60.0
 		p.move_and_slide()
 		await process_frame
-		if p.global_position.y < 0.9 and p.global_position.z > 1.0:
+		if p.global_position.y < BuildingBuilderScr.FLOOR_H + 0.7:
 			break
+	print("MID y=%.2f z=%.2f x=%.2f" % [p.global_position.y, p.global_position.z, p.global_position.x])
+	if p.global_position.y > BuildingBuilderScr.FLOOR_H + 1.2:
+		push_error("FAIL 2→1")
+		quit(1)
+		return
 
-	print("WALK y0=%.2f y=%.2f z=%.2f" % [y0, p.global_position.y, p.global_position.z])
-	if p.global_position.y > 1.2:
-		push_error("FAIL: did not reach ground walking forward")
+	# На этаже 1 — к левому маршу и вниз
+	p.global_position = Vector3(-1.15, BuildingBuilderScr.FLOOR_H + 0.4, 0.2)
+	for i in range(240):
+		p.velocity = Vector3(0, p.velocity.y, 3.8)
+		if not p.is_on_floor():
+			p.velocity.y -= 22.0 / 60.0
+		p.move_and_slide()
+		await process_frame
+		if p.global_position.y < 0.9:
+			break
+	print("GROUND y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
+	if p.global_position.y > 1.3:
+		push_error("FAIL 1→0")
 		quit(1)
 		return
 	print("TEST_STAIR_WALK_PASS")
