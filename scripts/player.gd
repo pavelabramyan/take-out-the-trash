@@ -5,7 +5,7 @@ extends CharacterBody3D
 const WALK := 4.0
 const SPRINT := 6.2
 const CROUCH := 2.0
-const JUMP_V := 5.2
+const JUMP_V := 3.6
 const BASE_SENS := 0.0024
 
 signal slipped
@@ -77,9 +77,11 @@ func _build_body() -> void:
 	flashlight.position = Vector3(0.1, -0.05, -0.1)
 	camera.add_child(flashlight)
 
-	floor_snap_length = 0.25
-	# Пандус лестницы ~40° — запас выше
-	floor_max_angle = deg_to_rad(55.0)
+	floor_snap_length = 0.35
+	# Ступени + пандус ~52° в шахте — нужен запас
+	floor_max_angle = deg_to_rad(60.0)
+	# Небольшие уступы ступеней
+	floor_block_on_wall = true
 
 func _ensure_gamepad_bindings() -> void:
 	_add_joy_button("interact", JOY_BUTTON_A)

@@ -19,5 +19,7 @@ jobs:
         run: godot --headless --path . --script res://tools/test_levels.gd
       - name: Carry tests
         run: godot --headless --path . --script res://tools/test_carry.gd
+      - name: Stairs walkability
+        run: godot --headless --path . --script res://tools/test_stairs.gd
       - name: Gameplay smoke
         run: godot --headless --path . --script res://tools/test_gameplay.gd

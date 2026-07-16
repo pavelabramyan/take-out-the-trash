@@ -8,7 +8,11 @@ const StairNpcScr = preload("res://scripts/npc.gd")
 
 const FLOOR_H := 3.0
 const SHAFT_W := 5.0
-const STAIR_W := 1.8
+const STAIR_W := 1.9
+## Проём лестницы в площадке (z: от квартир к фасаду)
+const HOLE_Z0 := 0.45
+const HOLE_Z1 := 2.75
+const HOLE_W := 2.05
 
 var player: CharacterBody3D
 var bag: RigidBody3D
@@ -194,60 +198,78 @@ func _build_stairwell(floors: int, basement: bool) -> void:
 	_box(Vector3(0, top + 0.2, 1.2), Vector3(5.3, 0.3, 5.4), "concrete")
 
 func _add_floor_landing(y: float, left_stair: bool) -> void:
-	## Площадка = плиты вокруг дырки под лестницу.
-	## Дырка: сторона марша, z примерно 0.55–2.7
-	var sx := -1.0 if left_stair else 1.0
-	# 1) Задняя площадка у квартир — чуть длиннее, стык с пандусом
-	_box(Vector3(0, y - 0.1, -0.45), Vector3(5.0, 0.2, 1.8), "tile")
-	# 2) Полоса на противоположной от лестницы стороне
-	var other_x := -sx
-	_box(Vector3(other_x * 1.5, y - 0.1, 1.55), Vector3(2.0, 0.2, 2.5), "tile")
-	# 3) Узкая полоса с той же стороны у стены
-	_box(Vector3(sx * 2.05, y - 0.1, 1.55), Vector3(0.9, 0.2, 2.5), "tile")
-	# 4) Передняя перемычка у фасада
-	_box(Vector3(0, y - 0.1, 2.95), Vector3(5.0, 0.2, 0.4), "tile")
+	## Площадка с ЯВНЫМ прямоугольным проёмом под марш — без перекрытия ступеней.
+	var hx := -1.0 if left_stair else 1.0
+	var hole_l := hx - HOLE_W * 0.5
+	var hole_r := hx + HOLE_W * 0.5
+	# Задняя площадка (квартиры) — до края проёма
+	var back_z0 := -1.35
+	var back_depth := HOLE_Z0 - back_z0
+	_box(Vector3(0, y - 0.1, back_z0 + back_depth * 0.5), Vector3(5.0, 0.2, back_depth), "tile")
+	# Передняя перемычка
+	var front_z1 := 3.2
+	var front_depth := front_z1 - HOLE_Z1
+	_box(Vector3(0, y - 0.1, HOLE_Z1 + front_depth * 0.5), Vector3(5.0, 0.2, front_depth), "tile")
+	# Боковые плиты слева/справа от проёма (на всю глубину проёма)
+	var mid_z := (HOLE_Z0 + HOLE_Z1) * 0.5
+	var mid_depth := HOLE_Z1 - HOLE_Z0
+	var left_w := hole_l - (-2.5)
+	if left_w > 0.15:
+		_box(Vector3(-2.5 + left_w * 0.5, y - 0.1, mid_z), Vector3(left_w, 0.2, mid_depth), "tile")
+	var right_w := 2.5 - hole_r
+	if right_w > 0.15:
+		_box(Vector3(hole_r + right_w * 0.5, y - 0.1, mid_z), Vector3(right_w, 0.2, mid_depth), "tile")
 
 func _add_flight(from_floor: int, left_side: bool) -> void:
-	## Визуальные ступени + пологий пандус (угол ~40°, ходим по коллизии).
+	## Ступени С коллизией + корректный пандус (раньше угол был перевёрнут — спуск = стена).
 	var y0 := float(from_floor) * FLOOR_H
 	var y1 := float(from_floor - 1) * FLOOR_H
 	var x := -1.0 if left_side else 1.0
-	var steps := 16
+	var steps := 12
 	for i in range(steps):
 		var t := (float(i) + 0.5) / float(steps)
-		var y := lerpf(y0, y1, t)
-		var z := lerpf(0.35, 2.55, t)
-		_box(Vector3(x, y - 0.06, z), Vector3(STAIR_W, 0.12, 0.34), "concrete", false)
+		var y := lerpf(y0, y1, t) - 0.02
+		var z := lerpf(HOLE_Z0 + 0.08, HOLE_Z1 - 0.08, t)
+		# Коллизия на каждой ступени — CharacterBody спокойно шагает вниз
+		_box(Vector3(x, y, z), Vector3(STAIR_W, 0.14, 0.36), "concrete", true)
 	_add_ramp(x, y0, y1)
 
 func _add_ramp(x: float, y_top: float, y_bot: float) -> void:
+	## Страховка под ступенями. rotation.x > 0: верх у квартир (малый z), низ у фасада.
 	var body := StaticBody3D.new()
 	body.collision_layer = 1
 	body.collision_mask = 0
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
-	# run 3.5 → atan2(3, 3.5) ≈ 40.6° < floor_max 55°
-	var run := 3.5
+	var run := HOLE_Z1 - HOLE_Z0
 	var rise := y_top - y_bot
 	var length := sqrt(run * run + rise * rise)
-	sh.size = Vector3(STAIR_W - 0.1, 0.12, length)
+	sh.size = Vector3(STAIR_W - 0.2, 0.1, length)
 	cs.shape = sh
 	body.add_child(cs)
-	body.position = Vector3(x, (y_top + y_bot) * 0.5 - 0.02, 1.45)
-	body.rotation.x = -atan2(rise, run)
+	body.position = Vector3(x, (y_top + y_bot) * 0.5 - 0.08, (HOLE_Z0 + HOLE_Z1) * 0.5)
+	# ВАЖНО: плюс atan2 — раньше минус переворачивал пандус и блокировал спуск
+	body.rotation.x = atan2(rise, run)
 	add_child(body)
 
 func _add_simple_rail(y: float, left_stair: bool) -> void:
-	## Только тонкие перила на краю дырки — не стена-лабиринт.
-	var closed_x := 1.0 if left_stair else -1.0
-	_box(Vector3(closed_x * 0.15, y + 0.5, 1.55), Vector3(0.06, 0.85, 2.0), "rail")
-	# Поручень у фасада над перемычкой
-	_box(Vector3(0, y + 0.5, 2.7), Vector3(2.4, 0.7, 0.06), "rail")
+	## Перила вокруг ПРОЁМА: нельзя упасть в дыру, вход только с зелёной метки.
+	var hx := -1.0 if left_stair else 1.0
+	var hole_l := hx - HOLE_W * 0.5
+	var hole_r := hx + HOLE_W * 0.5
+	var mid_z := (HOLE_Z0 + HOLE_Z1) * 0.5
+	var mid_depth := HOLE_Z1 - HOLE_Z0
+	# Бока проёма — высокие, чтобы не перепрыгнуть в шахту
+	_box(Vector3(hole_l, y + 0.7, mid_z), Vector3(0.08, 1.3, mid_depth), "rail")
+	_box(Vector3(hole_r, y + 0.7, mid_z), Vector3(0.08, 1.3, mid_depth), "rail")
+	# Дальний край проёма (у фасада) — закрыт
+	_box(Vector3(hx, y + 0.7, HOLE_Z1), Vector3(HOLE_W, 1.3, 0.08), "rail")
+	# У входа (зелёная метка) перил НЕТ — сюда заходишь на ступени
 
 func _add_stair_marker(y: float, left_stair: bool) -> void:
-	## Зелёная метка «сюда спускаться» на краю площадки.
+	## Зелёная метка = вход на лестницу (задний край проёма).
 	var x := -1.0 if left_stair else 1.0
-	_box(Vector3(x, y + 0.02, 0.35), Vector3(0.7, 0.05, 0.35), "mark", false)
+	_box(Vector3(x, y + 0.03, HOLE_Z0 - 0.12), Vector3(0.85, 0.06, 0.4), "mark", false)
 
 func _build_apartment_door(start_floor: int) -> void:
 	var y := float(start_floor) * FLOOR_H
