@@ -1,5 +1,5 @@
 extends SceneTree
-## Правый пандус 2→1: поверхность понижается по +Z.
+## Верхний марш 2→mid: поверхность понижается по +Z (правый, f=2).
 
 const LevelDataScr = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
@@ -16,16 +16,29 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var space := root.get_world_3d().direct_space_state
-	var x := 1.15
+	var x := 1.20
 	var prev := 99.0
 	for i in range(10):
 		var t := (float(i) + 0.5) / 10.0
-		var z := lerpf(BuildingBuilderScr.HOLE_Z0, BuildingBuilderScr.HOLE_Z1, t)
-		var rq := PhysicsRayQueryParameters3D.create(Vector3(x, 12, z), Vector3(x, 0, z))
+		var z := lerpf(BuildingBuilderScr.FLIGHT_Z_A0, BuildingBuilderScr.FLIGHT_Z_A1, t)
+		var rq := PhysicsRayQueryParameters3D.create(Vector3(x, 7.2, z), Vector3(x, 0, z))
 		rq.collision_mask = 1
 		var hit := space.intersect_ray(rq)
 		assert(not hit.is_empty())
 		assert(hit.position.y <= prev + 0.08)
 		prev = hit.position.y
 	print("TEST_STAIRS_PASS last_y=", prev)
+	# Нижний марш mid→1: понижается по −Z (левый)
+	prev = 99.0
+	x = -1.20
+	for i in range(10):
+		var t := (float(i) + 0.5) / 10.0
+		var z := lerpf(BuildingBuilderScr.FLIGHT_Z_A1, BuildingBuilderScr.FLIGHT_Z_A0, t)
+		var rq := PhysicsRayQueryParameters3D.create(Vector3(x, 7.2, z), Vector3(x, 0, z))
+		rq.collision_mask = 1
+		var hit := space.intersect_ray(rq)
+		assert(not hit.is_empty())
+		assert(hit.position.y <= prev + 0.08)
+		prev = hit.position.y
+	print("TEST_STAIRS_PASS lower last_y=", prev)
 	quit(0)

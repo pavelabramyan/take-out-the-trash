@@ -1,5 +1,5 @@
 extends SceneTree
-## Полный путь: спуск → дверь во двор → помойка (коллизия проходима).
+## Полный путь: U-лестница → дверь во двор → помойка.
 
 const LevelDataScr = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
@@ -29,31 +29,34 @@ func _run() -> void:
 	var p: CharacterBody3D = b.player
 	p.active = false
 	p.floor_max_angle = deg_to_rad(55.0)
-	p.floor_snap_length = 0.4
+	p.floor_snap_length = 0.45
+	var H: float = BuildingBuilderScr.FLOOR_H
+	var HH: float = BuildingBuilderScr.HALF_H
 
-	# С этажа 2 правым маршем вниз
-	p.global_position = Vector3(1.15, BuildingBuilderScr.FLOOR_H * 2.0 + 0.4, 0.15)
-	await _walk(p, Vector3(0, 0, 1), 200)
-	p.global_position = Vector3(-1.15, BuildingBuilderScr.FLOOR_H + 0.4, 0.15)
-	await _walk(p, Vector3(0, 0, 1), 220)
+	p.global_position = Vector3(1.20, H * 2.0 + 0.4, 0.15)
+	await _walk(p, Vector3(0, 0, 1), 150)
+	p.global_position = Vector3(-1.20, H * 2.0 - HH + 0.35, 2.6)
+	await _walk(p, Vector3(0, 0, -1), 150)
+	p.global_position = Vector3(1.20, H + 0.4, 0.15)
+	await _walk(p, Vector3(0, 0, 1), 150)
+	p.global_position = Vector3(-1.20, H - HH + 0.35, 2.6)
+	await _walk(p, Vector3(0, 0, -1), 170)
 	print("AT_GROUND y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
 	if p.global_position.y > 1.2:
 		push_error("FAIL stairs")
 		quit(1)
 		return
 
-	# К двери и во двор (+Z)
-	p.global_position = Vector3(0.0, 0.4, 2.0)
-	await _walk(p, Vector3(0, 0, 1), 180)
+	p.global_position = Vector3(0.0, 0.4, 3.2)
+	await _walk(p, Vector3(0, 0, 1), 200)
 	print("AFTER_DOOR y=%.2f z=%.2f" % [p.global_position.y, p.global_position.z])
 	if p.global_position.z < 4.5:
 		push_error("FAIL exit blocked — still in stairwell z=%.2f" % p.global_position.z)
 		quit(1)
 		return
 
-	# К помойке
 	var dump: Vector3 = b.dumpster.global_position
-	for i in range(260):
+	for i in range(280):
 		var to := dump - p.global_position
 		to.y = 0.0
 		if to.length() < 2.2:
