@@ -60,6 +60,7 @@ func build(level: Dictionary) -> void:
 		_build_basement_props()
 	_spawn_npcs(level)
 	_spawn_player_and_bag(start_floor, level)
+	_build_level_flavor()
 	# Только гул подъезда — музыка позже из game.gd
 	Svc.audio().play_ambient()
 
@@ -506,19 +507,24 @@ func _build_basement_props() -> void:
 	_box(Vector3(-0.8, -FLOOR_H + 0.12, 1.8), Vector3(0.9, 0.05, 0.9), "ice")
 
 func _build_dumpster() -> void:
-	_box(Vector3(3.5, 0.75, 14.6), Vector3(2.3, 1.45, 1.45), "dumpster")
-	_box(Vector3(3.5, 1.55, 14.6), Vector3(2.4, 0.1, 1.5), "metal", false)
-	_box(Vector3(5.2, 0.7, 14.6), Vector3(1.1, 1.3, 1.1), "dumpster")
+	# Три бака + крышки + колёсики-намёк
+	for i in range(3):
+		var dx := 2.6 + float(i) * 1.15
+		_box(Vector3(dx, 0.7, 14.6), Vector3(1.0, 1.35, 1.15), "dumpster")
+		_box(Vector3(dx, 1.42, 14.6), Vector3(1.05, 0.08, 1.2), "metal", false)
+		_box(Vector3(dx - 0.35, 0.08, 14.95), Vector3(0.12, 0.12, 0.12), "metal", false)
+		_box(Vector3(dx + 0.35, 0.08, 14.95), Vector3(0.12, 0.12, 0.12), "metal", false)
+	_box(Vector3(3.7, 1.9, 13.9), Vector3(0.9, 0.25, 0.04), "number", false)
 	dumpster = Area3D.new()
 	dumpster.name = "Dumpster"
 	dumpster.collision_layer = 0
 	dumpster.collision_mask = 2 | 4
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
-	sh.size = Vector3(3.6, 2.4, 3.2)
+	sh.size = Vector3(4.2, 2.4, 3.2)
 	cs.shape = sh
 	dumpster.add_child(cs)
-	dumpster.position = Vector3(3.5, 1.0, 14.6)
+	dumpster.position = Vector3(3.7, 1.0, 14.6)
 	add_child(dumpster)
 
 func _build_elevator(floors: int) -> void:
@@ -559,6 +565,35 @@ func _spawn_player_and_bag(start_floor: int, level: Dictionary) -> void:
 	trash.wind_force = float(level.get("wind", 0.0))
 	trash.global_position = spawn_pos + Vector3(0.25, 0.55, 0.2)
 	bag = trash
+
+func _build_level_flavor() -> void:
+	## Уникальные маркеры уровней (ТЗ LVL-*-ART) — без неоновых меток.
+	var id: int = int(_level.get("id", 1))
+	# Номер подъезда у входа
+	_box(Vector3(CELL_HALF - 0.2, 2.05, DOOR_Z - 0.05), Vector3(0.28, 0.35, 0.04), "number", false)
+	match id:
+		1:
+			# Веник/совок у двери — «мама выставила»
+			_box(Vector3(CELL_HALF - 0.25, 0.55, -0.3), Vector3(0.06, 1.0, 0.06), "wood", false)
+			_box(Vector3(CELL_HALF - 0.25, 0.08, -0.15), Vector3(0.25, 0.04, 0.18), "metal", false)
+		2:
+			# Острый угол трубы — урок thin
+			_box(Vector3(-CELL_HALF + 0.15, 1.1, 0.9), Vector3(0.12, 0.12, 0.9), "metal", false)
+			_box(Vector3(-CELL_HALF + 0.15, 1.1, 1.35), Vector3(0.18, 0.18, 0.08), "metal", false)
+		3, 4:
+			# Табличка «Лифт» / этажность
+			_box(Vector3(0.55, float(int(_level.get("start_floor", 9))) * FLOOR_H + 1.9, LAND_Z0 + 0.2), Vector3(0.35, 0.2, 0.03), "number", false)
+		5:
+			# Мигающий уже через light_timer; доп. провод
+			_box(Vector3(0.0, FLOOR_H * 3.0 + 2.3, 0.5), Vector3(2.5, 0.04, 0.04), "metal", false)
+		6:
+			_box(Vector3(-0.8, -FLOOR_H + 0.4, 1.5), Vector3(0.3, 0.3, 1.5), "metal", false)
+		7, 8:
+			_box(Vector3(2.0, 0.05, 8.5), Vector3(1.2, 0.04, 2.5), "ice", false)
+		9:
+			_box(Vector3(0.5, 0.55, 11.0), Vector3(1.2, 1.0, 0.08), "metal", false)  # заборчик к собакам
+		_:
+			_box(Vector3(-5.5, 0.9, 10.0), Vector3(0.5, 1.6, 0.5), "prop", false)
 
 func set_light_flicker(enabled: bool, period: float) -> void:
 	if not enabled:

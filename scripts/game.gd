@@ -88,6 +88,8 @@ func _start_level() -> void:
 	builder.player.set_cargo_feel(builder.bag.speed_mult(), builder.bag.fov_offset(), builder.bag.yaw_mult())
 	builder.bag.damaged.connect(_on_bag_damaged)
 	builder.bag.burst.connect(_on_bag_burst)
+	if builder.bag.has_signal("hit_hard"):
+		builder.bag.hit_hard.connect(_on_bag_hit_hard)
 	builder.player.slipped.connect(_on_slipped)
 	builder.player.fell_hard.connect(_on_fell_hard)
 	builder.player.throw_pressed.connect(_on_throw)
@@ -125,6 +127,12 @@ func _process(delta: float) -> void:
 		elapsed += delta
 		builder.player.on_ice = builder.is_on_ice(builder.player.global_position)
 		builder.bag.careful = builder.player.careful
+		if builder.bag.has_method("apply_wet"):
+			if builder.player.on_ice or (bool(level.get("basement", false)) and builder.player.global_position.y < 0.5):
+				builder.bag.apply_wet(0.18 * delta)
+		if builder.bag.has_method("apply_dirt") and builder.player.global_position.y < 1.2 \
+				and builder.player.velocity.length() > 1.0:
+			builder.bag.apply_dirt(0.04 * delta)
 		_update_hud()
 		_check_interactions()
 		_update_shake(delta)
@@ -132,7 +140,8 @@ func _process(delta: float) -> void:
 		_atmosphere_cues()
 		if _slow_t > 0.0:
 			_slow_t -= delta
-			Engine.time_scale = 0.35 if _slow_t > 0.0 else 1.0
+			if _slow_t <= 0.0:
+				Engine.time_scale = 1.0
 	if Input.is_action_just_pressed("restart") and state != State.PAUSE:
 		Svc.steam().note_restart()
 		Engine.time_scale = 1.0
@@ -388,6 +397,14 @@ func _grant_achievements(stars: int, intact: bool, stealth: bool, time_ok: bool)
 	if total >= LevelData.count() * 3:
 		Svc.steam().unlock("all_stars")
 
+func _on_bag_hit_hard(amount: float) -> void:
+	if state != State.PLAY:
+		return
+	_shake = maxf(_shake, 0.45)
+	if amount >= 12.0 and _slow_t <= 0.0:
+		_slow_t = 0.08
+		Engine.time_scale = 0.85
+
 func _fail(reason_key: String) -> void:
 	if state != State.PLAY:
 		return
@@ -395,6 +412,7 @@ func _fail(reason_key: String) -> void:
 	Engine.time_scale = 1.0
 	builder.player.active = false
 	builder.player.capture_mouse(false)
+	Svc.audio().play_sfx("fail", 0.95)
 	Svc.meta().add_stat("fails", 1)
 	end_title.text = Svc.loc().t(reason_key)
 	# Мини-replay текст
@@ -411,6 +429,7 @@ func _on_bag_burst() -> void:
 	burst_count += 1
 	_shake = 1.2
 	_slow_t = 0.22
+	Engine.time_scale = 0.35
 	builder.player.clear_cargo_feel()
 	Svc.steam().unlock("burst_once")
 	Svc.audio().yell_mom()

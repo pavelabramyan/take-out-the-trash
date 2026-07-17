@@ -253,6 +253,9 @@ func _physics_process(delta: float) -> void:
 		if _step_acc >= 0.48:
 			_step_acc = 0.0
 			Svc.audio().play_step()
+			if game != null and game.builder != null and game.builder.bag != null \
+					and game.builder.bag.has_method("notice_step"):
+				game.builder.bag.notice_step()
 	else:
 		_step_acc = 0.0
 

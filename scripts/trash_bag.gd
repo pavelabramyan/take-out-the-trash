@@ -5,6 +5,7 @@ extends RigidBody3D
 signal burst
 signal damaged(hp_left: float, max_hp: float)
 signal dumped
+signal hit_hard(amount: float)
 
 enum Cargo { BAG, BUCKETS, CARPET, FRIDGE, THIN }
 enum TearStage { WHOLE, WORN, HOLES, CRITICAL, BURST }
@@ -50,6 +51,10 @@ var _color_preset: int = 0
 var _is_plastic_bag: bool = false
 var _body_base_scale: Vector3 = Vector3.ONE
 var _debug_last_impulse: float = 0.0
+var wetness: float = 0.0
+var dirt: float = 0.0
+var _step_pulse: float = 0.0
+var _sag: float = 0.0
 
 const POS_K := 16.0
 const ROT_K := 7.5
@@ -168,50 +173,132 @@ func _build_visual() -> void:
 	_col = CollisionShape3D.new()
 	match cargo:
 		Cargo.BUCKETS:
-			_build_simple_primitive()
-			var cyl := CylinderMesh.new()
-			cyl.top_radius = 0.18
-			cyl.bottom_radius = 0.2
-			cyl.height = 0.45
-			_mesh.mesh = cyl
-			var sh := CylinderShape3D.new()
-			sh.radius = 0.2
-			sh.height = 0.45
-			_col.shape = sh
-			_mesh.material_override = _mat
-			add_child(_mesh)
-			add_child(_col)
+			_build_buckets()
 		Cargo.CARPET:
-			_build_simple_primitive()
-			var box := BoxMesh.new()
-			box.size = Vector3(1.4, 0.12, 0.45)
-			_mesh.mesh = box
-			var sh2 := BoxShape3D.new()
-			sh2.size = box.size
-			_col.shape = sh2
-			_mesh.material_override = _mat
-			add_child(_mesh)
-			add_child(_col)
+			_build_carpet()
 		Cargo.FRIDGE:
-			_build_simple_primitive()
-			var box2 := BoxMesh.new()
-			box2.size = Vector3(0.65, 1.5, 0.6)
-			_mesh.mesh = box2
-			var sh3 := BoxShape3D.new()
-			sh3.size = box2.size
-			_col.shape = sh3
-			_col.position = Vector3(0, 0.75, 0)
-			_mesh.position = Vector3(0, 0.75, 0)
-			_mesh.material_override = _mat
-			add_child(_mesh)
-			add_child(_col)
+			_build_fridge()
 		_:
 			_build_plastic_bag()
 	_build_burst_particles()
 	_build_crumb_particles()
 
-func _build_simple_primitive() -> void:
-	pass
+func _build_buckets() -> void:
+	_visual = Node3D.new()
+	add_child(_visual)
+	if _col == null:
+		_col = CollisionShape3D.new()
+	_mat.metallic = 0.55
+	_mat.roughness = 0.45
+	for side in [-1.0, 1.0]:
+		var cyl := MeshInstance3D.new()
+		var m := CylinderMesh.new()
+		m.top_radius = 0.14
+		m.bottom_radius = 0.16
+		m.height = 0.38
+		cyl.mesh = m
+		cyl.material_override = _mat
+		cyl.position = Vector3(side * 0.18, -0.05, 0.0)
+		_visual.add_child(cyl)
+		var rim := MeshInstance3D.new()
+		var t := TorusMesh.new()
+		t.inner_radius = 0.02
+		t.outer_radius = 0.15
+		rim.mesh = t
+		rim.material_override = _mat
+		rim.position = Vector3(side * 0.18, 0.14, 0.0)
+		rim.rotation_degrees = Vector3(90, 0, 0)
+		_visual.add_child(rim)
+	var bar := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.42, 0.03, 0.03)
+	bar.mesh = bm
+	bar.material_override = _mat
+	bar.position = Vector3(0, 0.22, 0.0)
+	_visual.add_child(bar)
+	_mesh = bar
+	_col.shape = BoxShape3D.new()
+	(_col.shape as BoxShape3D).size = Vector3(0.5, 0.45, 0.32)
+	_col.position = Vector3(0, 0.0, 0.0)
+	add_child(_col)
+
+func _build_carpet() -> void:
+	_visual = Node3D.new()
+	add_child(_visual)
+	_mat.roughness = 0.95
+	_mat.metallic = 0.0
+	var roll := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.14
+	cyl.bottom_radius = 0.14
+	cyl.height = 1.35
+	roll.mesh = cyl
+	roll.material_override = _mat
+	roll.rotation_degrees = Vector3(0, 0, 90)
+	roll.position = Vector3(0, -0.05, 0.0)
+	_visual.add_child(roll)
+	var strap := MeshInstance3D.new()
+	var sb := BoxMesh.new()
+	sb.size = Vector3(0.08, 0.32, 0.02)
+	strap.mesh = sb
+	var sm := StandardMaterial3D.new()
+	sm.albedo_color = Color(0.25, 0.2, 0.12)
+	strap.material_override = sm
+	strap.position = Vector3(0.0, 0.05, 0.12)
+	_visual.add_child(strap)
+	_mesh = roll
+	_col.shape = BoxShape3D.new()
+	(_col.shape as BoxShape3D).size = Vector3(1.4, 0.28, 0.32)
+	add_child(_col)
+
+func _build_fridge() -> void:
+	_visual = Node3D.new()
+	add_child(_visual)
+	_mat.metallic = 0.35
+	_mat.roughness = 0.4
+	var body := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(0.62, 1.45, 0.58)
+	body.mesh = box
+	body.material_override = _mat
+	body.position = Vector3(0, 0.72, 0.0)
+	_visual.add_child(body)
+	var door := MeshInstance3D.new()
+	var db := BoxMesh.new()
+	db.size = Vector3(0.58, 1.35, 0.06)
+	door.mesh = db
+	var dm := _mat.duplicate() as StandardMaterial3D
+	dm.albedo_color = Color(0.9, 0.92, 0.95)
+	door.material_override = dm
+	door.position = Vector3(0, 0.72, 0.32)
+	_visual.add_child(door)
+	var handle := MeshInstance3D.new()
+	var hb := BoxMesh.new()
+	hb.size = Vector3(0.04, 0.35, 0.05)
+	handle.mesh = hb
+	var hm := StandardMaterial3D.new()
+	hm.albedo_color = Color(0.7, 0.7, 0.72)
+	hm.metallic = 0.8
+	handle.material_override = hm
+	handle.position = Vector3(0.22, 0.75, 0.38)
+	_visual.add_child(handle)
+	_mesh = body
+	_col.shape = BoxShape3D.new()
+	(_col.shape as BoxShape3D).size = Vector3(0.65, 1.5, 0.62)
+	_col.position = Vector3(0, 0.75, 0)
+	add_child(_col)
+
+func notice_step() -> void:
+	if held and _is_plastic_bag:
+		_step_pulse = 1.0
+
+func apply_wet(amount: float = 0.35) -> void:
+	wetness = clampf(wetness + amount, 0.0, 1.0)
+	_update_damage_visual()
+
+func apply_dirt(amount: float = 0.2) -> void:
+	dirt = clampf(dirt + amount, 0.0, 1.0)
+	_update_damage_visual()
 
 func _apply_bag_material() -> void:
 	_mat = StandardMaterial3D.new()
@@ -423,6 +510,7 @@ func throw_forward(dir: Vector3, strength: float = 7.0) -> void:
 	angular_velocity = Vector3(randf_range(-4, 4), randf_range(-2, 2), randf_range(-4, 4))
 
 func drop_gentle() -> void:
+	_sag = 0.55
 	release(Vector3(0, -0.6, 0))
 
 func apply_fall_damage(speed: float) -> void:
@@ -484,14 +572,16 @@ func _carry_follow(delta: float) -> void:
 	var target_xf: Transform3D = _hold_target.global_transform
 	target_xf.origin += target_xf.basis * _hold_offset
 
-	# Дыхание + careful/sprint sway
+	# Дыхание + careful/sprint sway + пульс шага
+	_step_pulse = maxf(0.0, _step_pulse - delta * 4.5)
+	_sag = maxf(0.0, _sag - delta * 1.2)
 	var breath := sin(Time.get_ticks_msec() * 0.0022) * 0.006
 	var sway_amp := 0.01 if careful else 0.032
 	if tear_stage >= TearStage.HOLES:
 		sway_amp *= 1.45
 	var tsec := Time.get_ticks_msec() * 0.001
 	target_xf.origin += target_xf.basis.x * sin(tsec * 5.5) * sway_amp
-	target_xf.origin += target_xf.basis.y * (breath + sin(tsec * 9.0) * sway_amp * 0.5)
+	target_xf.origin += target_xf.basis.y * (breath + sin(tsec * 9.0) * sway_amp * 0.5 + _step_pulse * 0.025)
 
 	var desired: Vector3 = target_xf.origin
 	# Spring position (тяжесть снизу через отставание)
@@ -527,7 +617,9 @@ func _carry_follow(delta: float) -> void:
 
 	if _is_plastic_bag and _body_mi:
 		var sq := 1.0 - _compress * 0.55
-		_body_mi.scale = _body_base_scale * Vector3(sq, 1.0 + _compress * 0.2, sq)
+		var sag_y := 1.0 - _sag * 0.18
+		var sag_xz := 1.0 + _sag * 0.12
+		_body_mi.scale = _body_base_scale * Vector3(sq * sag_xz, (1.0 + _compress * 0.2) * sag_y, sq * sag_xz)
 
 	if wind_force > 0.0 and randf() < 0.015 * wind_force * delta * 60.0:
 		_apply_damage(wind_force * 0.06)
@@ -611,6 +703,8 @@ func _apply_damage(amount: float) -> void:
 	tear_stage = _tear_stage_for_hp()
 	_update_damage_visual()
 	damaged.emit(hp, max_hp)
+	if amount >= 8.0:
+		hit_hard.emit(amount)
 	if hp <= 0.0:
 		_do_burst()
 
@@ -618,20 +712,21 @@ func _update_damage_visual() -> void:
 	if _mat == null:
 		return
 	var t := 1.0 - (hp / maxf(max_hp, 0.01))
-	# Порча через albedo/alpha — без emission-лавы
 	_mat.emission_enabled = false
-	var dirt := Color(0.28, 0.18, 0.10)
-	_mat.albedo_color = _base_color.lerp(dirt, t * 0.55)
+	var dirt_c := Color(0.28, 0.18, 0.10)
+	_mat.albedo_color = _base_color.lerp(dirt_c, t * 0.55)
+	_mat.albedo_color = _mat.albedo_color.lerp(Color(0.2, 0.16, 0.12), dirt * 0.45)
+	if wetness > 0.05:
+		_mat.roughness = lerpf(0.78 if cargo != Cargo.THIN else 0.65, 0.35, wetness)
+		_mat.albedo_color = _mat.albedo_color.darkened(wetness * 0.15)
 	if cargo == Cargo.THIN:
 		_mat.albedo_color.a = lerpf(0.82, 0.55, t)
-	# Шов темнеет / «дыры»
 	if _seam_mi and _seam_mi.material_override is StandardMaterial3D:
 		var sm: StandardMaterial3D = _seam_mi.material_override
 		sm.albedo_color = _base_color.darkened(0.2 + t * 0.5)
 		if tear_stage >= TearStage.HOLES:
 			sm.albedo_color = Color(0.15, 0.08, 0.05)
 			_seam_mi.scale = Vector3(1.0 + t, 1.0, 1.0 + t * 2.0)
-	# Критика — содержимое просвечивает (теплее)
 	if tear_stage >= TearStage.CRITICAL and _body_mi:
 		_mat.albedo_color = _mat.albedo_color.lerp(Color(0.4, 0.28, 0.12), 0.35)
 
