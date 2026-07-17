@@ -13,10 +13,12 @@ fi
 
 python3 tools/gen_sfx.py
 python3 tools/gen_environment_textures.py
+python3 tools/gen_bag_textures.py
 
 "$GODOT" --headless --path . --quit-after 2 -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_levels.gd -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_carry.gd -- --test-mode
+"$GODOT" --headless --path . --script res://tools/test_bag_feel.gd -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_stairs.gd -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_stair_walk.gd -- --test-mode
 "$GODOT" --headless --path . --script res://tools/test_exit_dump.gd -- --test-mode

@@ -63,7 +63,8 @@ func _build_body() -> void:
 
 	hold_point = Node3D.new()
 	hold_point.name = "HoldPoint"
-	hold_point.position = Vector3(0.35, -0.25, -0.55)
+	# Ближе к камере: пакет закрывает низ кадра (вес в руках)
+	hold_point.position = Vector3(0.22, -0.32, -0.48)
 	camera.add_child(hold_point)
 
 	_build_hands()
@@ -134,14 +135,15 @@ func _build_hands() -> void:
 	lb.size = Vector3(0.08, 0.08, 0.22)
 	left_hand.mesh = lb
 	left_hand.material_override = skin
-	left_hand.position = Vector3(-0.22, -0.28, -0.35)
+	# Руки у ручек пакета
+	left_hand.position = Vector3(-0.12, -0.30, -0.42)
 	camera.add_child(left_hand)
 	right_hand = MeshInstance3D.new()
 	var rb := BoxMesh.new()
 	rb.size = Vector3(0.08, 0.08, 0.22)
 	right_hand.mesh = rb
 	right_hand.material_override = skin
-	right_hand.position = Vector3(0.28, -0.32, -0.4)
+	right_hand.position = Vector3(0.18, -0.30, -0.42)
 	camera.add_child(right_hand)
 
 func capture_mouse(on: bool) -> void:
@@ -261,6 +263,7 @@ func _physics_process(delta: float) -> void:
 	camera.position.y = lerpf(camera.position.y, 1.15 if _crouching else 1.55, 12.0 * delta)
 
 	if left_hand and right_hand:
-		var bob := sin(Time.get_ticks_msec() * 0.01) * (0.01 if careful else 0.02)
-		left_hand.position.y = -0.28 + bob
-		right_hand.position.y = -0.32 - bob
+		var bob := sin(Time.get_ticks_msec() * 0.01) * (0.008 if careful else 0.018)
+		var grip := 0.02 if careful else 0.0
+		left_hand.position = Vector3(-0.12 + grip, -0.30 + bob, -0.42)
+		right_hand.position = Vector3(0.18 - grip, -0.30 - bob, -0.42)

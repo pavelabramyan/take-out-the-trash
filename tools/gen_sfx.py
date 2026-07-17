@@ -99,6 +99,21 @@ def main() -> None:
     write_wav(SFX / "win.wav", mix(tone(523, 0.15, 0.3), tone(659, 0.2, 0.28), tone(784, 0.35, 0.25)))
     write_wav(SFX / "fail.wav", mix(tone(180, 0.25, 0.35), tone(90, 0.4, 0.3), noise(0.3, 0.2)))
     write_wav(SFX / "step.wav", mix(noise(0.06, 0.25), tone(90, 0.05, 0.15)))
+    # Пакет: шуршание / хват / плюх / трёние о стену
+    rustle = []
+    x = 424242
+    for i in range(SR * 2):
+        t = i / SR
+        x = (1103515245 * x + 12345) & 0x7FFFFFFF
+        n = (x / 0x7FFFFFFF) * 2 - 1
+        # полосовой «пластик»
+        s = n * 0.12 * (0.5 + 0.5 * math.sin(2 * math.pi * 18 * t))
+        s += 0.04 * math.sin(2 * math.pi * (900 + 200 * math.sin(t * 40)) * t)
+        rustle.append(s)
+    write_wav(SFX / "rustle.wav", rustle)
+    write_wav(SFX / "bag_grab.wav", mix(noise(0.1, 0.22), tone(240, 0.09, 0.18)))
+    write_wav(SFX / "bag_drop.wav", mix(noise(0.14, 0.28), tone(95, 0.12, 0.22)))
+    write_wav(SFX / "wall_rub.wav", mix(noise(0.2, 0.2), tone(160, 0.15, 0.12)))
 
     # Короткий loop меню
     loop = []

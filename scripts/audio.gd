@@ -19,7 +19,7 @@ func _ready() -> void:
 		add_child(p)
 		_sfx_pool.append(p)
 	_apply_volumes()
-	for k in ["burst", "pickup", "dump", "impact", "slip", "bark", "babushka", "mom", "mom2", "mom3", "elevator", "win", "fail", "step"]:
+	for k in ["burst", "pickup", "dump", "impact", "slip", "bark", "babushka", "mom", "mom2", "mom3", "elevator", "win", "fail", "step", "rustle", "bag_grab", "bag_drop", "wall_rub"]:
 		_try_load(k, "res://assets/sfx/%s.wav" % k)
 	_try_load("music", "res://assets/music/menu_loop.wav")
 	_try_load("game_music", "res://assets/music/game_loop.wav")
