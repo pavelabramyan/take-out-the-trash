@@ -190,12 +190,15 @@ func _build_buckets() -> void:
 		_col = CollisionShape3D.new()
 	_mat.metallic = 0.55
 	_mat.roughness = 0.45
+	var fill_mat := StandardMaterial3D.new()
+	fill_mat.albedo_color = Color(0.35, 0.28, 0.18)
+	fill_mat.roughness = 0.95
 	for side in [-1.0, 1.0]:
 		var cyl := MeshInstance3D.new()
 		var m := CylinderMesh.new()
 		m.top_radius = 0.14
-		m.bottom_radius = 0.16
-		m.height = 0.38
+		m.bottom_radius = 0.17
+		m.height = 0.4
 		cyl.mesh = m
 		cyl.material_override = _mat
 		cyl.position = Vector3(side * 0.18, -0.05, 0.0)
@@ -203,22 +206,40 @@ func _build_buckets() -> void:
 		var rim := MeshInstance3D.new()
 		var t := TorusMesh.new()
 		t.inner_radius = 0.02
-		t.outer_radius = 0.15
+		t.outer_radius = 0.155
 		rim.mesh = t
 		rim.material_override = _mat
-		rim.position = Vector3(side * 0.18, 0.14, 0.0)
+		rim.position = Vector3(side * 0.18, 0.15, 0.0)
 		rim.rotation_degrees = Vector3(90, 0, 0)
 		_visual.add_child(rim)
+		var fill := MeshInstance3D.new()
+		var fm := CylinderMesh.new()
+		fm.top_radius = 0.12
+		fm.bottom_radius = 0.12
+		fm.height = 0.08
+		fill.mesh = fm
+		fill.material_override = fill_mat
+		fill.position = Vector3(side * 0.18, 0.08, 0.0)
+		_visual.add_child(fill)
+		var wire := MeshInstance3D.new()
+		var wm := TorusMesh.new()
+		wm.inner_radius = 0.01
+		wm.outer_radius = 0.12
+		wire.mesh = wm
+		wire.material_override = _mat
+		wire.position = Vector3(side * 0.18, 0.28, 0.0)
+		wire.rotation_degrees = Vector3(0, 0, 90)
+		_visual.add_child(wire)
 	var bar := MeshInstance3D.new()
 	var bm := BoxMesh.new()
 	bm.size = Vector3(0.42, 0.03, 0.03)
 	bar.mesh = bm
 	bar.material_override = _mat
-	bar.position = Vector3(0, 0.22, 0.0)
+	bar.position = Vector3(0, 0.28, 0.0)
 	_visual.add_child(bar)
 	_mesh = bar
 	_col.shape = BoxShape3D.new()
-	(_col.shape as BoxShape3D).size = Vector3(0.5, 0.45, 0.32)
+	(_col.shape as BoxShape3D).size = Vector3(0.5, 0.5, 0.35)
 	_col.position = Vector3(0, 0.0, 0.0)
 	add_child(_col)
 
@@ -229,14 +250,24 @@ func _build_carpet() -> void:
 	_mat.metallic = 0.0
 	var roll := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
-	cyl.top_radius = 0.14
-	cyl.bottom_radius = 0.14
+	cyl.top_radius = 0.15
+	cyl.bottom_radius = 0.15
 	cyl.height = 1.35
 	roll.mesh = cyl
 	roll.material_override = _mat
 	roll.rotation_degrees = Vector3(0, 0, 90)
 	roll.position = Vector3(0, -0.05, 0.0)
 	_visual.add_child(roll)
+	# Бахрома по торцам
+	for end_x in [-0.68, 0.68]:
+		for i in range(6):
+			var fr := MeshInstance3D.new()
+			var fb := BoxMesh.new()
+			fb.size = Vector3(0.04, 0.02, 0.12)
+			fr.mesh = fb
+			fr.material_override = _mat
+			fr.position = Vector3(end_x, -0.02, -0.05 + float(i) * 0.02)
+			_visual.add_child(fr)
 	var strap := MeshInstance3D.new()
 	var sb := BoxMesh.new()
 	sb.size = Vector3(0.08, 0.32, 0.02)
@@ -244,18 +275,18 @@ func _build_carpet() -> void:
 	var sm := StandardMaterial3D.new()
 	sm.albedo_color = Color(0.25, 0.2, 0.12)
 	strap.material_override = sm
-	strap.position = Vector3(0.0, 0.05, 0.12)
+	strap.position = Vector3(0.0, 0.05, 0.14)
 	_visual.add_child(strap)
 	_mesh = roll
 	_col.shape = BoxShape3D.new()
-	(_col.shape as BoxShape3D).size = Vector3(1.4, 0.28, 0.32)
+	(_col.shape as BoxShape3D).size = Vector3(1.4, 0.3, 0.34)
 	add_child(_col)
 
 func _build_fridge() -> void:
 	_visual = Node3D.new()
 	add_child(_visual)
-	_mat.metallic = 0.35
-	_mat.roughness = 0.4
+	_mat.metallic = 0.45
+	_mat.roughness = 0.35
 	var body := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(0.62, 1.45, 0.58)
@@ -263,25 +294,57 @@ func _build_fridge() -> void:
 	body.material_override = _mat
 	body.position = Vector3(0, 0.72, 0.0)
 	_visual.add_child(body)
+	# Морозилка сверху
+	var freezer := MeshInstance3D.new()
+	var freezer_box := BoxMesh.new()
+	freezer_box.size = Vector3(0.58, 0.38, 0.06)
+	freezer.mesh = freezer_box
+	var freezer_mat := _mat.duplicate() as StandardMaterial3D
+	freezer_mat.albedo_color = Color(0.88, 0.9, 0.93)
+	freezer.material_override = freezer_mat
+	freezer.position = Vector3(0, 1.2, 0.32)
+	_visual.add_child(freezer)
 	var door := MeshInstance3D.new()
 	var db := BoxMesh.new()
-	db.size = Vector3(0.58, 1.35, 0.06)
+	db.size = Vector3(0.58, 0.95, 0.06)
 	door.mesh = db
 	var dm := _mat.duplicate() as StandardMaterial3D
 	dm.albedo_color = Color(0.9, 0.92, 0.95)
 	door.material_override = dm
-	door.position = Vector3(0, 0.72, 0.32)
+	door.position = Vector3(0, 0.55, 0.32)
 	_visual.add_child(door)
+	# Резиновый уплотнитель
+	var seal := MeshInstance3D.new()
+	var sb := BoxMesh.new()
+	sb.size = Vector3(0.6, 1.4, 0.02)
+	seal.mesh = sb
+	var sm := StandardMaterial3D.new()
+	sm.albedo_color = Color(0.12, 0.12, 0.12)
+	sm.roughness = 0.85
+	seal.material_override = sm
+	seal.position = Vector3(0, 0.72, 0.28)
+	_visual.add_child(seal)
 	var handle := MeshInstance3D.new()
 	var hb := BoxMesh.new()
 	hb.size = Vector3(0.04, 0.35, 0.05)
 	handle.mesh = hb
 	var hm := StandardMaterial3D.new()
 	hm.albedo_color = Color(0.7, 0.7, 0.72)
-	hm.metallic = 0.8
+	hm.metallic = 0.85
 	handle.material_override = hm
-	handle.position = Vector3(0.22, 0.75, 0.38)
+	handle.position = Vector3(0.22, 0.55, 0.38)
 	_visual.add_child(handle)
+	var feet_mat := StandardMaterial3D.new()
+	feet_mat.albedo_color = Color(0.15, 0.15, 0.15)
+	for fx in [-0.22, 0.22]:
+		for fz in [-0.2, 0.2]:
+			var foot := MeshInstance3D.new()
+			var fbm := BoxMesh.new()
+			fbm.size = Vector3(0.08, 0.04, 0.08)
+			foot.mesh = fbm
+			foot.material_override = feet_mat
+			foot.position = Vector3(fx, 0.02, fz)
+			_visual.add_child(foot)
 	_mesh = body
 	_col.shape = BoxShape3D.new()
 	(_col.shape as BoxShape3D).size = Vector3(0.65, 1.5, 0.62)
@@ -303,54 +366,69 @@ func apply_dirt(amount: float = 0.2) -> void:
 func _apply_bag_material() -> void:
 	_mat = StandardMaterial3D.new()
 	_mat.albedo_color = _base_color
-	_mat.roughness = 0.78 if cargo != Cargo.THIN else 0.65
-	_mat.metallic = 0.02
+	_mat.roughness = 0.72 if cargo != Cargo.THIN else 0.58
+	_mat.metallic = 0.0
 	if cargo == Cargo.THIN:
 		_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		_mat.albedo_color.a = 0.82
+		_mat.albedo_color.a = 0.78
 	var albedo_path := "res://assets/textures/bag/bag_thin_albedo.png" if cargo == Cargo.THIN else "res://assets/textures/bag/bag_albedo.png"
 	if ResourceLoader.exists(albedo_path):
 		_mat.albedo_texture = load(albedo_path)
-		_mat.uv1_scale = Vector3(1.2, 1.2, 1.2)
+		_mat.uv1_scale = Vector3(1.35, 1.35, 1.35)
 	if ResourceLoader.exists("res://assets/textures/bag/bag_rough.png"):
 		_mat.roughness_texture = load("res://assets/textures/bag/bag_rough.png")
 	if ResourceLoader.exists("res://assets/textures/bag/bag_normal.png"):
 		_mat.normal_enabled = true
 		_mat.normal_texture = load("res://assets/textures/bag/bag_normal.png")
-		_mat.normal_scale = 0.55
-	# Лёгкая «просвечиваемость» краёв через rim-ish: emission off, slightly lower AO feel
+		_mat.normal_scale = 0.95
 	_mat.emission_enabled = false
 
 func _build_plastic_bag() -> void:
 	_apply_bag_material()
 	_visual = Node3D.new()
 	_visual.name = "BagVisual"
-	# Pivot у ручек; тело висит ниже
 	add_child(_visual)
 
 	var thin_s := 0.88 if cargo == Cargo.THIN else 1.0
 	var asym := 0.04 if _color_preset != 1 else -0.03
 
-	# Тело — сплюснутая сфера (низ тяжёлый)
+	# Брюхо — сплюснутая сфера + складки
 	_body_mi = MeshInstance3D.new()
 	var sphere := SphereMesh.new()
 	sphere.radius = 0.155 * thin_s
-	sphere.height = 0.34 * thin_s
-	sphere.radial_segments = 20
-	sphere.rings = 12
+	sphere.height = 0.36 * thin_s
+	sphere.radial_segments = 24
+	sphere.rings = 14
 	_body_mi.mesh = sphere
 	_body_mi.material_override = _mat
-	_body_base_scale = Vector3(1.15 + asym, 1.25, 0.78 - asym * 0.5)
+	_body_base_scale = Vector3(1.22 + asym, 1.18, 0.72 - asym * 0.5)
 	_body_mi.scale = _body_base_scale
-	_body_mi.position = Vector3(asym * 0.5, -0.20, 0.0)
+	_body_mi.position = Vector3(asym * 0.5, -0.22, 0.0)
 	_visual.add_child(_body_mi)
+	# Складки полиэтилена
+	for i in range(5):
+		var fold := MeshInstance3D.new()
+		var fs := SphereMesh.new()
+		fs.radius = 0.04 + float(i % 2) * 0.015
+		fs.height = 0.12
+		fs.radial_segments = 10
+		fs.rings = 6
+		fold.mesh = fs
+		fold.material_override = _mat
+		fold.position = Vector3(
+			(-0.08 + float(i) * 0.04) + asym,
+			-0.14 - float(i % 3) * 0.03,
+			0.06 - float(i) * 0.02
+		)
+		fold.scale = Vector3(0.55, 1.4, 0.35)
+		_visual.add_child(fold)
 
 	# Горловина
 	_neck_mi = MeshInstance3D.new()
 	var neck := CylinderMesh.new()
-	neck.top_radius = 0.06 * thin_s
-	neck.bottom_radius = 0.11 * thin_s
-	neck.height = 0.12
+	neck.top_radius = 0.05 * thin_s
+	neck.bottom_radius = 0.12 * thin_s
+	neck.height = 0.11
 	neck.radial_segments = 14
 	_neck_mi.mesh = neck
 	_neck_mi.material_override = _mat
@@ -360,7 +438,7 @@ func _build_plastic_bag() -> void:
 	# Шов (зона разрыва)
 	_seam_mi = MeshInstance3D.new()
 	var seam := BoxMesh.new()
-	seam.size = Vector3(0.01, 0.32, 0.02)
+	seam.size = Vector3(0.012, 0.34, 0.02)
 	_seam_mi.mesh = seam
 	var seam_mat := _mat.duplicate() as StandardMaterial3D
 	seam_mat.albedo_color = _base_color.darkened(0.25)
@@ -368,7 +446,6 @@ func _build_plastic_bag() -> void:
 	_seam_mi.position = Vector3(0.0, -0.18, 0.12)
 	_visual.add_child(_seam_mi)
 
-	# Ручки (ушки)
 	_handle_l = _make_handle(-1.0, thin_s)
 	_handle_r = _make_handle(1.0, thin_s)
 	_visual.add_child(_handle_l)
@@ -395,18 +472,29 @@ func _build_plastic_bag() -> void:
 	add_child(_col)
 
 func _make_handle(side: float, thin_s: float) -> MeshInstance3D:
+	## Мягкая петля из капсул (провисание), не идеальный torus.
 	var root := MeshInstance3D.new()
-	# Тонкий U из трёх боксов через MultiMesh — проще: Torus сегмент как capsule loop
-	var t := TorusMesh.new()
-	t.inner_radius = 0.035
-	t.outer_radius = 0.055 * thin_s
-	t.rings = 10
-	t.ring_segments = 8
-	root.mesh = t
+	var stub := BoxMesh.new()
+	stub.size = Vector3(0.02, 0.02, 0.02)
+	root.mesh = stub
 	root.material_override = _mat
-	root.position = Vector3(side * 0.07, 0.06, 0.0)
-	root.rotation_degrees = Vector3(70.0, 0.0, side * 18.0)
-	root.scale = Vector3(0.7, 0.55, 0.7)
+	root.position = Vector3(side * 0.06, 0.05, 0.0)
+	var segs := [
+		[Vector3(0, 0.02, 0), Vector3(0.02, 0.08, 0.02), Vector3(8, 0, side * 12)],
+		[Vector3(side * 0.02, 0.08, 0.01), Vector3(0.02, 0.06, 0.02), Vector3(35, 0, side * 25)],
+		[Vector3(side * 0.035, 0.04, 0.02), Vector3(0.018, 0.07, 0.018), Vector3(70, 0, side * 10)],
+	]
+	for s in segs:
+		var mi := MeshInstance3D.new()
+		var c := CapsuleMesh.new()
+		c.radius = 0.009 * thin_s
+		c.height = 0.055 * thin_s
+		mi.mesh = c
+		mi.material_override = _mat
+		mi.position = s[0]
+		mi.scale = s[1]
+		mi.rotation_degrees = s[2]
+		root.add_child(mi)
 	return root
 
 func _make_rag(side: float) -> MeshInstance3D:
@@ -717,10 +805,16 @@ func _update_damage_visual() -> void:
 	_mat.albedo_color = _base_color.lerp(dirt_c, t * 0.55)
 	_mat.albedo_color = _mat.albedo_color.lerp(Color(0.2, 0.16, 0.12), dirt * 0.45)
 	if wetness > 0.05:
-		_mat.roughness = lerpf(0.78 if cargo != Cargo.THIN else 0.65, 0.35, wetness)
+		_mat.roughness = lerpf(0.72 if cargo != Cargo.THIN else 0.58, 0.28, wetness)
 		_mat.albedo_color = _mat.albedo_color.darkened(wetness * 0.15)
 	if cargo == Cargo.THIN:
-		_mat.albedo_color.a = lerpf(0.82, 0.55, t)
+		_mat.albedo_color.a = lerpf(0.78, 0.5, t)
+	# Tear map на поздних стадиях
+	if tear_stage >= TearStage.WORN and ResourceLoader.exists("res://assets/textures/bag/bag_tear.png"):
+		_mat.detail_enabled = true
+		_mat.detail_albedo = load("res://assets/textures/bag/bag_tear.png")
+		_mat.detail_uv_layer = BaseMaterial3D.DETAIL_UV_1
+		_mat.uv1_scale = Vector3(1.35 + t * 0.4, 1.35 + t * 0.4, 1.35)
 	if _seam_mi and _seam_mi.material_override is StandardMaterial3D:
 		var sm: StandardMaterial3D = _seam_mi.material_override
 		sm.albedo_color = _base_color.darkened(0.2 + t * 0.5)

@@ -114,6 +114,10 @@ func _start_level() -> void:
 	title_label.text = "%s %d — %s" % [Svc.loc().t("level"), level_index + 1, level.get("title_%s" % Svc.loc().lang, level.get("title_en", ""))]
 	hp_bar.max_value = float(level.get("bag_hp", 100))
 	hp_bar.value = hp_bar.max_value
+	# Приглушённый HUD — не неон поверх панельки
+	hp_bar.modulate = Color(0.75, 0.85, 0.7, 0.85)
+	title_label.modulate = Color(0.9, 0.88, 0.8, 0.9)
+	prompt_label.modulate = Color(0.85, 0.82, 0.75, 0.8)
 	prompt_label.text = str(level.get("hint_%s" % Svc.loc().lang, level.get("hint_en", "")))
 	end_panel.visible = false
 	Svc.steam().set_rich_presence(level_index + 1, str(level.get("cargo", "bag")))

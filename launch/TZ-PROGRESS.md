@@ -6,19 +6,38 @@
 | Фаза ТЗ | Статус | Что закрыто в коде |
 |---------|--------|-------------------|
 | 0 Стабилизация | частично | quality_gate, path tests |
-| 1 Пакет → идеал | Wave1 + Wave2 chunk | wet/dirt, step-sway, sag, hit-pause, cargos silhouettes |
-| 2 Клетка art-pass | chunk | level flavor props, dumpster×3, номер подъезда |
+| 1 Пакет → идеал | Wave1–2 + reality B | руки-кисти, складки, tear map, cargos силуэт |
+| 2 Клетка art-pass | reality C | бетонный марш, перила, плинтус, пропы, PBR maps |
 | 3 Уникальность 12 ур. | chunk L1–9 markers | `_build_level_flavor` |
-| 4 Аудио/UI | chunk | `fail` SFX на fail |
+| 4 Аудио/UI | chunk | `fail` SFX; приглушённый HUD |
 | 5 Fun-gate | **не сделано** | нужен человек ×3 |
 | 6–7 Steam | **не сделано** | AppID=0 |
+
+## Reality Visual Overhaul (по кадрам)
+
+| Волна | Статус | Критерий |
+|-------|--------|----------|
+| A Свет | сделано | sky, плафоны, ambient↑, SSAO↓ (SDFGI off на Metal) |
+| B Руки+пакет | сделано | кисти+рукав; брюхо/складки/петли; tear |
+| C Клетка | сделано | проступь+подступенок, перила, плинтус, пропы |
+| D Двор | сделано | бордюр/газон/фонарь/окна/помойка+ржа |
+| E Gate | сделано | `tools/visual_reality_pass.gd` → `launch/reality_shots/` |
+
+**Прогон кадров:**  
+`./Godot.app/Contents/MacOS/Godot --path . --script res://tools/visual_reality_pass.gd`
+
+Чеклист глазками (после прогона):
+- [ ] 01/03/05/06 — не чёрная дыра
+- [ ] 02/11/12 — пакет узнаётся за секунду; руки не бруски
+- [ ] 03–07 — подъезд, не Minecraft
+- [ ] 08–09 — двор + железные баки
 
 ## Следующие P0 (не закрыты)
 
 1. Fun-gate 3 человека (`FUN-GATE.md`)
-2. Реальные меши дверей/перил (не боксы)
-3. Запись SFX/VO вместо procedural
-4. Steam AppID + Coming Soon
-5. Deck 30 мин
+2. Запись SFX/VO вместо procedural
+3. Steam AppID + Coming Soon
+4. Deck 30 мин
+5. Итерация по reality_shots после живого прогона
 
 Обновляй эту таблицу после каждого спринта.

@@ -71,10 +71,10 @@ func _build_body() -> void:
 
 	flashlight = SpotLight3D.new()
 	flashlight.light_color = Color(0.95, 0.97, 1.0)
-	flashlight.light_energy = 3.5
-	flashlight.spot_range = 14.0
-	flashlight.spot_angle = 28.0
-	flashlight.shadow_enabled = false
+	flashlight.light_energy = 2.8
+	flashlight.spot_range = 12.0
+	flashlight.spot_angle = 32.0
+	flashlight.shadow_enabled = true
 	flashlight.visible = false
 	flashlight.position = Vector3(0.1, -0.05, -0.1)
 	camera.add_child(flashlight)
@@ -129,22 +129,59 @@ func _add_joy_axis(action: String, axis: int, value: float) -> void:
 
 func _build_hands() -> void:
 	var skin := StandardMaterial3D.new()
-	skin.albedo_color = Color(0.86, 0.68, 0.55)
-	left_hand = MeshInstance3D.new()
-	var lb := BoxMesh.new()
-	lb.size = Vector3(0.08, 0.08, 0.22)
-	left_hand.mesh = lb
-	left_hand.material_override = skin
-	# Руки у ручек пакета
-	left_hand.position = Vector3(-0.12, -0.30, -0.42)
+	skin.albedo_color = Color(0.82, 0.62, 0.48)
+	skin.roughness = 0.72
+	var sleeve := StandardMaterial3D.new()
+	sleeve.albedo_color = Color(0.22, 0.28, 0.38)
+	sleeve.roughness = 0.9
+	left_hand = _make_hand_rig(skin, sleeve, -1.0)
+	left_hand.position = Vector3(-0.14, -0.28, -0.40)
+	left_hand.rotation_degrees = Vector3(12, 8, -18)
 	camera.add_child(left_hand)
-	right_hand = MeshInstance3D.new()
-	var rb := BoxMesh.new()
-	rb.size = Vector3(0.08, 0.08, 0.22)
-	right_hand.mesh = rb
-	right_hand.material_override = skin
-	right_hand.position = Vector3(0.18, -0.30, -0.42)
+	right_hand = _make_hand_rig(skin, sleeve, 1.0)
+	right_hand.position = Vector3(0.20, -0.28, -0.40)
+	right_hand.rotation_degrees = Vector3(12, -8, 18)
 	camera.add_child(right_hand)
+
+func _make_hand_rig(skin: Material, sleeve: Material, side: float) -> MeshInstance3D:
+	## Ладонь + рукав + пальцы-боксы (читаемый силуэт кисти).
+	var palm := MeshInstance3D.new()
+	var pm := BoxMesh.new()
+	pm.size = Vector3(0.08, 0.03, 0.095)
+	palm.mesh = pm
+	palm.material_override = skin
+	var forearm := MeshInstance3D.new()
+	var fm := BoxMesh.new()
+	fm.size = Vector3(0.07, 0.055, 0.18)
+	forearm.mesh = fm
+	forearm.material_override = sleeve
+	forearm.position = Vector3(0, 0.015, 0.12)
+	palm.add_child(forearm)
+	var cuff := MeshInstance3D.new()
+	var cm := BoxMesh.new()
+	cm.size = Vector3(0.078, 0.045, 0.035)
+	cuff.mesh = cm
+	cuff.material_override = sleeve
+	cuff.position = Vector3(0, 0.012, 0.04)
+	palm.add_child(cuff)
+	var thumb := MeshInstance3D.new()
+	var tm := BoxMesh.new()
+	tm.size = Vector3(0.022, 0.02, 0.045)
+	thumb.mesh = tm
+	thumb.material_override = skin
+	thumb.position = Vector3(side * 0.045, -0.008, -0.01)
+	thumb.rotation_degrees = Vector3(15, side * 40, side * 35)
+	palm.add_child(thumb)
+	for i in range(4):
+		var finger := MeshInstance3D.new()
+		var ff := BoxMesh.new()
+		ff.size = Vector3(0.014, 0.014, 0.05)
+		finger.mesh = ff
+		finger.material_override = skin
+		finger.position = Vector3(-0.028 + float(i) * 0.018, 0.0, -0.065)
+		finger.rotation_degrees = Vector3(40, 0, 0)
+		palm.add_child(finger)
+	return palm
 
 func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE

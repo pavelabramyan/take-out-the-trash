@@ -177,16 +177,50 @@ def door_wood(path: Path, size: int = 512) -> None:
     im.save(path)
 
 
-def dumpster_green(path: Path, size: int = 256) -> None:
+def dumpster_green(path: Path, size: int = 512) -> None:
     im = Image.new("RGB", (size, size), (36, 95, 48))
     d = ImageDraw.Draw(im)
-    d.rectangle([8, 16, size - 8, size - 8], outline=(20, 60, 28), width=5)
-    for y in range(30, size - 20, 18):
-        d.line([(16, y), (size - 16, y)], fill=(28, 75, 38), width=2)
+    d.rectangle([8, 16, size - 8, size - 8], outline=(20, 60, 28), width=8)
+    for y in range(30, size - 20, 22):
+        d.line([(16, y), (size - 16, y)], fill=(28, 75, 38), width=3)
     _noise(im, 18, 22)
-    # ржавчина
-    d.ellipse([20, size - 50, 70, size - 10], fill=(90, 55, 30))
+    # ржавчина / вмятины
+    for _ in range(8):
+        x = (1103515245 * (_ + 9) + 12345) & 0x7FFFFFFF
+        cx, cy = x % size, (x // 7) % size
+        d.ellipse([cx, cy, cx + 40, cy + 28], fill=(90, 55, 30))
     im.save(path)
+
+
+def _rough_from_albedo(albedo: Path, out: Path) -> None:
+    im = Image.open(albedo).convert("L")
+    # Инверсия яркости → шероховатость (светлое = глаже)
+    inv = Image.eval(im, lambda p: 220 - p // 3)
+    inv.save(out)
+
+
+def _normal_from_albedo(albedo: Path, out: Path, strength: float = 2.2) -> None:
+    im = Image.open(albedo).convert("L")
+    w, h = im.size
+    src = im.load()
+    nrm = Image.new("RGB", (w, h))
+    dst = nrm.load()
+    for y in range(h):
+        for x in range(w):
+            x0 = src[(x - 1) % w, y]
+            x1 = src[(x + 1) % w, y]
+            y0 = src[x, (y - 1) % h]
+            y1 = src[x, (y + 1) % h]
+            dx = (x0 - x1) * strength
+            dy = (y0 - y1) * strength
+            dz = 255.0
+            length = math.sqrt(dx * dx + dy * dy + dz * dz) or 1.0
+            dst[x, y] = (
+                int(128 + 127 * dx / length),
+                int(128 + 127 * dy / length),
+                int(128 + 127 * dz / length),
+            )
+    nrm.save(out)
 
 
 def asphalt(path: Path, size: int = 512) -> None:
@@ -220,6 +254,17 @@ def metal_door(path: Path, size: int = 512) -> None:
 
 
 def main() -> None:
+    names = [
+        "tile.png",
+        "concrete.png",
+        "wall.png",
+        "zelenka.png",
+        "panel.png",
+        "door.png",
+        "dumpster.png",
+        "asphalt.png",
+        "metal_door.png",
+    ]
     tile_floor(OUT / "tile.png")
     concrete(OUT / "concrete.png")
     wallpaper(OUT / "wall.png")
@@ -229,6 +274,11 @@ def main() -> None:
     dumpster_green(OUT / "dumpster.png")
     asphalt(OUT / "asphalt.png")
     metal_door(OUT / "metal_door.png")
+    for name in names:
+        base = OUT / name
+        stem = base.stem
+        _rough_from_albedo(base, OUT / f"{stem}_rough.png")
+        _normal_from_albedo(base, OUT / f"{stem}_normal.png")
     print("TEX_OK", OUT)
 
 
