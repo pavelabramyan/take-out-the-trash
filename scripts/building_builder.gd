@@ -198,13 +198,14 @@ func _add_world_env(night: bool) -> void:
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.12, 0.12, 0.14) if night else Color(0.55, 0.52, 0.48)
 	env.fog_density = 0.01 if night else 0.003
+	# SSAO/glow умеренно — на AMD полный пакет эффектов иногда роняет окно
 	env.ssao_enabled = true
-	env.ssao_radius = 0.7
-	env.ssao_intensity = 1.4
+	env.ssao_radius = 0.55
+	env.ssao_intensity = 1.1
 	env.glow_enabled = true
-	env.glow_intensity = 0.28
-	env.glow_strength = 0.65
-	env.glow_bloom = 0.06
+	env.glow_intensity = 0.2
+	env.glow_strength = 0.55
+	env.glow_bloom = 0.04
 	# SDFGI на MoltenVK/AMD нестабилен — fill светом + ReflectionProbe
 	env.sdfgi_enabled = false
 	env.ssr_enabled = false
@@ -219,9 +220,11 @@ func _add_world_env(night: bool) -> void:
 	var sun := DirectionalLight3D.new()
 	sun.light_energy = 0.4 if night else 1.05
 	sun.light_color = Color(0.55, 0.62, 0.85) if night else Color(1.0, 0.95, 0.85)
+	# Одна directional-тень — omni-shadows на MoltenVK/AMD валят процесс
 	sun.shadow_enabled = true
-	sun.shadow_blur = 1.2
+	sun.shadow_blur = 1.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	sun.directional_shadow_max_distance = 40.0
 	sun.rotation_degrees = Vector3(-32, 42, 0) if night else Vector3(-38, 55, 0)
 	add_child(sun)
 
@@ -371,7 +374,7 @@ func _add_entrance_props() -> void:
 	el.light_energy = 1.35
 	el.omni_range = 4.5
 	el.omni_attenuation = 1.8
-	el.shadow_enabled = true
+	el.shadow_enabled = false
 	el.position = Vector3(0, 2.25, DOOR_Z + 0.55)
 	add_child(el)
 	lights.append(el)
@@ -564,7 +567,7 @@ func _add_floor_light(y: float) -> void:
 	lamp.light_energy = 1.35
 	lamp.omni_range = 4.6
 	lamp.omni_attenuation = 2.0
-	lamp.shadow_enabled = true
+	lamp.shadow_enabled = false
 	lamp.position = Vector3(0.15, y + 2.35, 0.1)
 	add_child(lamp)
 	lights.append(lamp)
