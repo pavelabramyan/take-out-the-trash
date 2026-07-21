@@ -65,73 +65,85 @@ func build(level: Dictionary) -> void:
 	Svc.audio().play_ambient()
 
 func _make_materials() -> void:
+	## Цвета по рефу Нижегородской / типовой клетки: грязная бирюза + грязный верх.
+	## Важно: albedo_color умножается на текстуру — при готовой albedo держим ~1.0.
 	var style: String = str(_level.get("style", "khrushchev"))
-	var wall_up := Color(0.72, 0.66, 0.52)       # кремово-облупленный
-	var wall_low := Color(0.18, 0.38, 0.26)      # масляная зелёнка
-	var tile_c := Color(0.46, 0.42, 0.38)
-	var panel_c := Color(0.62, 0.58, 0.50)
+	var wall_up := Color(1.05, 1.0, 0.92)       # грязно-белый верх (tint на wall.png)
+	var wall_low := Color(1.15, 1.2, 1.1)        # зелёнка уже в zelenka.png
+	var tile_c := Color(0.95, 0.92, 0.88)
+	var panel_c := Color(1.0, 0.96, 0.9)         # облезлая панель
 	match style:
 		"brezhnev":
-			wall_up = Color(0.70, 0.72, 0.74)
-			wall_low = Color(0.22, 0.34, 0.46)
-			panel_c = Color(0.55, 0.58, 0.62)
+			wall_up = Color(1.0, 1.0, 1.0)
+			wall_low = Color(0.95, 1.05, 1.2)
+			panel_c = Color(0.95, 0.98, 1.0)
 		"courtyard":
-			wall_up = Color(0.68, 0.60, 0.50)
-			wall_low = Color(0.32, 0.24, 0.18)
-			panel_c = Color(0.58, 0.48, 0.40)
+			wall_up = Color(1.0, 0.95, 0.85)
+			wall_low = Color(1.1, 0.95, 0.85)
+			panel_c = Color(1.0, 0.9, 0.8)
 		_:
 			pass
-	_mats["wall"] = _tex_mat("res://assets/textures/wall.png", wall_up, Vector3(0.85, 0.85, 0.85))
-	_mats["wainscot"] = _tex_mat("res://assets/textures/zelenka.png", wall_low, Vector3(1.1, 1.1, 1.1))
-	(_mats["wainscot"] as StandardMaterial3D).roughness = 0.78
-	_mats["tile"] = _tex_mat("res://assets/textures/tile.png", tile_c, Vector3(6.5, 6.5, 6.5))
-	(_mats["tile"] as StandardMaterial3D).roughness = 0.88
-	_mats["rail"] = _mat(Color(0.28, 0.28, 0.30), 0.72)
-	(_mats["rail"] as StandardMaterial3D).roughness = 0.45
-	_mats["door"] = _tex_mat("res://assets/textures/door.png", Color(0.36, 0.22, 0.14), Vector3(1, 1, 1))
-	_mats["door_apt"] = _tex_mat("res://assets/textures/door.png", Color(0.48, 0.36, 0.24), Vector3(1, 1, 1))
-	_mats["door_metal"] = _tex_mat("res://assets/textures/metal_door.png", Color(0.30, 0.31, 0.33), Vector3(1, 1, 1))
-	_mats["concrete"] = _tex_mat("res://assets/textures/concrete.png", Color(0.48, 0.46, 0.42), Vector3(2.4, 2.4, 2.4))
-	_mats["step"] = _tex_mat("res://assets/textures/tile.png", Color(0.42, 0.40, 0.36), Vector3(4.0, 4.0, 4.0))
-	_mats["panel"] = _tex_mat("res://assets/textures/panel.png", panel_c, Vector3(1.0, 1.0, 1.0))
-	_mats["asphalt"] = _tex_mat("res://assets/textures/asphalt.png", Color(0.24, 0.24, 0.26), Vector3(5.0, 5.0, 5.0))
+	_mats["wall"] = _tex_mat("res://assets/textures/wall.png", wall_up, Vector3(0.7, 0.7, 0.7))
+	(_mats["wall"] as StandardMaterial3D).roughness = 0.92
+	_mats["wainscot"] = _tex_mat("res://assets/textures/zelenka.png", wall_low, Vector3(0.95, 0.95, 0.95))
+	(_mats["wainscot"] as StandardMaterial3D).roughness = 0.55  # масляная краска чуть блестит
+	_mats["tile"] = _tex_mat("res://assets/textures/tile.png", tile_c, Vector3(5.5, 5.5, 5.5))
+	(_mats["tile"] as StandardMaterial3D).roughness = 0.9
+	_mats["rail"] = _mat(Color(0.18, 0.18, 0.19), 0.65)
+	(_mats["rail"] as StandardMaterial3D).roughness = 0.55
+	_mats["handrail"] = _mat(Color(0.38, 0.14, 0.12), 0.05)  # тёмно-бордовый поручень
+	(_mats["handrail"] as StandardMaterial3D).roughness = 0.62
+	_mats["door"] = _tex_mat("res://assets/textures/door.png", Color(1.0, 1.0, 1.0), Vector3(1, 1, 1))
+	_mats["door_apt"] = _tex_mat("res://assets/textures/door.png", Color(1.1, 1.05, 0.95), Vector3(1, 1, 1))
+	_mats["door_metal"] = _tex_mat("res://assets/textures/metal_door.png", Color(1.0, 1.0, 1.0), Vector3(1, 1, 1))
+	_mats["concrete"] = _tex_mat("res://assets/textures/concrete.png", Color(1.0, 0.96, 0.88), Vector3(2.2, 2.2, 2.2))
+	# Ступени: жёлтый бетон в центре прохода + зелёная краска по краям
+	_mats["step"] = _tex_mat("res://assets/textures/concrete.png", Color(1.15, 1.05, 0.85), Vector3(3.5, 3.5, 3.5))
+	_mats["step_paint"] = _tex_mat("res://assets/textures/zelenka.png", Color(1.25, 1.35, 1.15), Vector3(2.0, 2.0, 2.0))
+	(_mats["step_paint"] as StandardMaterial3D).roughness = 0.7
+	_mats["panel"] = _tex_mat("res://assets/textures/panel.png", panel_c, Vector3(0.85, 0.85, 0.85))
+	_mats["asphalt"] = _tex_mat("res://assets/textures/asphalt.png", Color(1.05, 1.05, 1.05), Vector3(4.5, 4.5, 4.5))
 	_mats["ice"] = _mat(Color(0.75, 0.85, 0.95), 0.2)
-	_mats["dumpster"] = _tex_mat("res://assets/textures/dumpster.png", Color(0.16, 0.36, 0.20), Vector3(1.5, 1.5, 1.5))
-	_mats["mail"] = _mat(Color(0.34, 0.30, 0.24), 0.4)
-	_mats["metal"] = _mat(Color(0.28, 0.29, 0.30), 0.7)
-	(_mats["metal"] as StandardMaterial3D).roughness = 0.5
-	_mats["glass"] = _mat(Color(0.35, 0.42, 0.48), 0.05)
+	_mats["dumpster"] = _tex_mat("res://assets/textures/dumpster.png", Color(1.15, 1.25, 1.1), Vector3(1.2, 1.2, 1.2))
+	_mats["mail"] = _mat(Color(0.30, 0.28, 0.22), 0.45)
+	(_mats["mail"] as StandardMaterial3D).roughness = 0.55
+	_mats["metal"] = _mat(Color(0.22, 0.23, 0.24), 0.75)
+	(_mats["metal"] as StandardMaterial3D).roughness = 0.48
+	_mats["glass"] = _mat(Color(0.28, 0.34, 0.38), 0.05)
 	(_mats["glass"] as StandardMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	(_mats["glass"] as StandardMaterial3D).albedo_color.a = 0.55
-	(_mats["glass"] as StandardMaterial3D).roughness = 0.25
-	# Потёртая краска — БЕЗ emission
-	_mats["mark"] = _mat(Color(0.30, 0.24, 0.12))
+	(_mats["glass"] as StandardMaterial3D).albedo_color.a = 0.45
+	(_mats["glass"] as StandardMaterial3D).roughness = 0.3
+	_mats["mark"] = _mat(Color(0.28, 0.22, 0.12))
 	(_mats["mark"] as StandardMaterial3D).roughness = 0.96
-	_mats["prop"] = _mat(Color(0.28, 0.26, 0.24))
-	_mats["number"] = _mat(Color(0.78, 0.74, 0.62))
-	_mats["wood"] = _mat(Color(0.38, 0.26, 0.14))
-	_mats["paper"] = _mat(Color(0.78, 0.74, 0.62))
-	_mats["dirt"] = _mat(Color(0.22, 0.20, 0.16))
-	(_mats["dirt"] as StandardMaterial3D).albedo_color.a = 0.55
+	_mats["prop"] = _mat(Color(0.26, 0.24, 0.22))
+	_mats["number"] = _mat(Color(0.72, 0.70, 0.58))
+	_mats["wood"] = _mat(Color(0.34, 0.22, 0.12))
+	_mats["paper"] = _mat(Color(0.72, 0.68, 0.55))
+	_mats["dirt"] = _mat(Color(0.18, 0.16, 0.12))
+	(_mats["dirt"] as StandardMaterial3D).albedo_color.a = 0.62
 	(_mats["dirt"] as StandardMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_mats["grass"] = _mat(Color(0.22, 0.38, 0.16))
-	(_mats["grass"] as StandardMaterial3D).roughness = 0.92
+	_mats["graffiti"] = _mat(Color(0.12, 0.12, 0.12))
+	(_mats["graffiti"] as StandardMaterial3D).roughness = 0.95
+	_mats["grass"] = _mat(Color(0.32, 0.30, 0.18))  # сухая дворовая трава
+	(_mats["grass"] as StandardMaterial3D).roughness = 0.95
 	_mats["rust"] = _mat(Color(0.42, 0.22, 0.10), 0.35)
 	(_mats["rust"] as StandardMaterial3D).roughness = 0.78
-	_mats["lamp"] = _mat(Color(1.0, 0.92, 0.7))
+	_mats["lamp"] = _mat(Color(1.0, 0.88, 0.55))
 	(_mats["lamp"] as StandardMaterial3D).emission_enabled = true
-	(_mats["lamp"] as StandardMaterial3D).emission = Color(1.0, 0.85, 0.45)
-	(_mats["lamp"] as StandardMaterial3D).emission_energy_multiplier = 2.4
+	(_mats["lamp"] as StandardMaterial3D).emission = Color(1.0, 0.78, 0.35)
+	(_mats["lamp"] as StandardMaterial3D).emission_energy_multiplier = 3.2
 	_mats["window_lit"] = _mat(Color(0.95, 0.85, 0.55))
 	(_mats["window_lit"] as StandardMaterial3D).emission_enabled = true
 	(_mats["window_lit"] as StandardMaterial3D).emission = Color(1.0, 0.82, 0.45)
-	(_mats["window_lit"] as StandardMaterial3D).emission_energy_multiplier = 1.8
-	_mats["curtain"] = _mat(Color(0.55, 0.35, 0.28))
+	(_mats["window_lit"] as StandardMaterial3D).emission_energy_multiplier = 1.6
+	_mats["curtain"] = _mat(Color(0.45, 0.30, 0.24))
 	(_mats["curtain"] as StandardMaterial3D).roughness = 0.9
-	_mats["puddle"] = _mat(Color(0.25, 0.28, 0.30), 0.55)
-	(_mats["puddle"] as StandardMaterial3D).roughness = 0.12
+	_mats["balcony"] = _mat(Color(0.72, 0.72, 0.70))
+	(_mats["balcony"] as StandardMaterial3D).roughness = 0.75
+	_mats["puddle"] = _mat(Color(0.22, 0.24, 0.26), 0.25)
+	(_mats["puddle"] as StandardMaterial3D).roughness = 0.28
 	(_mats["puddle"] as StandardMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	(_mats["puddle"] as StandardMaterial3D).albedo_color.a = 0.55
+	(_mats["puddle"] as StandardMaterial3D).albedo_color.a = 0.45
 
 func _mat(c: Color, metallic: float = 0.0) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -180,14 +192,15 @@ func _add_world_env(night: bool) -> void:
 	sky.sky_material = sky_mat
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.32, 0.30, 0.26) if night else Color(0.58, 0.54, 0.46)
-	env.ambient_light_energy = 0.48 if night else 0.62
+	# Ambient: мрачно, но зелёнка должна читаться (не «чёрная студия»)
+	env.ambient_light_color = Color(0.32, 0.30, 0.26) if night else Color(0.55, 0.52, 0.46)
+	env.ambient_light_energy = 0.45 if night else 0.58
 	env.fog_enabled = true
-	env.fog_light_color = Color(0.12, 0.12, 0.14) if night else Color(0.55, 0.54, 0.50)
-	env.fog_density = 0.01 if night else 0.0025
+	env.fog_light_color = Color(0.12, 0.12, 0.14) if night else Color(0.55, 0.52, 0.48)
+	env.fog_density = 0.01 if night else 0.003
 	env.ssao_enabled = true
-	env.ssao_radius = 0.65
-	env.ssao_intensity = 1.25
+	env.ssao_radius = 0.7
+	env.ssao_intensity = 1.4
 	env.glow_enabled = true
 	env.glow_intensity = 0.28
 	env.glow_strength = 0.65
@@ -196,16 +209,16 @@ func _add_world_env(night: bool) -> void:
 	env.sdfgi_enabled = false
 	env.ssr_enabled = false
 	env.adjustment_enabled = true
-	env.adjustment_saturation = 0.8
-	env.adjustment_contrast = 1.03
+	env.adjustment_saturation = 0.92
+	env.adjustment_contrast = 1.04
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES
-	env.tonemap_exposure = 1.08 if night else 1.18
+	env.tonemap_exposure = 1.12 if night else 1.22
 	we.environment = env
 	add_child(we)
 
 	var sun := DirectionalLight3D.new()
-	sun.light_energy = 0.35 if night else 0.72
-	sun.light_color = Color(0.55, 0.62, 0.85) if night else Color(1.0, 0.94, 0.82)
+	sun.light_energy = 0.4 if night else 1.05
+	sun.light_color = Color(0.55, 0.62, 0.85) if night else Color(1.0, 0.95, 0.85)
 	sun.shadow_enabled = true
 	sun.shadow_blur = 1.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
@@ -421,7 +434,7 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 	body.rotation.x = angle
 	add_child(body)
 
-	# Бетонный марш: проступь + подступенок (визуал; коллайдер — пандус выше)
+	# Реф Нижегородская: зелёная краска по краям, вытертый жёлтый бетон по центру
 	var steps := 9
 	var z_dir := 1.0 if z1 > z0 else -1.0
 	for i in range(steps):
@@ -429,19 +442,19 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 		var y := lerpf(y_top, y_bot, t)
 		var z := lerpf(z0, z1, t)
 		var tread_w := STAIR_W - 0.08
-		# Износ по центру — чуть тоньше проступь
-		_box(Vector3(x, y, z), Vector3(tread_w, 0.07, 0.22), "step", false)
+		_box(Vector3(x, y, z), Vector3(tread_w, 0.07, 0.22), "step_paint", false)
+		# Вытертая середина (проходом)
+		_box(Vector3(x, y + 0.012, z), Vector3(tread_w * 0.42, 0.02, 0.18), "step", false)
 		_box(Vector3(x, y - 0.055, z - z_dir * 0.05), Vector3(tread_w - 0.02, 0.11, 0.08), "concrete", false)
 		var nz := z + z_dir * 0.1
-		_box(Vector3(x, y + 0.03, nz), Vector3(tread_w - 0.04, 0.015, 0.035), "concrete", false)
-		# Грязь у краёв
-		if i % 3 == 0:
-			_box(Vector3(x + (0.35 if left else -0.35), y + 0.04, z), Vector3(0.12, 0.01, 0.1), "dirt", false)
+		_box(Vector3(x, y + 0.03, nz), Vector3(tread_w - 0.04, 0.015, 0.035), "step", false)
+		if i % 2 == 0:
+			_box(Vector3(x + (0.38 if left else -0.38), y + 0.04, z), Vector3(0.14, 0.012, 0.12), "dirt", false)
 
 	_box(Vector3(x, y_top - 0.02, z0 + (0.1 if z1 > z0 else -0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", true)
 	_box(Vector3(x, y_bot + 0.02, z1 + (-0.1 if z1 > z0 else 0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", true)
 
-	# Перила: поручень + нижняя тяга + стойки + крепления к стене
+	# Перила: тёмный металл + бордовый поручень (реф)
 	var rail_x := x + (STAIR_W * 0.46 if not left else -STAIR_W * 0.46)
 	var wall_side := 1.0 if not left else -1.0
 	var rail := StaticBody3D.new()
@@ -453,10 +466,10 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 	rail.add_child(rcs)
 	var rmi := MeshInstance3D.new()
 	var rbm := BoxMesh.new()
-	rbm.size = Vector3(0.05, 0.05, length * 0.92)
+	rbm.size = Vector3(0.055, 0.045, length * 0.92)
 	rmi.mesh = rbm
-	rmi.material_override = _mats["metal"]
-	rmi.position.y = 0.42
+	rmi.material_override = _mats["handrail"]
+	rmi.position.y = 0.44
 	rail.add_child(rmi)
 	var low := MeshInstance3D.new()
 	var lbm := BoxMesh.new()
@@ -473,16 +486,22 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 		var t := (float(i) + 0.5) / 7.0
 		var sy := lerpf(y_top, y_bot, t) + 0.4
 		var sz := lerpf(z0, z1, t)
-		_box(Vector3(rail_x, sy, sz), Vector3(0.028, 0.78, 0.028), "metal", false)
-		# Крепление к стене
+		_box(Vector3(rail_x, sy, sz), Vector3(0.026, 0.78, 0.026), "metal", false)
 		_box(Vector3(rail_x + wall_side * 0.12, sy + 0.25, sz), Vector3(0.18, 0.03, 0.03), "metal", false)
 
+	# Низ марша / «под лестницей» — граффити и мусор (реф)
+	var under_y := (y_top + y_bot) * 0.5 - 0.55
+	var under_z := (z0 + z1) * 0.5
+	_box(Vector3(x - wall_side * 0.55, under_y + 0.35, under_z), Vector3(0.02, 0.35, 0.55), "graffiti", false)
+	_box(Vector3(x - wall_side * 0.52, under_y + 0.15, under_z + 0.1), Vector3(0.18, 0.12, 0.18), "prop", false)
+
 func _add_floor_wainscot(y: float) -> void:
-	var h := 1.4
+	var h := 1.45
 	var cy := y + h * 0.5
-	_box(Vector3(-CELL_HALF + 0.02, cy, 1.15), Vector3(0.04, h, 4.8), "wainscot", false)
-	_box(Vector3(CELL_HALF - 0.02, cy, 1.15), Vector3(0.04, h, 4.8), "wainscot", false)
-	_box(Vector3(0, cy, LAND_Z0 + 0.02), Vector3(CELL_W - 0.15, h, 0.04), "wainscot", false)
+	# Чуть толще / ближе к игроку — иначе зелёнка тонет в стенке
+	_box(Vector3(-CELL_HALF + 0.05, cy, 1.15), Vector3(0.08, h, 4.8), "wainscot", false)
+	_box(Vector3(CELL_HALF - 0.05, cy, 1.15), Vector3(0.08, h, 4.8), "wainscot", false)
+	_box(Vector3(0, cy, LAND_Z0 + 0.05), Vector3(CELL_W - 0.12, h, 0.08), "wainscot", false)
 	# Линия раздела зелёнка / верх + плинтус
 	_box(Vector3(0, y + h, 1.15), Vector3(CELL_W - 0.1, 0.02, 4.7), "dirt", false)
 	_box(Vector3(-CELL_HALF + 0.04, y + 0.04, 1.15), Vector3(0.06, 0.08, 4.6), "concrete", false)
@@ -501,17 +520,30 @@ func _add_floor_props(y: float, floor_num: int, has_elevator: bool) -> void:
 	_box(Vector3(CELL_HALF - 0.12, y + 2.35, 0.8), Vector3(0.04, 0.04, 3.2), "metal", false)
 	_box(Vector3(CELL_HALF - 0.12, y + 1.7, -0.5), Vector3(0.06, 0.7, 0.06), "metal", false)
 	_box(Vector3(0.0, y + 1.9, LAND_Z0 + 0.06), Vector3(0.22, 0.28, 0.03), "number", false)
-	# Грязные углы
-	_box(Vector3(-CELL_HALF + 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.25, 0.04, 0.25), "dirt", false)
-	_box(Vector3(CELL_HALF - 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.25, 0.04, 0.25), "dirt", false)
+	# Грязные углы + потёртости на зелёнке
+	_box(Vector3(-CELL_HALF + 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.28, 0.05, 0.28), "dirt", false)
+	_box(Vector3(CELL_HALF - 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.28, 0.05, 0.28), "dirt", false)
+	_box(Vector3(-CELL_HALF + 0.06, y + 0.55, 1.4), Vector3(0.03, 0.7, 0.9), "dirt", false)
+	_box(Vector3(CELL_HALF - 0.06, y + 0.4, 0.2), Vector3(0.03, 0.5, 0.6), "dirt", false)
+	# Граффити на верхней половине стены
+	_box(Vector3(-CELL_HALF + 0.04, y + 1.85, 0.6), Vector3(0.02, 0.25, 0.4), "graffiti", false)
+	_box(Vector3(CELL_HALF - 0.04, y + 2.0, 1.5), Vector3(0.02, 0.18, 0.3), "graffiti", false)
 	if floor_num % 2 == 0:
 		_box(Vector3(CELL_HALF - 0.2, y + 1.15, 0.15), Vector3(0.28, 0.85, 0.14), "metal", false)
 		_box(Vector3(CELL_HALF - 0.2, y + 1.2, 0.08), Vector3(0.22, 0.5, 0.02), "dirt", false)
 		_box(Vector3(-CELL_HALF + 0.18, y + 1.4, 0.3), Vector3(0.02, 0.45, 0.35), "paper", false)
+	# Пакет/хлам в углу площадки
+	if floor_num % 3 == 1:
+		_box(Vector3(CELL_HALF - 0.35, y + 0.12, LAND_Z0 + 0.35), Vector3(0.22, 0.2, 0.18), "prop", false)
 	if has_elevator:
-		_box(Vector3(0.0, y + 1.05, LAND_Z0 - 0.02), Vector3(0.95, 2.0, 0.07), "metal", false)
-		_box(Vector3(-0.24, y + 1.05, LAND_Z0 + 0.02), Vector3(0.42, 1.9, 0.04), "door_metal", false)
-		_box(Vector3(0.24, y + 1.05, LAND_Z0 + 0.02), Vector3(0.42, 1.9, 0.04), "door_metal", false)
+		# Тяжёлая дверь лифта с рядами глазков (реф Нижегородская)
+		_box(Vector3(0.0, y + 1.05, LAND_Z0 - 0.02), Vector3(0.95, 2.05, 0.08), "metal", false)
+		_box(Vector3(-0.22, y + 1.05, LAND_Z0 + 0.03), Vector3(0.4, 1.95, 0.05), "door_metal", false)
+		_box(Vector3(0.22, y + 1.05, LAND_Z0 + 0.03), Vector3(0.4, 1.95, 0.05), "door_metal", false)
+		for row in range(3):
+			var ey := y + 1.25 + float(row) * 0.28
+			_box(Vector3(-0.22, ey, LAND_Z0 + 0.08), Vector3(0.22, 0.08, 0.02), "glass", false)
+			_box(Vector3(0.22, ey, LAND_Z0 + 0.08), Vector3(0.22, 0.08, 0.02), "glass", false)
 		_box(Vector3(0.55, y + 1.75, LAND_Z0 + 0.08), Vector3(0.18, 0.14, 0.02), "number", false)
 
 func _apt_door(pos: Vector3, num: int, on_back: bool = false) -> void:
@@ -524,24 +556,24 @@ func _apt_door(pos: Vector3, num: int, on_back: bool = false) -> void:
 		_box(pos, Vector3(0.07, 2.0, 0.78), "door_apt", false)
 
 func _add_floor_light(y: float) -> void:
-	# Плафон + тёплый свет (~60 Вт) с тенями
-	_box(Vector3(0, y + 2.52, 0.05), Vector3(0.48, 0.06, 0.48), "metal", false)
-	_box(Vector3(0, y + 2.48, 0.05), Vector3(0.36, 0.04, 0.36), "lamp", false)
+	# Голая лампочка на проводе — как в живом подъезде
+	_box(Vector3(0.15, y + 2.55, 0.1), Vector3(0.02, 0.25, 0.02), "metal", false)
+	_box(Vector3(0.15, y + 2.38, 0.1), Vector3(0.07, 0.1, 0.07), "lamp", false)
 	var lamp := OmniLight3D.new()
-	lamp.light_color = Color(1.0, 0.82, 0.48)
-	lamp.light_energy = 1.15
-	lamp.omni_range = 5.0
-	lamp.omni_attenuation = 1.7
+	lamp.light_color = Color(1.0, 0.78, 0.42)
+	lamp.light_energy = 1.35
+	lamp.omni_range = 4.6
+	lamp.omni_attenuation = 2.0
 	lamp.shadow_enabled = true
-	lamp.position = Vector3(0, y + 2.42, 0.05)
+	lamp.position = Vector3(0.15, y + 2.35, 0.1)
 	add_child(lamp)
 	lights.append(lamp)
-	# Дневной свет от окна на mid
+	# Дневной свет от окна на mid — жёстче, с бликом
 	var ml := OmniLight3D.new()
-	ml.light_color = Color(0.88, 0.92, 1.0)
-	ml.light_energy = 1.25
-	ml.omni_range = 4.2
-	ml.omni_attenuation = 1.5
+	ml.light_color = Color(0.92, 0.94, 1.0)
+	ml.light_energy = 1.55
+	ml.omni_range = 4.0
+	ml.omni_attenuation = 1.35
 	ml.position = Vector3(0, y - HALF_H + 1.9, 2.55)
 	add_child(ml)
 	lights.append(ml)
@@ -581,13 +613,27 @@ func _build_yard(ice: bool, night: bool) -> void:
 			var wy := 1.5 + float(row) * FLOOR_H
 			var kind := (row * 3 + col) % 5
 			_box(Vector3(wx, wy, DOOR_Z + 0.38), Vector3(1.28, 1.42, 0.05), "metal", false)
-			_box(Vector3(wx, wy - 0.72, DOOR_Z + 0.5), Vector3(1.35, 0.08, 0.22), "concrete", false)  # подоконник
+			_box(Vector3(wx, wy - 0.72, DOOR_Z + 0.5), Vector3(1.35, 0.08, 0.22), "concrete", false)
 			if kind == 0 and night:
 				_box(Vector3(wx, wy, DOOR_Z + 0.45), Vector3(1.15, 1.3, 0.05), "window_lit", false)
 			elif kind == 1:
 				_box(Vector3(wx, wy, DOOR_Z + 0.45), Vector3(1.15, 1.3, 0.05), "curtain", false)
 			else:
 				_box(Vector3(wx, wy, DOOR_Z + 0.45), Vector3(1.15, 1.3, 0.05), "glass", false)
+			# Разные балконы (реф Северодонецк): кто во что горазд
+			if kind == 2:
+				_box(Vector3(wx, wy - 0.15, DOOR_Z + 0.85), Vector3(1.4, 1.1, 0.7), "balcony", false)
+				_box(Vector3(wx, wy + 0.35, DOOR_Z + 0.85), Vector3(1.42, 0.08, 0.72), "metal", false)
+			elif kind == 3:
+				_box(Vector3(wx, wy - 0.2, DOOR_Z + 0.75), Vector3(1.35, 0.9, 0.55), "wood", false)
+			elif kind == 4:
+				_box(Vector3(wx, wy - 0.35, DOOR_Z + 0.7), Vector3(1.3, 0.08, 0.5), "concrete", false)
+				_box(Vector3(wx - 0.55, wy - 0.05, DOOR_Z + 0.7), Vector3(0.05, 0.7, 0.5), "metal", false)
+				_box(Vector3(wx + 0.55, wy - 0.05, DOOR_Z + 0.7), Vector3(0.05, 0.7, 0.5), "metal", false)
+	# Провода с крыши (реф)
+	for i in range(5):
+		var wx := -6.0 + float(i) * 3.0
+		_box(Vector3(wx, 15.2, DOOR_Z + 2.0 + float(i) * 0.4), Vector3(0.03, 0.03, 4.5 + float(i)), "metal", false)
 	# Козырёк толще + пятна
 	_box(Vector3(0, 2.45, 4.75), Vector3(3.4, 0.16, 2.4), "concrete")
 	_box(Vector3(0, 2.38, 4.9), Vector3(3.0, 0.04, 2.0), "dirt", false)
@@ -597,6 +643,9 @@ func _build_yard(ice: bool, night: bool) -> void:
 	_box(Vector3(0, 0.04, 6.6), Vector3(0.7, 0.03, 3.0), "mark", false)
 	_box(Vector3(1.3, 0.04, 10.6), Vector3(0.7, 0.03, 4.0), "mark", false)
 	_box(Vector3(3.3, 0.04, 13.9), Vector3(2.2, 0.03, 2.6), "mark", false)
+	# Сухая трава у забора
+	_box(Vector3(-6.5, 0.08, 10.0), Vector3(1.5, 0.12, 4.0), "grass", false)
+	_box(Vector3(7.0, 0.08, 13.0), Vector3(1.2, 0.1, 3.0), "grass", false)
 	# Забор — сетка на столбах, не сплошной блок
 	for i in range(8):
 		var fx := -9.5 + float(i) * 2.7
@@ -622,17 +671,25 @@ func _build_yard(ice: bool, night: bool) -> void:
 	if ice:
 		_box(Vector3(0, 0.02, 9.0), Vector3(3.0, 0.05, 1.0), "ice")
 		yard_ice_zones.append(Rect2(Vector2(-7, 7), Vector2(14, 10)))
-	# Дневной/ночной двор — фонарь, не «огненный шар»
+	# Дневной fill у помойки + ночной фонарь
 	var yl := OmniLight3D.new()
-	yl.light_color = Color(1.0, 0.82, 0.5) if night else Color(0.95, 0.92, 0.85)
-	yl.light_energy = 2.2 if night else 0.55
-	yl.omni_range = 12.0 if night else 8.0
+	yl.light_color = Color(1.0, 0.82, 0.5) if night else Color(0.95, 0.94, 0.9)
+	yl.light_energy = 2.2 if night else 1.1
+	yl.omni_range = 12.0 if night else 10.0
 	yl.omni_attenuation = 1.4
 	yl.shadow_enabled = night
 	yl.position = Vector3(-1.8, 3.9, 7.7)
 	add_child(yl)
 	if night:
 		lights.append(yl)
+	if not night:
+		var dump_fill := OmniLight3D.new()
+		dump_fill.light_color = Color(0.95, 0.93, 0.88)
+		dump_fill.light_energy = 0.85
+		dump_fill.omni_range = 7.0
+		dump_fill.omni_attenuation = 1.2
+		dump_fill.position = Vector3(3.7, 3.2, 13.5)
+		add_child(dump_fill)
 
 func _build_detour_path() -> void:
 	_box(Vector3(-7.0, -0.05, 11.0), Vector3(2.2, 0.12, 10.0), "asphalt")
@@ -643,7 +700,12 @@ func _build_basement_props() -> void:
 	_box(Vector3(-0.8, -FLOOR_H + 0.12, 1.8), Vector3(0.9, 0.05, 0.9), "ice")
 
 func _build_dumpster() -> void:
-	# Три бака: рёбра, ржавые крышки, колёса, лужа/мусор
+	# Контейнерная площадка: 3 бака + низкий забор + мусор вокруг (реф двор)
+	_box(Vector3(3.7, 0.55, 15.5), Vector3(4.6, 1.0, 0.08), "metal", false)
+	_box(Vector3(1.5, 0.55, 14.5), Vector3(0.08, 1.0, 2.2), "metal", false)
+	_box(Vector3(5.9, 0.55, 14.5), Vector3(0.08, 1.0, 2.2), "metal", false)
+	for i in range(5):
+		_box(Vector3(1.9 + float(i) * 0.95, 0.95, 15.5), Vector3(0.05, 0.9, 0.05), "metal", false)
 	for i in range(3):
 		var dx := 2.6 + float(i) * 1.15
 		_box(Vector3(dx, 0.7, 14.6), Vector3(1.0, 1.35, 1.15), "dumpster")
@@ -652,6 +714,9 @@ func _build_dumpster() -> void:
 		_box(Vector3(dx + 0.48, 0.7, 14.6), Vector3(0.04, 1.2, 1.05), "rust", false)
 		_box(Vector3(dx, 1.42, 14.55), Vector3(1.08, 0.1, 1.22), "metal", false)
 		_box(Vector3(dx + 0.15, 1.48, 14.55), Vector3(0.35, 0.06, 0.2), "rust", false)
+		# Граффити на крышке
+		if i == 1:
+			_box(Vector3(dx, 1.5, 14.4), Vector3(0.4, 0.02, 0.25), "graffiti", false)
 		_box(Vector3(dx - 0.35, 0.1, 15.05), Vector3(0.14, 0.14, 0.08), "metal", false)
 		_box(Vector3(dx + 0.35, 0.1, 15.05), Vector3(0.14, 0.14, 0.08), "metal", false)
 		_box(Vector3(dx - 0.35, 0.1, 14.15), Vector3(0.14, 0.14, 0.08), "metal", false)
@@ -659,7 +724,9 @@ func _build_dumpster() -> void:
 	_box(Vector3(3.7, 0.03, 13.8), Vector3(2.8, 0.02, 1.2), "puddle", false)
 	_box(Vector3(2.4, 0.08, 13.5), Vector3(0.25, 0.08, 0.2), "dirt", false)
 	_box(Vector3(4.8, 0.1, 15.2), Vector3(0.35, 0.12, 0.25), "prop", false)
-	_box(Vector3(3.7, 1.9, 13.9), Vector3(0.9, 0.25, 0.04), "number", false)
+	_box(Vector3(3.2, 0.15, 13.3), Vector3(0.4, 0.2, 0.3), "prop", false)
+	# Табличка на заборе площадки, не «в воздухе»
+	_box(Vector3(3.7, 1.35, 15.55), Vector3(0.9, 0.28, 0.04), "number", false)
 	dumpster = Area3D.new()
 	dumpster.name = "Dumpster"
 	dumpster.collision_layer = 0

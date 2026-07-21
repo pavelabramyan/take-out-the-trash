@@ -104,13 +104,14 @@ func _run() -> void:
 	await _place(p, Vector3(sx, H * 2.0 + 0.05, 0.3), 0.0, -35.0)
 	await _shot("03_stairs_top_down")
 
-	await _place(p, Vector3(0.0, H * 2.0 - HH + 0.05, 2.35), 180.0, -10.0)
+	# Смотрим на лестницу + зелёнку боковой стены (не в лифт)
+	await _place(p, Vector3(0.15, H * 2.0 - HH + 0.05, 2.2), 35.0, -18.0)
 	await _shot("04_mid_landing")
 
-	await _place(p, Vector3(sx, H + 1.2, 1.2), 0.0, -20.0)
+	await _place(p, Vector3(sx, H + 1.35, 1.35), 10.0, -28.0)
 	await _shot("05_on_stairs")
 
-	await _place(p, Vector3(0.0, 0.05, 2.6), 180.0, -8.0)
+	await _place(p, Vector3(0.0, 0.05, 1.8), 180.0, -6.0)
 	await _shot("06_lobby_to_door")
 
 	await _place(p, Vector3(0.0, 0.05, door_z - 0.6), 180.0, -10.0)

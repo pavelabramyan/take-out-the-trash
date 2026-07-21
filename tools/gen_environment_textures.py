@@ -113,29 +113,37 @@ def wallpaper(path: Path, size: int = 512) -> None:
 
 
 def zelenka(path: Path, size: int = 512) -> None:
-    """Масляная «зелёнка» / голубая полоса — царапины, сколы."""
-    im = Image.new("RGBA", (size, size), (48, 98, 72, 255))
+    """Масляная зелёнка/бирюза как на Нижегородской: грязь, сколы, потёки."""
+    # Реф: читаемый teal (не почти-чёрный — иначе в сцене пропадает)
+    im = Image.new("RGBA", (size, size), (42, 98, 90, 255))
     d = ImageDraw.Draw(im, "RGBA")
-    # вертикальные мазки кисти
-    for x in range(0, size, 4):
-        c = 40 + (x * 3) % 20
-        d.line([(x, 0), (x, size)], fill=(c, c + 45, c + 20, 35), width=2)
-    # сколы до бетона
+    for x in range(0, size, 3):
+        c = 22 + (x * 2) % 18
+        d.line([(x, 0), (x, size)], fill=(c, c + 38, c + 32, 40), width=2)
+    # горизонтальные следы тряпки
+    for y in range(0, size, 28):
+        d.line([(0, y), (size, y + (y % 5) - 2)], fill=(20, 55, 50, 28), width=3)
     x = 44
-    for _ in range(60):
+    for _ in range(90):
         x = (1103515245 * x + 12345) & 0x7FFFFFFF
         cx, cy = x % size, (x // size) % size
-        w, h = 3 + x % 14, 2 + x % 8
-        d.ellipse([cx, cy, cx + w, cy + h], fill=(140, 135, 125, 200))
-    # царапины
-    for _ in range(40):
+        w, h = 4 + x % 18, 3 + x % 10
+        # скол до жёлтого бетона
+        d.ellipse([cx, cy, cx + w, cy + h], fill=(155, 140, 110, 210))
+    for _ in range(55):
         x = (1103515245 * x + 12345) & 0x7FFFFFFF
         x0, y0 = x % size, (x // 3) % size
-        d.line([(x0, y0), (x0 + 20 + x % 40, y0 + (x % 5) - 2)], fill=(30, 50, 35, 120), width=1)
-    # тёмный плинтус-намёк внизу текстуры
-    d.rectangle([0, size - 18, size, size], fill=(35, 55, 40, 180))
+        d.line([(x0, y0), (x0 + 25 + x % 50, y0 + (x % 7) - 3)], fill=(18, 40, 36, 140), width=1)
+    # тёмные потёки
+    for i in range(18):
+        x = (1103515245 * (i + 9) + 12345) & 0x7FFFFFFF
+        sx = x % size
+        for dy in range(50 + x % 70):
+            a = max(0, 55 - dy // 2)
+            d.point((sx, (x // size + dy) % size), fill=(15, 35, 30, a))
+    d.rectangle([0, size - 22, size, size], fill=(22, 40, 36, 200))
     im = im.convert("RGB")
-    _noise(im, 14, 12)
+    _noise(im, 16, 12)
     im.save(path)
 
 
