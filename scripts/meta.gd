@@ -61,10 +61,19 @@ func save_all() -> void:
 		pass
 
 func _apply_display() -> void:
-	if bool(settings.get("fullscreen", false)):
+	# На Mac AMD + MoltenVK fullscreen/Retina 3–4K swapchain часто роняет процесс без лога.
+	# Держим окно 1280×720, пока не будет стабильного рендера.
+	var want_fs := bool(settings.get("fullscreen", false))
+	if OS.get_name() == "macOS":
+		want_fs = false
+		settings["fullscreen"] = false
+	if want_fs:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(Vector2i(1280, 720))
+		var scr := DisplayServer.screen_get_size()
+		DisplayServer.window_set_position(Vector2i(maxi(40, (scr.x - 1280) / 2), maxi(40, (scr.y - 720) / 2)))
 	DisplayServer.window_set_vsync_mode(
 		DisplayServer.VSYNC_ENABLED if bool(settings.get("vsync", true)) else DisplayServer.VSYNC_DISABLED
 	)
