@@ -198,15 +198,15 @@ func _add_world_env(night: bool) -> void:
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.12, 0.12, 0.14) if night else Color(0.55, 0.52, 0.48)
 	env.fog_density = 0.01 if night else 0.003
-	# SSAO/glow умеренно — на AMD полный пакет эффектов иногда роняет окно
-	env.ssao_enabled = true
+	# Compatibility/OpenGL: SSAO/SSR/SDFGI недоступны; glow тоже часто роняет AMD
+	var forward_plus := RenderingServer.get_current_rendering_method() == "forward_plus"
+	env.ssao_enabled = forward_plus
 	env.ssao_radius = 0.55
 	env.ssao_intensity = 1.1
-	env.glow_enabled = true
+	env.glow_enabled = forward_plus
 	env.glow_intensity = 0.2
 	env.glow_strength = 0.55
 	env.glow_bloom = 0.04
-	# SDFGI на MoltenVK/AMD нестабилен — fill светом + ReflectionProbe
 	env.sdfgi_enabled = false
 	env.ssr_enabled = false
 	env.adjustment_enabled = true
@@ -228,18 +228,19 @@ func _add_world_env(night: bool) -> void:
 	sun.rotation_degrees = Vector3(-32, 42, 0) if night else Vector3(-38, 55, 0)
 	add_child(sun)
 
-	# Bounce в клетке + у входа
-	var rp_cell := ReflectionProbe.new()
-	rp_cell.size = Vector3(4.2, 12.0, 6.5)
-	rp_cell.position = Vector3(0, 4.0, 1.2)
-	rp_cell.update_mode = ReflectionProbe.UPDATE_ONCE
-	rp_cell.ambient_mode = ReflectionProbe.AMBIENT_ENVIRONMENT
-	add_child(rp_cell)
-	var rp_yard := ReflectionProbe.new()
-	rp_yard.size = Vector3(18.0, 8.0, 16.0)
-	rp_yard.position = Vector3(0, 2.5, 10.0)
-	rp_yard.update_mode = ReflectionProbe.UPDATE_ONCE
-	add_child(rp_yard)
+	# ReflectionProbe на Mac OpenGL/AMD часто тяжёлый — только Forward+
+	if forward_plus:
+		var rp_cell := ReflectionProbe.new()
+		rp_cell.size = Vector3(4.2, 12.0, 6.5)
+		rp_cell.position = Vector3(0, 4.0, 1.2)
+		rp_cell.update_mode = ReflectionProbe.UPDATE_ONCE
+		rp_cell.ambient_mode = ReflectionProbe.AMBIENT_ENVIRONMENT
+		add_child(rp_cell)
+		var rp_yard := ReflectionProbe.new()
+		rp_yard.size = Vector3(18.0, 8.0, 16.0)
+		rp_yard.position = Vector3(0, 2.5, 10.0)
+		rp_yard.update_mode = ReflectionProbe.UPDATE_ONCE
+		add_child(rp_yard)
 
 func _box(pos: Vector3, size: Vector3, mat_key: String, with_collision: bool = true) -> StaticBody3D:
 	var body := StaticBody3D.new()
