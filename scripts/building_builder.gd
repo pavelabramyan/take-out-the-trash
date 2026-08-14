@@ -92,8 +92,8 @@ func _make_materials() -> void:
 	_mats["step_paint"] = MaterialLibrary.pbr("plaster_paint", {"tint": Color(0.30, 0.38, 0.30), "rough": 0.72, "tile_m": 1.2, "fallback": Color(0.30, 0.38, 0.30)})
 	_mats["panel"] = MaterialLibrary.pbr("concrete_wall", {"tint": panel_c, "tile_m": 2.6, "normal_scale": 0.85, "fallback": panel_c})
 	_mats["bricks"] = MaterialLibrary.pbr("bricks", {"tint": Color(0.82, 0.72, 0.64), "fallback": Color(0.60, 0.42, 0.34)})
-	_mats["asphalt"] = MaterialLibrary.pbr("asphalt", {"tint": Color(0.58, 0.58, 0.58), "fallback": Color(0.20, 0.20, 0.19)})
-	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.62, 0.62, 0.62), "fallback": Color(0.17, 0.17, 0.16)})
+	_mats["asphalt"] = MaterialLibrary.pbr("asphalt", {"tint": Color(0.42, 0.42, 0.42), "fallback": Color(0.20, 0.20, 0.19)})
+	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.46, 0.46, 0.46), "fallback": Color(0.17, 0.17, 0.16)})
 	_mats["gravel"] = MaterialLibrary.pbr("gravel", {"tint": Color(0.66, 0.64, 0.61), "fallback": Color(0.32, 0.31, 0.29)})
 	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.68, 0.64, 0.58), "fallback": Color(0.28, 0.24, 0.18)})
 	_mats["grass"] = MaterialLibrary.pbr("grass", {"tint": Color(0.60, 0.64, 0.46), "tile_m": 1.6, "fallback": Color(0.30, 0.36, 0.16)})
@@ -121,10 +121,11 @@ func _make_materials() -> void:
 	_mats["number"] = MaterialLibrary.flat(Color(0.62, 0.60, 0.50), 0.80)
 	# Мелочь и полупрозрачное
 	_mats["glass"] = MaterialLibrary.flat(Color(0.16, 0.20, 0.23), 0.12, 0.35, 0.55)
-	_mats["mark"] = MaterialLibrary.flat(Color(0.20, 0.17, 0.13), 0.98, 0.0, 0.85)
+	_mats["mark"] = MaterialLibrary.flat(Color(0.14, 0.12, 0.10), 0.98, 0.0, 0.40)
 	_mats["prop"] = MaterialLibrary.flat(Color(0.20, 0.19, 0.17), 0.90)
 	_mats["dirt"] = MaterialLibrary.flat(Color(0.10, 0.09, 0.07), 1.0, 0.0, 0.50)
 	_mats["curtain"] = MaterialLibrary.flat(Color(0.38, 0.26, 0.21), 0.95)
+	_mats["panel_far"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.34, 0.34, 0.35), "tile_m": 3.2, "normal_scale": 0.4, "fallback": Color(0.34, 0.34, 0.35)})
 	_mats["balcony"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.66, 0.65, 0.62), "tile_m": 1.4, "fallback": Color(0.62, 0.62, 0.60)})
 	_mats["puddle"] = MaterialLibrary.flat(Color(0.06, 0.07, 0.08), 0.06, 0.20, 0.72)
 	_mats["lamp"] = MaterialLibrary.emissive(Color(1.0, 0.90, 0.62), 3.0, Color(1.0, 0.76, 0.34))
@@ -232,11 +233,10 @@ func _add_world_env(night: bool) -> void:
 	sun.shadow_normal_bias = 1.6
 	# Угловой размер источника: пасмурное небо = широкая мягкая тень
 	sun.light_angular_distance = 3.5 if night else 1.6
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	sun.directional_shadow_max_distance = 55.0
-	sun.directional_shadow_split_1 = 0.06
-	sun.directional_shadow_split_2 = 0.18
-	sun.directional_shadow_split_3 = 0.48
+	# Два сплита вместо четырёх: каждый сплит — это ещё один проход по сцене
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	sun.directional_shadow_max_distance = 32.0
+	sun.directional_shadow_split_1 = 0.12
 	sun.rotation_degrees = Vector3(-32, 42, 0) if night else Vector3(-38, 55, 0)
 	add_child(sun)
 
@@ -447,9 +447,15 @@ func _add_entrance_props() -> void:
 	slit.position = Vector3(0.15, 1.1, DOOR_Z + 0.35)
 	_tune_light(slit, false, 16.0)
 	add_child(slit)
-	# Плафон под козырьком
-	_box(Vector3(0, 2.35, DOOR_Z + 0.55), Vector3(0.35, 0.08, 0.35), "metal", false)
-	_box(Vector3(0, 2.30, DOOR_Z + 0.55), Vector3(0.22, 0.04, 0.22), "lamp", false)
+	# Светильник в решётке над входом
+	var sconce := PropLibrary.spawn(self, "industrial_caged_sconce", Vector3(0.0, 2.34, DOOR_Z + 0.16), Vector3(0, 180, 0), 1.0, 0.34)
+	if sconce == null:
+		_box(Vector3(0, 2.35, DOOR_Z + 0.55), Vector3(0.35, 0.08, 0.35), "metal", false)
+	_box(Vector3(0, 2.26, DOOR_Z + 0.30), Vector3(0.14, 0.04, 0.14), "lamp", false)
+	# Хлам в тамбуре: урна, коробка, ящик
+	PropLibrary.spawn(self, "metal_trash_can", Vector3(CELL_HALF - 0.34, 0.0, 3.25), Vector3(0, -40, 0), 1.0, 0.72)
+	PropLibrary.spawn(self, "cardboard_box_01", Vector3(-CELL_HALF + 0.38, 0.0, 2.92), Vector3(0, 24, 0), 1.0, 0.34)
+	PropLibrary.spawn(self, "plastic_crate_01", Vector3(-CELL_HALF + 0.36, 0.0, 2.35), Vector3(0, -12, 0), 1.0, 0.27)
 	var el := OmniLight3D.new()
 	el.light_color = Color(1.0, 0.78, 0.44)
 	el.light_energy = 1.5
@@ -555,9 +561,10 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 		var mi := _mesh_at(step_mesh, Vector3(x, y, z), "step")
 		mi.rotation_degrees.y = 0.0 if z_dir > 0.0 else 180.0
 		# Затёртая до бетона середина и остатки краски по краям — как в подъезде
-		dirt_x.append(Transform3D(Basis.IDENTITY, Vector3(x, y + riser * 0.5 - 0.021, z - z_dir * 0.01)))
-		paint_x.append(Transform3D(Basis.IDENTITY, Vector3(x + tread_w * 0.5 - 0.07, y + riser * 0.5 - 0.022, z)))
-		paint_x.append(Transform3D(Basis.IDENTITY, Vector3(x - tread_w * 0.5 + 0.07, y + riser * 0.5 - 0.022, z)))
+		var top_y := y + (riser + 0.02) * 0.5 + 0.003
+		dirt_x.append(Transform3D(Basis.IDENTITY, Vector3(x, top_y, z - z_dir * 0.01)))
+		paint_x.append(Transform3D(Basis.IDENTITY, Vector3(x + tread_w * 0.5 - 0.07, top_y, z)))
+		paint_x.append(Transform3D(Basis.IDENTITY, Vector3(x - tread_w * 0.5 + 0.07, top_y, z)))
 	_multi(Geo.rounded_box(Vector3(0.13, 0.008, tread_d * 0.92), 0.003), "step_paint", paint_x)
 	_multi(Geo.rounded_box(Vector3(tread_w * 0.55, 0.006, tread_d * 0.6), 0.002), "dirt", dirt_x)
 	# Косоур: крашеная боковина марша вдоль стены
@@ -696,9 +703,12 @@ func _tune_light(l: OmniLight3D, shadow: bool, fade_begin: float = 14.0) -> void
 	l.distance_fade_length = 5.0
 
 func _add_floor_light(y: float) -> void:
-	_cyl(Vector3(0.15, y + 2.52, 0.1), 0.006, 0.28, "metal")
-	_vis(Vector3(0.15, y + 2.42, 0.1), Vector3(0.04, 0.05, 0.04), "concrete")
-	_sph(Vector3(0.15, y + 2.36, 0.1), 0.04, "lamp")
+	# Плафон в решётке — типовой подъездный светильник
+	var shade := PropLibrary.spawn(self, "caged_hanging_light", Vector3(0.15, y + 2.32, 0.1), Vector3(0, 0, 0), 1.0, 0.30)
+	if shade == null:
+		_cyl(Vector3(0.15, y + 2.52, 0.1), 0.006, 0.28, "metal")
+		_vis(Vector3(0.15, y + 2.42, 0.1), Vector3(0.04, 0.05, 0.04), "concrete")
+	_sph(Vector3(0.15, y + 2.30, 0.1), 0.035, "lamp")
 	var lamp := OmniLight3D.new()
 	# 2700K накаливания против 6500K из окна — контраст тёплого и холодного
 	lamp.light_color = Color(1.0, 0.72, 0.36)
@@ -706,7 +716,7 @@ func _add_floor_light(y: float) -> void:
 	lamp.omni_range = 5.0
 	lamp.omni_attenuation = 1.8
 	lamp.position = Vector3(0.15, y + 2.35, 0.1)
-	_tune_light(lamp, true, 11.0)
+	_tune_light(lamp, true, 8.5)
 	add_child(lamp)
 	lights.append(lamp)
 	# Свет, входящий через окно промежуточной площадки
@@ -716,7 +726,7 @@ func _add_floor_light(y: float) -> void:
 	ml.omni_range = 4.6
 	ml.omni_attenuation = 1.3
 	ml.position = Vector3(0, y - HALF_H + 1.9, 2.55)
-	_tune_light(ml, true, 12.0)
+	_tune_light(ml, false, 10.0)
 	add_child(ml)
 	lights.append(ml)
 
@@ -732,8 +742,8 @@ func _build_yard(ice: bool, night: bool) -> void:
 	_box(Vector3(0, -0.1, 12.0), Vector3(24.0, 0.3, 18.0), ground)
 	# Бордюр + клок зелёнки у дома
 	_box(Vector3(0, 0.02, 5.4), Vector3(8.0, 0.12, 0.35), "concrete", false)
-	_box(Vector3(-3.5, 0.01, 6.2), Vector3(2.2, 0.06, 1.4), "grass", false)
-	_box(Vector3(3.8, 0.01, 6.0), Vector3(1.8, 0.06, 1.1), "grass", false)
+	_box(Vector3(-3.5, 0.01, 6.2), Vector3(2.4, 0.06, 1.5), "ground_dirt", false)
+	_box(Vector3(3.8, 0.01, 6.0), Vector3(1.9, 0.06, 1.2), "ground_dirt", false)
 	_box(Vector3(2.2, 0.03, 11.5), Vector3(1.4, 0.02, 0.9), "puddle", false)
 	# Фасад с швами
 	_box(Vector3(-4.2, 8.5, DOOR_Z + 0.25), Vector3(6.6, 17.0, 0.28), "panel")
@@ -789,44 +799,39 @@ func _build_yard(ice: bool, night: bool) -> void:
 	_box(Vector3(1.3, 0.04, 10.6), Vector3(0.7, 0.03, 4.0), "mark", false)
 	_box(Vector3(3.3, 0.04, 13.9), Vector3(2.2, 0.03, 2.6), "mark", false)
 	# Сухая трава у забора
-	_box(Vector3(-6.5, 0.08, 10.0), Vector3(1.5, 0.12, 4.0), "grass", false)
-	_box(Vector3(7.0, 0.08, 13.0), Vector3(1.2, 0.1, 3.0), "grass", false)
-	# Забор — сетка на столбах, не сплошной блок
-	for i in range(8):
-		var fx := -9.5 + float(i) * 2.7
-		_box(Vector3(fx, 0.7, 19.3), Vector3(0.1, 1.4, 0.1), "metal", false)
-	_box(Vector3(0, 1.35, 19.3), Vector3(20.0, 0.05, 0.05), "metal", false)
-	_box(Vector3(0, 0.35, 19.3), Vector3(20.0, 0.05, 0.05), "metal", false)
-	for i in range(8):
-		_vis(Vector3(-10.0, 0.7, 6.0 + float(i) * 1.7), Vector3(0.08, 1.4, 0.08), "metal")
-		_vis(Vector3(10.0, 0.7, 6.0 + float(i) * 1.7), Vector3(0.08, 1.4, 0.08), "metal")
-	_vis(Vector3(-10.0, 1.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
-	_vis(Vector3(-10.0, 0.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
-	_vis(Vector3(10.0, 1.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
-	_vis(Vector3(10.0, 0.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
-	_box(Vector3(-4.8, 0.3, 8.2), Vector3(1.7, 0.09, 0.4), "wood")
-	_box(Vector3(-5.35, 0.38, 8.2), Vector3(0.09, 0.35, 0.35), "wood")
-	_box(Vector3(-4.25, 0.38, 8.2), Vector3(0.09, 0.35, 0.35), "wood")
-	_box(Vector3(-3.2, 0.4, 7.5), Vector3(0.32, 0.65, 0.32), "metal", false)
-	# Фонарный столб
-	_box(Vector3(-1.8, 2.0, 7.2), Vector3(0.12, 4.0, 0.12), "metal", false)
-	_box(Vector3(-1.8, 4.05, 7.5), Vector3(0.5, 0.08, 0.08), "metal", false)
-	_box(Vector3(-1.8, 3.95, 7.7), Vector3(0.28, 0.18, 0.28), "lamp" if night else "metal", false)
+	_box(Vector3(-6.5, 0.04, 10.0), Vector3(1.7, 0.08, 4.2), "ground_dirt", false)
+	_box(Vector3(7.0, 0.04, 13.0), Vector3(1.4, 0.08, 3.2), "ground_dirt", false)
+	_build_chainlink()
+	# Лавка у входа и урна
+	PropLibrary.spawn(self, "modular_street_seating", Vector3(-4.8, 0.0, 8.2), Vector3(0, 90, 0), 1.0, 0.85)
+	PropLibrary.spawn(self, "metal_trash_can", Vector3(-3.2, 0.0, 7.5), Vector3(0, -20, 0), 1.0, 0.9)
+	# Фонарный столб: модель вместо палки с кубом
+	var lamp_post := PropLibrary.spawn(self, "street_lamp_01", Vector3(-1.8, 0.0, 7.2), Vector3(0, 105, 0), 1.0, 4.6)
+	if lamp_post == null:
+		_box(Vector3(-1.8, 2.0, 7.2), Vector3(0.12, 4.0, 0.12), "metal", false)
+		_box(Vector3(-1.8, 4.05, 7.5), Vector3(0.5, 0.08, 0.08), "metal", false)
+		_box(Vector3(-1.8, 3.95, 7.7), Vector3(0.28, 0.18, 0.28), "lamp" if night else "metal", false)
+	elif night:
+		_vis(Vector3(-1.8, 4.32, 7.62), Vector3(0.26, 0.10, 0.42), "lamp")
 	_box(Vector3(6.8, 1.15, 11.5), Vector3(0.1, 2.2, 0.1), "metal")
 	_box(Vector3(7.55, 1.15, 11.5), Vector3(0.1, 2.2, 0.1), "metal")
 	_box(Vector3(7.15, 2.25, 11.5), Vector3(0.95, 0.07, 0.07), "metal", false)
+	# Боковины площадки: листы профнастила на стойках
 	var enc_b := _box(Vector3(3.5, 0.65, 16.1), Vector3(4.3, 1.2, 0.1), "metal")
 	var enc_l := _box(Vector3(1.45, 0.65, 14.5), Vector3(0.1, 1.2, 3.3), "metal")
 	var enc_r := _box(Vector3(5.55, 0.65, 14.5), Vector3(0.1, 1.2, 3.3), "metal")
 	_hide_mesh(enc_b)
 	_hide_mesh(enc_l)
 	_hide_mesh(enc_r)
-	for i in range(8):
-		_vis(Vector3(1.45, 0.18 + float(i) * 0.12, 14.5), Vector3(0.03, 0.04, 3.1), "metal")
-		_vis(Vector3(5.55, 0.18 + float(i) * 0.12, 14.5), Vector3(0.03, 0.04, 3.1), "metal")
+	for sx in [1.45, 5.55]:
+		_vis(Vector3(sx, 0.85, 14.5), Vector3(0.04, 1.7, 3.3), "steel")
+		_vis(Vector3(sx, 1.74, 14.5), Vector3(0.06, 0.06, 3.34), "rust")
+		for i in range(3):
+			_mesh_at(Geo.pipe(0.032, 1.9), Vector3(sx, 0.95, 13.0 + float(i) * 1.5), "steel")
 	_vis(Vector3(8.2, 14.6, DOOR_Z + 0.9), Vector3(0.55, 0.08, 0.55), "metal")
 	_cyl(Vector3(8.2, 14.85, DOOR_Z + 0.9), 0.28, 0.04, "metal", Vector3(70, 20, 0))
 	_vis(Vector3(-6.4, 6.4, DOOR_Z + 0.55), Vector3(0.55, 0.32, 0.42), "metal")
+	_dress_yard(night, ice)
 	if ice:
 		_box(Vector3(0, 0.02, 9.0), Vector3(3.0, 0.05, 1.0), "ice")
 		yard_ice_zones.append(Rect2(Vector2(-7, 7), Vector2(14, 10)))
@@ -842,6 +847,149 @@ func _build_yard(ice: bool, night: bool) -> void:
 	if night:
 		lights.append(yl)
 
+## Разнотравье вдоль бордюров и у забора: одна пачка на вид растения.
+func _scatter_plants(rng: RandomNumberGenerator, model: String, part: String, spots: Array, scale_range: Vector2) -> void:
+	var got := PropLibrary.mesh_of(model, part)
+	if got.is_empty():
+		return
+	var xforms: Array = []
+	for s in spots:
+		var p: Vector3 = s
+		var b := Basis(Vector3.UP, rng.randf_range(0.0, TAU)).scaled(Vector3.ONE * rng.randf_range(scale_range.x, scale_range.y))
+		xforms.append(Transform3D(b, p))
+	# Травинки тени не бросают: на глаз незаметно, по кадру — заметно
+	_multi_raw(got[0], xforms, got[1], false)
+
+func _plant_spots(rng: RandomNumberGenerator, count: int, cx: float, cz: float, w: float, d: float, y: float = 0.0) -> Array:
+	var out: Array = []
+	for _i in range(count):
+		out.append(Vector3(cx + rng.randf_range(-w, w), y, cz + rng.randf_range(-d, d)))
+	return out
+
+## Безлистное дерево поздней осени: ствол и ветки — листву в CC0 не найти
+## дешевле 90 МБ геометрии, а голое дерево для нашей серости даже точнее.
+func _bare_tree(base: Vector3, height: float, seed_val: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_val
+	var trunk_r := height * 0.045
+	_mesh_at(Geo.pipe(trunk_r, height, 12), base + Vector3(0, height * 0.5, 0), "wood")
+	var count := 11
+	for i in range(count):
+		var t := 0.42 + 0.54 * float(i) / float(count)
+		var y := base.y + height * t
+		var yaw := rng.randf_range(0.0, TAU)
+		var tilt := deg_to_rad(rng.randf_range(25.0, 58.0))
+		var len_b: float = height * rng.randf_range(0.16, 0.30) * (1.0 - t * 0.4)
+		var dir := Vector3(sin(yaw) * sin(tilt), cos(tilt), cos(yaw) * sin(tilt)).normalized()
+		var start := Vector3(base.x, y, base.z)
+		var mid := start + dir * len_b * 0.5
+		var branch := _mesh_at(Geo.pipe(trunk_r * (0.34 - t * 0.12), len_b, 6), mid, "wood")
+		branch.rotation = Quaternion(Vector3.UP, dir).get_euler()
+		# Второстепенная веточка от середины основной
+		if i % 2 == 0:
+			var yaw2 := yaw + rng.randf_range(0.6, 1.8)
+			var dir2 := Vector3(sin(yaw2) * 0.8, 0.6, cos(yaw2) * 0.8).normalized()
+			var len2 := len_b * 0.55
+			var twig := _mesh_at(Geo.pipe(trunk_r * 0.14, len2, 5), mid + dir2 * len2 * 0.5, "wood")
+			twig.rotation = Quaternion(Vector3.UP, dir2).get_euler()
+
+## Соседние панельки за забором: без них небо садится прямо на землю.
+func _background_blocks(night: bool) -> void:
+	var blocks := [
+		{"pos": Vector3(-22.0, 8.4, 44.0), "size": Vector3(26.0, 16.8, 11.0), "rot": -8.0},
+		{"pos": Vector3(19.0, 10.2, 52.0), "size": Vector3(22.0, 20.4, 11.0), "rot": 6.0},
+		{"pos": Vector3(2.0, 7.2, 68.0), "size": Vector3(34.0, 14.4, 12.0), "rot": 0.0},
+	]
+	var lit: Array = []
+	var dark: Array = []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20240814
+	for b in blocks:
+		var pos: Vector3 = b["pos"]
+		var size: Vector3 = b["size"]
+		var mi := _mesh_at(Geo.rounded_box(size, 0.05), pos, "panel_far", Vector3(0, b["rot"], 0))
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var basis := Basis(Vector3.UP, deg_to_rad(float(b["rot"])))
+		var cols := int(size.x / 3.2)
+		var rows := int(size.y / 2.8)
+		for r in range(rows):
+			for c in range(cols):
+				var local := Vector3(-size.x * 0.5 + 1.8 + float(c) * 3.2, -size.y * 0.5 + 1.9 + float(r) * 2.8, -size.z * 0.5 - 0.06)
+				var t := Transform3D(basis, pos + basis * local)
+				if night and rng.randf() < 0.45:
+					lit.append(t)
+				else:
+					dark.append(t)
+	_multi(Geo.rounded_box(Vector3(1.5, 1.3, 0.08), 0.01), "window_lit" if night else "glass", lit if night else dark)
+	if night and not dark.is_empty():
+		_multi(Geo.rounded_box(Vector3(1.5, 1.3, 0.08), 0.01), "glass", dark)
+
+func _dress_yard(night: bool, ice: bool) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 777
+	_background_blocks(night)
+	if not ice:
+		_scatter_plants(rng, "grass_medium_01", "tall_a", _plant_spots(rng, 26, -3.5, 6.2, 1.1, 0.7, 0.02), Vector2(0.8, 1.5))
+		_scatter_plants(rng, "grass_medium_01", "mid_b", _plant_spots(rng, 22, 3.8, 6.0, 0.9, 0.55, 0.02), Vector2(0.9, 1.6))
+		_scatter_plants(rng, "grass_medium_01", "small_a", _plant_spots(rng, 30, -6.5, 10.0, 0.8, 2.0, 0.02), Vector2(0.8, 1.4))
+		_scatter_plants(rng, "weed_plant_02", "_c_", _plant_spots(rng, 18, 7.0, 13.0, 0.7, 1.6, 0.01), Vector2(0.9, 1.5))
+		_scatter_plants(rng, "dandelion_01", "_e_", _plant_spots(rng, 12, -4.0, 8.4, 2.4, 0.5, 0.01), Vector2(0.8, 1.3))
+		_scatter_plants(rng, "nettle_plant", "tall_a", _plant_spots(rng, 14, 9.4, 11.0, 0.5, 4.0, 0.01), Vector2(1.0, 1.8))
+		_bare_tree(Vector3(-7.6, 0.0, 8.4), 7.5, 11)
+		_bare_tree(Vector3(8.6, 0.0, 16.4), 6.2, 27)
+	else:
+		_scatter_plants(rng, "grass_medium_01", "tall_a", _plant_spots(rng, 14, -3.5, 6.2, 1.1, 0.6, 0.02), Vector2(0.6, 1.0))
+	# Люк, машина под чехлом, шины
+	PropLibrary.spawn(self, "water_manhole_cover", Vector3(-2.4, 0.0, 11.6), Vector3(0, 12, 0), 1.0, 0.08)
+	PropLibrary.spawn(self, "covered_car", Vector3(-7.2, 0.0, 14.6), Vector3(0, 12, 0), 1.0, 1.55)
+	PropLibrary.spawn(self, "old_tyre", Vector3(-9.2, 0.05, 11.2), Vector3(0, 0, 0), 1.0, 0.62)
+	PropLibrary.spawn(self, "plastic_monobloc_chair_01", Vector3(-5.9, 0.0, 8.9), Vector3(0, 200, 0), 1.0, 0.85)
+	# Фасадные детали: кондиционеры и провода к столбу
+	PropLibrary.spawn(self, "exterior_aircon_unit", Vector3(-6.4, 6.4, DOOR_Z + 0.42), Vector3(0, 0, 0), 1.0, 0.62)
+	PropLibrary.spawn(self, "exterior_aircon_unit", Vector3(5.6, 9.2, DOOR_Z + 0.42), Vector3(0, 0, 0), 1.0, 0.62)
+	PropLibrary.spawn(self, "security_light", Vector3(2.2, 2.9, DOOR_Z + 0.30), Vector3(0, 180, 0), 1.0, 0.4)
+
+## Сетка-рабица секциями по периметру двора: столбы и полотно — из модели.
+func _build_chainlink() -> void:
+	var panel := PropLibrary.mesh_of("modular_chainlink_fence", "fence_double")
+	var post := PropLibrary.mesh_of("modular_chainlink_fence", "fence_post")
+	if panel.is_empty() or post.is_empty():
+		for i in range(8):
+			_box(Vector3(-9.5 + float(i) * 2.7, 0.7, 19.3), Vector3(0.1, 1.4, 0.1), "metal", false)
+		_box(Vector3(0, 1.35, 19.3), Vector3(20.0, 0.05, 0.05), "metal", false)
+		return
+	var panel_w := 1.91
+	var panels: Array = []
+	var posts: Array = []
+	# Дальняя сторона и две боковых; поворот на 90° для боковых линий
+	for i in range(11):
+		var px := -9.55 + float(i) * panel_w
+		panels.append(Transform3D(Basis.IDENTITY, Vector3(px, 0.0, 19.3)))
+		posts.append(Transform3D(Basis.IDENTITY, Vector3(px - panel_w * 0.5, 0.0, 19.3)))
+	var side_rot := Basis(Vector3.UP, deg_to_rad(90.0))
+	for side in [-10.2, 10.2]:
+		for i in range(7):
+			var pz := 6.4 + float(i) * panel_w
+			panels.append(Transform3D(side_rot, Vector3(side, 0.0, pz)))
+			posts.append(Transform3D(side_rot, Vector3(side, 0.0, pz - panel_w * 0.5)))
+	_multi_raw(panel[0], panels, panel[1])
+	_multi_raw(post[0], posts, post[1])
+
+## MultiMesh для мешей из GLTF: материалы берутся из самого меша, не из _mats.
+func _multi_raw(mesh: Mesh, xforms: Array, local: Transform3D = Transform3D.IDENTITY, shadows: bool = true) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = xforms.size()
+	for i in range(xforms.size()):
+		mm.set_instance_transform(i, (xforms[i] as Transform3D) * local)
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	if not shadows:
+		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mmi)
+	return mmi
+
 func _build_detour_path() -> void:
 	_box(Vector3(-7.0, -0.05, 11.0), Vector3(2.2, 0.12, 10.0), "asphalt")
 	_box(Vector3(-7.0, 0.04, 15.0), Vector3(0.5, 0.06, 0.5), "mark", false)
@@ -849,6 +997,15 @@ func _build_detour_path() -> void:
 func _build_basement_props() -> void:
 	_box(Vector3(0.9, -FLOOR_H + 0.35, 1.0), Vector3(0.22, 0.22, 2.0), "metal")
 	_box(Vector3(-0.8, -FLOOR_H + 0.12, 1.8), Vector3(0.9, 0.05, 0.9), "ice")
+	# Трубы под потолком подвала и хлам у стены
+	var pipes := PropLibrary.mesh_of("modular_pipes", "pipe")
+	if not pipes.is_empty():
+		var runs: Array = []
+		for i in range(3):
+			runs.append(Transform3D(Basis(Vector3.UP, deg_to_rad(90.0)), Vector3(-1.1 + float(i) * 0.18, -FLOOR_H + 1.95, 2.0)))
+		_multi_raw(pipes[0], runs, pipes[1])
+	PropLibrary.spawn(self, "plastic_crate_01", Vector3(1.05, -FLOOR_H + 0.02, 2.6), Vector3(0, 30, 0), 1.0, 0.28)
+	PropLibrary.spawn(self, "cardboard_box_01", Vector3(0.75, -FLOOR_H + 0.02, 3.4), Vector3(0, -18, 0), 1.0, 0.35)
 
 func _build_basement_exit() -> void:
 	## Коридор + пандус во двор — «через подвал короче» должно быть правдой.
@@ -877,30 +1034,60 @@ func _build_basement_exit() -> void:
 	add_child(ramp)
 	_box(Vector3(0, 0.02, 11.4), Vector3(1.8, 0.12, 1.6), "asphalt")
 
+## Евроконтейнер 1.1 м³: корпус с уклоном, рёбра жёсткости, крышка на петлях,
+## ручки, колёса и потёки ржавчины. Коллизия остаётся исходным боксом.
+func _euro_bin(center: Vector3, lid_deg: float, tagged: bool) -> void:
+	var body := _box(center, Vector3(1.0, 1.35, 1.15), "dumpster")
+	_hide_mesh(body)
+	var base_y := center.y - 0.675
+	# Корпус: низ уже верха — у настоящего бака стенки с уклоном
+	_vis(Vector3(center.x, base_y + 0.30, center.z), Vector3(0.88, 0.44, 1.02), "dumpster")
+	_vis(Vector3(center.x, base_y + 0.78, center.z), Vector3(0.98, 0.56, 1.12), "dumpster")
+	_vis(Vector3(center.x, base_y + 1.09, center.z), Vector3(1.0, 0.10, 1.14), "dumpster")
+	var ribs: Array = []
+	for k in range(3):
+		ribs.append(Transform3D(Basis.IDENTITY, Vector3(center.x, base_y + 0.62 + float(k) * 0.20, center.z)))
+	_multi(Geo.rounded_box(Vector3(1.01, 0.05, 1.15), 0.008), "dumpster", ribs)
+	# Крышка на петлях, откинута назад
+	var lid := _mesh_at(Geo.rounded_box(Vector3(1.04, 0.07, 1.16), 0.012),
+		Vector3(center.x, base_y + 1.16, center.z + 0.02), "steel")
+	lid.rotation_degrees.x = lid_deg
+	_mesh_at(Geo.pipe(0.016, 0.98), Vector3(center.x, base_y + 1.14, center.z - 0.56), "rust", Vector3(0, 0, 90))
+	for sx in [-1.0, 1.0]:
+		_mesh_at(Geo.pipe(0.018, 0.30), Vector3(center.x + sx * 0.52, base_y + 0.92, center.z), "steel", Vector3(90, 0, 0))
+		_vis(Vector3(center.x + sx * 0.51, base_y + 0.92, center.z - 0.15), Vector3(0.03, 0.06, 0.04), "steel")
+		_vis(Vector3(center.x + sx * 0.51, base_y + 0.92, center.z + 0.15), Vector3(0.03, 0.06, 0.04), "steel")
+	# Колёса на вилках
+	for wz in [-0.42, 0.42]:
+		for wx in [-0.34, 0.34]:
+			var wp := Vector3(center.x + wx, base_y + 0.07, center.z + wz)
+			_mesh_at(Geo.pipe(0.065, 0.05, 14), wp, "prop", Vector3(0, 0, 90))
+			_vis(wp + Vector3(0, 0.09, 0), Vector3(0.07, 0.13, 0.05), "steel")
+	# Потёки ржавчины и трафарет
+	_vis(Vector3(center.x - 0.30, base_y + 0.55, center.z - 0.58), Vector3(0.12, 0.62, 0.01), "rust")
+	_vis(Vector3(center.x + 0.22, base_y + 0.40, center.z - 0.58), Vector3(0.08, 0.44, 0.01), "rust")
+	_vis(Vector3(center.x + 0.45, base_y + 0.70, center.z + 0.57), Vector3(0.06, 0.5, 0.01), "rust")
+	_vis(Vector3(center.x, base_y + 0.80, center.z - 0.585), Vector3(0.34, 0.16, 0.01), "number")
+	if tagged:
+		_vis(Vector3(center.x - 0.02, base_y + 0.50, center.z - 0.59), Vector3(0.6, 0.4, 0.01), "graffiti")
+
 func _build_dumpster() -> void:
-	for i in range(10):
-		_vis(Vector3(3.7, 0.18 + float(i) * 0.09, 15.5), Vector3(4.4, 0.04, 0.03), "metal")
+	# Площадка: профнастил на стойках вместо решётки из палок
 	for i in range(5):
-		_vis(Vector3(1.9 + float(i) * 0.95, 0.95, 15.5), Vector3(0.05, 0.9, 0.05), "metal")
+		_mesh_at(Geo.pipe(0.035, 1.9), Vector3(1.9 + float(i) * 0.95, 0.95, 15.5), "steel")
+	_vis(Vector3(3.7, 0.95, 15.56), Vector3(4.4, 1.7, 0.04), "steel")
+	_vis(Vector3(3.7, 1.84, 15.5), Vector3(4.5, 0.06, 0.18), "rust")
 	for i in range(3):
-		var dx := 2.6 + float(i) * 1.15
-		_box(Vector3(dx, 0.7, 14.6), Vector3(1.0, 1.35, 1.15), "dumpster")
-		_vis(Vector3(dx, 0.7, 14.04), Vector3(0.95, 1.18, 0.03), "dumpster_rust")
-		for k in range(7):
-			_vis(Vector3(dx - 0.42 + float(k) * 0.14, 0.7, 14.03), Vector3(0.03, 1.18, 0.025), "metal")
-		var lid := _vis(Vector3(dx, 1.44, 14.52), Vector3(1.08, 0.08, 1.22), "metal")
-		lid.rotation_degrees.x = -28.0
-		_cyl(Vector3(dx, 1.50, 14.40), 0.015, 0.22, "rust", Vector3(0, 0, 90))
-		if i == 1:
-			_vis(Vector3(dx, 1.52, 14.35), Vector3(0.4, 0.02, 0.25), "graffiti")
-		for wz in [-0.45, 0.45]:
-			for wx in [-0.35, 0.35]:
-				_cyl(Vector3(dx + wx, 0.08, 14.6 + wz), 0.07, 0.05, "metal", Vector3(0, 0, 90))
+		_euro_bin(Vector3(2.6 + float(i) * 1.15, 0.7, 14.6), -62.0 if i != 2 else -18.0, i == 1)
 	_box(Vector3(3.7, 0.03, 13.8), Vector3(2.8, 0.02, 1.2), "puddle", false)
 	_box(Vector3(2.4, 0.08, 13.5), Vector3(0.25, 0.08, 0.2), "dirt", false)
-	_box(Vector3(4.8, 0.1, 15.2), Vector3(0.35, 0.12, 0.25), "prop", false)
-	_box(Vector3(3.2, 0.15, 13.3), Vector3(0.4, 0.2, 0.3), "prop", false)
-	_vis(Vector3(3.7, 1.35, 15.55), Vector3(0.9, 0.28, 0.04), "paper")
+	_vis(Vector3(3.7, 1.35, 15.53), Vector3(0.9, 0.28, 0.01), "paper")
+	# Хлам вокруг баков
+	PropLibrary.spawn(self, "metal_trash_can", Vector3(5.5, 0.0, 15.0), Vector3(0, 25, 0), 1.0, 0.9)
+	PropLibrary.spawn(self, "plastic_crate_01", Vector3(1.75, 0.0, 13.6), Vector3(0, -35, 4), 1.0, 0.28)
+	PropLibrary.spawn(self, "cardboard_box_01", Vector3(4.9, 0.0, 13.5), Vector3(0, 15, 0), 1.0, 0.36)
+	PropLibrary.spawn(self, "old_tyre", Vector3(1.5, 0.03, 15.0), Vector3(90, 20, 0), 1.0, 0.6)
+	PropLibrary.spawn(self, "street_rat", Vector3(5.15, 0.02, 14.2), Vector3(0, -120, 0), 1.0, 0.09)
 	dumpster = Area3D.new()
 	dumpster.name = "Dumpster"
 	dumpster.collision_layer = 0

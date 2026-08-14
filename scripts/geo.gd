@@ -80,9 +80,12 @@ static func stair_step(width: float, tread: float, riser: float, nose: float = 0
 		return hit
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var tread_h := 0.05
+	var tread_h := 0.04
 	_merge(st, rounded_box(Vector3(width, tread_h, tread + nose), 0.008), Transform3D(Basis.IDENTITY, Vector3(0, riser * 0.5 - tread_h * 0.5, -nose * 0.5)))
-	_merge(st, rounded_box(Vector3(width - 0.01, riser - tread_h, tread * 0.5), 0.006), Transform3D(Basis.IDENTITY, Vector3(0, -tread_h * 0.5, tread * 0.25)))
+	# Подступёнок прижат к передней кромке — под свесом появляется тень
+	var riser_d: float = tread * 0.55
+	_merge(st, rounded_box(Vector3(width - 0.012, riser - tread_h, riser_d), 0.006),
+		Transform3D(Basis.IDENTITY, Vector3(0, -tread_h * 0.5, (tread + nose) * 0.5 - nose - riser_d * 0.5)))
 	var mesh := st.commit()
 	_cache[key] = mesh
 	return mesh

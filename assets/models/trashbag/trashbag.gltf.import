@@ -3,12 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bbcpubu5lun5m"
-valid=false
+uid="uid://dcqemi108r4ll"
+path="res://.godot/imported/trashbag.gltf-3e564d77c173aaeb1277de2584c91153.scn"
 
 [deps]
 
 source_file="res://assets/models/trashbag/trashbag.gltf"
+dest_files=["res://.godot/imported/trashbag.gltf-3e564d77c173aaeb1277de2584c91153.scn"]
 
 [params]
 
