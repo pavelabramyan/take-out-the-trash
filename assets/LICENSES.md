@@ -62,7 +62,17 @@
 - `assets/hdri/abandoned_parking_1k.hdr` — https://polyhaven.com/a/abandoned_parking
 - `assets/hdri/preller_drive_1k.hdr` — https://polyhaven.com/a/preller_drive
 
+## Шрифты — SIL Open Font License 1.1
+
+PT Sans и PT Sans Narrow, ParaType. Источник: https://github.com/google/fonts
+
+- `assets/fonts/PT_Sans-Web-Regular.ttf`
+- `assets/fonts/PT_Sans-Narrow-Web-Regular.ttf`
+- `assets/fonts/PT_Sans-Narrow-Web-Bold.ttf`
+
 ## Собственные ассеты
 
 Всё в `assets/textures`, `assets/sfx`, `assets/music` сгенерировано скриптами
-из `tools/` и принадлежит проекту.
+из `tools/` (`gen_environment_textures.py`, `gen_sfx.py`) и принадлежит проекту.
+Звуки — физический синтез: модальные резонансы металла, формантные голоса,
+шумовые модели трения плюс свёртка с откликом лестничной клетки.

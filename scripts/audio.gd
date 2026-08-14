@@ -85,12 +85,14 @@ func _apply_volumes() -> void:
 func refresh_volumes() -> void:
 	_apply_volumes()
 
-func play_sfx(key: String, pitch: float = 1.0) -> void:
+func play_sfx(key: String, pitch: float = 1.0, gain_db: float = 0.0) -> void:
 	if not _streams.has(key):
 		return
 	var p: AudioStreamPlayer = _sfx_pool[_pool_i]
 	_pool_i = (_pool_i + 1) % _sfx_pool.size()
 	p.pitch_scale = pitch
+	var s := clampf(float(Svc.meta().settings.get("sfx", 0.9)), 0.001, 1.0)
+	p.volume_db = linear_to_db(s) + gain_db
 	p.stream = _streams[key]
 	p.play()
 
@@ -118,7 +120,7 @@ func yell_mom() -> void:
 		line = "mom"
 	play_sfx(line, 0.92 + randf() * 0.16)
 
-func play_step() -> void:
+func play_step(surface: String = "concrete") -> void:
 	var pool: Array = []
 	for k in _step_lines:
 		if _streams.has(k):
@@ -129,7 +131,17 @@ func play_step() -> void:
 	if pool.size() > 1 and i == _last_step:
 		i = (i + 1) % pool.size()
 	_last_step = i
-	play_sfx(pool[i], 0.94 + randf() * 0.12)
+	# Асфальт мягче и глуше бетона, наледь — звонкая и выше
+	var pitch := 0.94 + randf() * 0.12
+	var gain := 0.0
+	match surface:
+		"asphalt":
+			pitch *= 0.88
+			gain = -3.0
+		"ice":
+			pitch *= 1.14
+			gain = -1.0
+	play_sfx(pool[i], pitch, gain)
 
 func set_danger(on: bool) -> void:
 	if on and _streams.has("danger_music"):

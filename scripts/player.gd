@@ -348,7 +348,13 @@ func _physics_process(delta: float) -> void:
 		_step_acc += horiz * delta
 		if _step_acc >= 0.48:
 			_step_acc = 0.0
-			Svc.audio().play_step()
+			# Бетон подъезда, асфальт двора и наледь звучат по-разному
+			var surface := "concrete"
+			if on_ice:
+				surface = "ice"
+			elif global_position.z > 1.5:
+				surface = "asphalt"
+			Svc.audio().play_step(surface)
 			if game != null and game.builder != null and game.builder.bag != null \
 					and game.builder.bag.has_method("notice_step"):
 				game.builder.bag.notice_step()
