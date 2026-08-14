@@ -66,10 +66,11 @@ func _build_body() -> void:
 	# расстояния и ломает наплыв кадра при переносе груза (cargo_fov).
 	var attrs := CameraAttributesPractical.new()
 	attrs.auto_exposure_enabled = true
-	attrs.auto_exposure_min_sensitivity = 90.0
-	attrs.auto_exposure_max_sensitivity = 320.0
-	attrs.auto_exposure_speed = 0.6
-	attrs.auto_exposure_scale = 0.26
+	# Нижний предел держит двор от пересвета, верхний не даёт ослепнуть в подъезде
+	attrs.auto_exposure_min_sensitivity = 36.0
+	attrs.auto_exposure_max_sensitivity = 280.0
+	attrs.auto_exposure_speed = 0.7
+	attrs.auto_exposure_scale = 0.27
 	# Слабое размытие дали: подъезд читается как снятый на телефон, а не рендер
 	attrs.dof_blur_far_enabled = true
 	attrs.dof_blur_far_distance = 9.0
@@ -149,11 +150,11 @@ func _build_hands() -> void:
 	# Рабочие перчатки: реалистичную кисть с кожей в кадре не собрать из
 	# примитивов, а перчатка прощает грубую форму
 	var skin := StandardMaterial3D.new()
-	skin.albedo_color = Color(0.20, 0.21, 0.24)
+	skin.albedo_color = Color(0.075, 0.075, 0.085)
 	skin.roughness = 0.88
 	skin.metallic = 0.0
 	var sleeve := StandardMaterial3D.new()
-	sleeve.albedo_color = Color(0.16, 0.19, 0.26)
+	sleeve.albedo_color = Color(0.06, 0.07, 0.10)
 	sleeve.roughness = 0.94
 	left_hand = _make_hand_rig(skin, sleeve, -1.0)
 	left_hand.position = Vector3(-0.14, -0.28, -0.40)
@@ -182,7 +183,7 @@ func _make_hand_rig(skin: Material, sleeve: Material, side: float) -> MeshInstan
 	var knuckle := MeshInstance3D.new()
 	knuckle.mesh = Geo.rounded_box(Vector3(0.074, 0.012, 0.034), 0.006)
 	var pad := StandardMaterial3D.new()
-	pad.albedo_color = Color(0.13, 0.14, 0.16)
+	pad.albedo_color = Color(0.05, 0.05, 0.055)
 	pad.roughness = 0.8
 	knuckle.material_override = pad
 	knuckle.position = Vector3(0, 0.019, -0.036)
@@ -202,7 +203,7 @@ func _make_hand_rig(skin: Material, sleeve: Material, side: float) -> MeshInstan
 	var cuff := MeshInstance3D.new()
 	cuff.mesh = Geo.pipe(0.033, 0.038, 14)
 	var cuff_m := StandardMaterial3D.new()
-	cuff_m.albedo_color = Color(0.30, 0.26, 0.20)
+	cuff_m.albedo_color = Color(0.13, 0.11, 0.08)
 	cuff_m.roughness = 0.95
 	cuff.material_override = cuff_m
 	cuff.position = Vector3(0, 0.008, 0.044)
@@ -227,14 +228,9 @@ func _make_hand_rig(skin: Material, sleeve: Material, side: float) -> MeshInstan
 		ff.radial_segments = 10
 		finger.mesh = ff
 		finger.material_override = skin
-		finger.position = Vector3(-0.028 + float(i) * 0.0185, 0.003, -0.070)
-		finger.rotation_degrees = Vector3(34 + float(i) * 2.0, 0, 0)
+		finger.position = Vector3(-0.028 + float(i) * 0.0185, -0.004, -0.058)
+		finger.rotation_degrees = Vector3(58 + float(i) * 3.0, 0, side * (2.0 - float(i)))
 		palm.add_child(finger)
-		var seam := MeshInstance3D.new()
-		seam.mesh = Geo.rounded_box(Vector3(0.004, 0.004, 0.05), 0.001)
-		seam.material_override = cuff_m
-		seam.position = Vector3(0.0, 0.010, 0.0)
-		finger.add_child(seam)
 	return palm
 
 func capture_mouse(on: bool) -> void:

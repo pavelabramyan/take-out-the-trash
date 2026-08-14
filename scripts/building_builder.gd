@@ -96,7 +96,7 @@ func _make_materials() -> void:
 	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.30, 0.30, 0.30), "fallback": Color(0.17, 0.17, 0.16)})
 	_mats["gravel"] = MaterialLibrary.pbr("gravel", {"tint": Color(0.66, 0.64, 0.61), "fallback": Color(0.32, 0.31, 0.29)})
 	_mats["rope"] = MaterialLibrary.flat(Color(0.62, 0.58, 0.48), 0.95, 0.0)
-	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.38, 0.34, 0.28), "tile_m": 0.55, "fallback": Color(0.28, 0.24, 0.18)})
+	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.43, 0.38, 0.29), "tile_m": 0.55, "fallback": Color(0.33, 0.29, 0.22)})
 	_mats["grass"] = MaterialLibrary.pbr("grass", {"tint": Color(0.60, 0.64, 0.46), "tile_m": 1.6, "fallback": Color(0.30, 0.36, 0.16)})
 	_mats["ice"] = MaterialLibrary.pbr("ice", {"tint": Color(0.82, 0.88, 0.92), "rough": 0.85, "fallback": Color(0.72, 0.80, 0.85)})
 	_mats["snow"] = MaterialLibrary.pbr("snow", {"tint": Color(0.95, 0.96, 1.0), "fallback": Color(0.88, 0.90, 0.94)})
@@ -109,10 +109,10 @@ func _make_materials() -> void:
 	_mats["rust"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.58, 0.33, 0.18), "metal": 0.45, "rough": 1.0, "tile_m": 0.8, "fallback": Color(0.42, 0.22, 0.10)})
 	_mats["steel"] = MaterialLibrary.pbr("steel_corrugated", {"tint": Color(0.34, 0.35, 0.36), "metal": 0.9, "rough": 0.88, "tile_m": 0.45, "fallback": Color(0.32, 0.33, 0.34)})
 	_mats["door_metal"] = MaterialLibrary.pbr("steel_corrugated", {"tint": Color(0.34, 0.33, 0.31), "metal": 0.90, "rough": 0.90, "tile_m": 1.0, "fallback": Color(0.26, 0.25, 0.24)})
-	_mats["corrug"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.21, 0.28, 0.23), "metal": 0.30, "rough": 0.86, "tile_m": 0.9, "normal_scale": 0.6, "fallback": Color(0.19, 0.26, 0.21)})
-	_mats["bin_lid"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.16, 0.24, 0.17), "metal": 0.25, "rough": 0.55, "tile_m": 1.0, "fallback": Color(0.14, 0.22, 0.15)})
+	_mats["corrug"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.13, 0.17, 0.14), "metal": 0.02, "rough": 0.93, "tile_m": 0.9, "normal_scale": 0.6, "fallback": Color(0.12, 0.16, 0.13)})
+	_mats["bin_lid"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.15, 0.22, 0.16), "metal": 0.04, "rough": 0.82, "tile_m": 1.0, "fallback": Color(0.13, 0.20, 0.14)})
 	_mats["bark"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.24, 0.20, 0.16), "rough": 1.0, "tile_m": 0.55, "normal_scale": 1.4, "fallback": Color(0.24, 0.20, 0.16)})
-	_mats["dumpster"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.26, 0.42, 0.26), "metal": 0.35, "rough": 0.72, "tile_m": 1.1, "fallback": Color(0.20, 0.34, 0.20)})
+	_mats["dumpster"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.20, 0.32, 0.21), "metal": 0.08, "rough": 0.80, "tile_m": 1.1, "fallback": Color(0.17, 0.28, 0.18)})
 	_mats["dumpster_rust"] = _mats["rust"]
 	_mats["mail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.26, 0.34, 0.36), "metal": 0.50, "rough": 0.65, "tile_m": 0.8, "fallback": Color(0.22, 0.30, 0.32)})
 	# Дерево: квартирные двери, лавка, черенок веника
@@ -122,14 +122,14 @@ func _make_materials() -> void:
 	# Рисованные карты — там важен сам рисунок, а не микрорельеф
 	_mats["graffiti"] = MaterialLibrary.painted("res://assets/textures/graffiti.png", Color(1, 1, 1), Vector3.ONE, 0.95)
 	_mats["paper"] = MaterialLibrary.painted("res://assets/textures/paper_notice.png", Color(0.95, 0.93, 0.86), Vector3.ONE, 0.92)
-	_mats["number"] = MaterialLibrary.flat(Color(0.62, 0.60, 0.50), 0.80)
+	_mats["number"] = MaterialLibrary.flat(Color(0.42, 0.41, 0.35), 0.88)
 	# Мелочь и полупрозрачное
 	_mats["glass"] = MaterialLibrary.flat(Color(0.16, 0.20, 0.23), 0.12, 0.35, 0.55)
 	_mats["mark"] = MaterialLibrary.flat(Color(0.14, 0.12, 0.10), 0.98, 0.0, 0.40)
 	_mats["prop"] = MaterialLibrary.flat(Color(0.20, 0.19, 0.17), 0.90)
 	_mats["dirt"] = MaterialLibrary.flat(Color(0.10, 0.09, 0.07), 1.0, 0.0, 0.50)
 	_mats["curtain"] = MaterialLibrary.flat(Color(0.38, 0.26, 0.21), 0.95)
-	_mats["panel_far"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.34, 0.34, 0.35), "tile_m": 3.2, "normal_scale": 0.4, "fallback": Color(0.34, 0.34, 0.35)})
+	_mats["panel_far"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.21, 0.21, 0.22), "tile_m": 3.2, "normal_scale": 0.4, "fallback": Color(0.21, 0.21, 0.22)})
 	_mats["balcony"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.44, 0.43, 0.41), "tile_m": 1.4, "fallback": Color(0.62, 0.62, 0.60)})
 	_mats["puddle"] = MaterialLibrary.flat(Color(0.06, 0.07, 0.08), 0.06, 0.20, 0.72)
 	_mats["lamp"] = MaterialLibrary.emissive(Color(1.0, 0.90, 0.62), 3.0, Color(1.0, 0.76, 0.34))
@@ -155,11 +155,11 @@ func _add_world_env(night: bool) -> void:
 		# HDRI даёт и небо, и заполняющий свет с настоящим распределением яркости
 		var pano := PanoramaSkyMaterial.new()
 		pano.panorama = load(hdri)
-		pano.energy_multiplier = 0.7 if night else 1.0
+		pano.energy_multiplier = 0.55 if night else 0.88
 		sky.sky_material = pano
 		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 		env.ambient_light_sky_contribution = 1.0
-		env.ambient_light_energy = 0.28 if night else 0.42
+		env.ambient_light_energy = 0.24 if night else 0.40
 		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	else:
 		var sky_mat := ProceduralSkyMaterial.new()
@@ -182,11 +182,11 @@ func _add_world_env(night: bool) -> void:
 
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_DEPTH
-	env.fog_light_color = Color(0.10, 0.11, 0.14) if night else Color(0.62, 0.64, 0.66)
+	env.fog_light_color = Color(0.10, 0.11, 0.14) if night else Color(0.44, 0.46, 0.49)
 	env.fog_light_energy = 0.7 if night else 1.0
-	env.fog_density = 0.010 if night else 0.0028
+	env.fog_density = 0.010 if night else 0.0055
 	env.fog_sky_affect = 0.12
-	env.fog_aerial_perspective = 0.5
+	env.fog_aerial_perspective = 0.72
 
 	var forward_plus := RenderingServer.get_current_rendering_method() == "forward_plus"
 	if forward_plus:
@@ -198,16 +198,16 @@ func _add_world_env(night: bool) -> void:
 		env.ssao_detail = 0.6
 		env.ssao_light_affect = 0.15
 		env.ssao_ao_channel_affect = 0.35
-		env.ssil_enabled = true
-		env.ssil_radius = 3.5
+		env.ssil_enabled = night
+		env.ssil_radius = 3.0
 		env.ssil_intensity = 1.1
 		env.ssil_normal_rejection = 1.0
-		env.volumetric_fog_enabled = true
-		env.volumetric_fog_density = 0.020 if night else 0.006
+		env.volumetric_fog_enabled = night
+		env.volumetric_fog_density = 0.020 if night else 0.005
 		env.volumetric_fog_albedo = Color(0.70, 0.71, 0.75)
 		env.volumetric_fog_emission = Color(0.02, 0.02, 0.03)
 		env.volumetric_fog_anisotropy = 0.25
-		env.volumetric_fog_length = 45.0
+		env.volumetric_fog_length = 32.0
 		env.volumetric_fog_gi_inject = 0.6
 		env.volumetric_fog_ambient_inject = 0.35
 		env.glow_enabled = true
@@ -219,11 +219,11 @@ func _add_world_env(night: bool) -> void:
 	env.sdfgi_enabled = false
 	env.ssr_enabled = false
 	env.adjustment_enabled = true
-	env.adjustment_saturation = 0.94
-	env.adjustment_contrast = 1.05
+	env.adjustment_saturation = 0.88
+	env.adjustment_contrast = 1.14
 	# AgX держит пересветы окна и лампы, не выжигая их в белое пятно
 	env.tonemap_mode = Environment.TONE_MAPPER_AGX
-	env.tonemap_exposure = 1.1 if night else 0.95
+	env.tonemap_exposure = 1.05 if night else 0.94
 	env.tonemap_white = 6.0
 	we.environment = env
 	add_child(we)
@@ -862,7 +862,11 @@ func _scatter_plants(rng: RandomNumberGenerator, model: String, part: String, sp
 		var b := Basis(Vector3.UP, rng.randf_range(0.0, TAU)).scaled(Vector3.ONE * rng.randf_range(scale_range.x, scale_range.y))
 		xforms.append(Transform3D(b, p))
 	# Травинки тени не бросают: на глаз незаметно, по кадру — заметно
-	_multi_raw(got[0], xforms, got[1], false)
+	var mmi := _multi_raw(got[0], xforms, got[1], false)
+	# Дальше двадцати метров отдельные травинки не различить, а кадр они едят
+	mmi.visibility_range_end = 22.0
+	mmi.visibility_range_end_margin = 4.0
+	mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 
 func _plant_spots(rng: RandomNumberGenerator, count: int, cx: float, cz: float, w: float, d: float, y: float = 0.0) -> Array:
 	var out: Array = []
@@ -920,6 +924,24 @@ func _background_blocks(night: bool) -> void:
 	# получается чёрный обрыв
 	var ground := _mesh_at(Geo.rounded_box(Vector3(320.0, 0.4, 320.0), 0.1), Vector3(0, -0.24, 30.0), "asphalt")
 	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Сплошное кольцо кварталов по кругу: между отдельными коробками
+	# просвечивало яркое небо и получались белые провалы до горизонта
+	var far_rng := RandomNumberGenerator.new()
+	far_rng.seed = 90210
+	var far_tf: Array = []
+	var sectors := 12
+	for i in range(sectors):
+		var ang := TAU * float(i) / float(sectors)
+		var rad := 118.0 + far_rng.randf_range(-8.0, 12.0)
+		var h := far_rng.randf_range(15.0, 26.0)
+		var c := Vector3(sin(ang) * rad, h * 0.5, 10.0 + cos(ang) * rad)
+		# Секторы перекрываются по ширине, поэтому стыков не видно
+		var w := rad * TAU / float(sectors) * 1.45
+		var fmi := _mesh_at(Geo.rounded_box(Vector3(w, h, 13.0), 0.05), c, "panel_far",
+			Vector3(0, rad_to_deg(ang), 0))
+		fmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		far_tf.append(Transform3D(Basis(Vector3.UP, ang), c + Vector3(0, h * 0.5 + 0.25, 0)))
+	_multi(Geo.rounded_box(Vector3(26.0, 0.6, 13.6), 0.04), "panel_far", far_tf)
 	var lit: Array = []
 	var dark: Array = []
 	var rng := RandomNumberGenerator.new()
@@ -1011,16 +1033,23 @@ const LAWNS := [
 
 ## Газон: земля внутри бордюра, разнотравье и проплешины.
 func _lawns(rng: RandomNumberGenerator, ice: bool) -> void:
+	# Злаки повторены в списке: одуванчик весит 23 тысячи треугольников,
+	# и при равных шансах газон съедал бюджет кадра
 	var kinds := [
-		["grass_medium_01", "tall_a", Vector2(0.8, 1.6)],
+		["grass_medium_01", "tall_a", Vector2(0.8, 1.7)],
+		["grass_medium_01", "tall_b", Vector2(0.8, 1.7)],
+		["grass_medium_01", "tall_c", Vector2(0.9, 1.8)],
 		["grass_medium_01", "mid_b", Vector2(0.9, 1.7)],
+		["grass_medium_01", "mid_c", Vector2(0.9, 1.7)],
 		["grass_medium_01", "small_a", Vector2(0.9, 1.5)],
-		["weed_plant_02", "_c_", Vector2(0.9, 1.6)],
-		["dandelion_01", "_e_", Vector2(0.8, 1.4)],
-		["nettle_plant", "tall_a", Vector2(1.0, 1.9)],
+		["grass_medium_01", "small_b", Vector2(1.0, 1.6)],
 		["grass_medium_01", "tiny_a", Vector2(1.2, 2.4)],
 		["grass_medium_01", "tiny_c", Vector2(1.2, 2.6)],
 		["grass_medium_01", "tiny_e", Vector2(1.4, 2.6)],
+		["grass_medium_01", "tiny_f", Vector2(1.4, 2.6)],
+		["weed_plant_02", "_c_", Vector2(0.9, 1.6)],
+		["nettle_plant", "tall_a", Vector2(1.0, 1.9)],
+		["dandelion_01", "_a_", Vector2(0.8, 1.4)],
 	]
 	var per_kind: Array = []
 	for _k in kinds:
@@ -1030,7 +1059,7 @@ func _lawns(rng: RandomNumberGenerator, ice: bool) -> void:
 		var s: Vector2 = l["s"]
 		_vis(Vector3(c.x, 0.045, c.y), Vector3(s.x * 2.0, 0.09, s.y * 2.0), "ground_dirt")
 		# Плотность занижена на льду: под снегом трава не торчит
-		var per_m2 := 4.0 if ice else 16.0
+		var per_m2 := 5.0 if ice else 19.0
 		var total := int(s.x * 2.0 * s.y * 2.0 * per_m2)
 		for i in range(total):
 			var idx := rng.randi_range(0, kinds.size() - 1)
@@ -1228,9 +1257,9 @@ func _euro_bin(center: Vector3, lid_deg: float, tagged: bool) -> void:
 	_vis(Vector3(center.x - 0.30, base_y + 0.55, center.z - 0.58), Vector3(0.12, 0.62, 0.01), "rust")
 	_vis(Vector3(center.x + 0.22, base_y + 0.40, center.z - 0.58), Vector3(0.08, 0.44, 0.01), "rust")
 	_vis(Vector3(center.x + 0.45, base_y + 0.70, center.z + 0.57), Vector3(0.06, 0.5, 0.01), "rust")
-	_vis(Vector3(center.x, base_y + 0.80, center.z - 0.585), Vector3(0.34, 0.16, 0.01), "number")
+	_vis(Vector3(center.x, base_y + 0.86, center.z - 0.585), Vector3(0.20, 0.09, 0.01), "number")
 	if tagged:
-		_vis(Vector3(center.x - 0.02, base_y + 0.50, center.z - 0.59), Vector3(0.6, 0.4, 0.01), "graffiti")
+		_vis(Vector3(center.x - 0.02, base_y + 0.46, center.z - 0.59), Vector3(0.42, 0.26, 0.01), "graffiti")
 
 func _build_dumpster() -> void:
 	# Площадка: профнастил на стойках вместо решётки из палок

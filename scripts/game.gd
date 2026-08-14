@@ -131,7 +131,7 @@ func _start_level() -> void:
 	hp_bar.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	hp_bar.custom_minimum_size = Vector2(260, 10)
 	hp_bar.size = Vector2(260, 10)
-	hp_bar.position = Vector2(hp_bar.position.x - 130.0, 16.0)
+	hp_bar.position = Vector2(hp_bar.position.x - 130.0, 44.0)
 	title_label.modulate = Color(0.9, 0.88, 0.8, 0.9)
 	prompt_label.modulate = Color(0.85, 0.82, 0.75, 0.8)
 	prompt_label.text = str(level.get("hint_%s" % Svc.loc().lang, level.get("hint_en", "")))

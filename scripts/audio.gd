@@ -70,9 +70,19 @@ func set_indoor(on: bool) -> void:
 	_reverb.room_size = 0.72 if on else 0.3
 	_reverb.damping = 0.32 if on else 0.7
 
+const LOOPED := ["rustle", "ambient", "music", "game_music", "danger_music"]
+
 func _try_load(key: String, path: String) -> void:
-	if ResourceLoader.exists(path):
-		_streams[key] = load(path)
+	if not ResourceLoader.exists(path):
+		return
+	var s: AudioStream = load(path)
+	# Флаг петли в .import Godot берёт из кэша сэмпла, поэтому ставим явно
+	if key in LOOPED and s is AudioStreamWAV:
+		var w: AudioStreamWAV = s
+		w.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		w.loop_begin = 0
+		w.loop_end = 0
+	_streams[key] = s
 
 func _apply_volumes() -> void:
 	var m := clampf(float(Svc.meta().settings.get("music", 0.7)), 0.001, 1.0)

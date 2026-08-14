@@ -10,6 +10,7 @@ uniform float lift_blue : hint_range(0.0, 0.2) = 0.035;
 uniform float contrast : hint_range(0.5, 2.0) = 1.08;
 uniform float saturation : hint_range(0.0, 2.0) = 0.92;
 uniform float time_seed = 0.0;
+uniform sampler2D screen_tex : hint_screen_texture, repeat_disable, filter_linear;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -23,9 +24,9 @@ void fragment() {
 	// Хроматика растёт от центра к краям, как в дешёвой оптике
 	vec2 offset = centered * chroma_amount * r2 * 4.0;
 	vec3 col;
-	col.r = texture(TEXTURE, uv + offset).r;
-	col.g = texture(TEXTURE, uv).g;
-	col.b = texture(TEXTURE, uv - offset).b;
+	col.r = texture(screen_tex, uv + offset).r;
+	col.g = texture(screen_tex, uv).g;
+	col.b = texture(screen_tex, uv - offset).b;
 
 	// Тени уходят в синеву, света остаются нейтральными
 	float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));

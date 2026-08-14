@@ -148,10 +148,14 @@ func _setup_rustle() -> void:
 	_rustle = AudioStreamPlayer3D.new()
 	_rustle.volume_db = -80.0
 	_rustle.max_distance = 12.0
-	_rustle.bus = "Master"
+	_rustle.bus = "SFX" if AudioServer.get_bus_index("SFX") != -1 else "Master"
+	_rustle.unit_size = 4.0
 	add_child(_rustle)
 	if ResourceLoader.exists("res://assets/sfx/rustle.wav"):
-		_rustle.stream = load("res://assets/sfx/rustle.wav")
+		var w: AudioStream = load("res://assets/sfx/rustle.wav")
+		if w is AudioStreamWAV:
+			(w as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+		_rustle.stream = w
 		_rustle.autoplay = false
 
 func _build_visual() -> void:
