@@ -1,0 +1,3 @@
+ambientCG Road012A (CC0)
+https://ambientcg.com/view?id=Road012A
+tile_m=4.0

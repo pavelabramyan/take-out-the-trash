@@ -1,0 +1,3 @@
+ambientCG Carpet016 (CC0)
+https://ambientcg.com/view?id=Carpet016
+tile_m=1.0

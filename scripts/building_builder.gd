@@ -66,117 +66,69 @@ func build(level: Dictionary) -> void:
 	Svc.audio().play_ambient()
 
 func _make_materials() -> void:
-	## Цвета по рефу Нижегородской / типовой клетки: грязная бирюза + грязный верх.
-	## Важно: albedo_color умножается на текстуру — при готовой albedo держим ~1.0.
+	## PBR из assets/pbr (ambientCG, CC0). Цвет задаётся тинтом поверх серой
+	## albedo: краска по штукатурке, грязь по плитке, зелень по контейнерам.
 	var style: String = str(_level.get("style", "khrushchev"))
-	var wall_up := Color(1.05, 1.0, 0.92)       # грязно-белый верх (tint на wall.png)
-	var wall_low := Color(1.15, 1.2, 1.1)        # зелёнка уже в zelenka.png
-	var tile_c := Color(0.78, 0.72, 0.64)
-	var panel_c := Color(1.0, 0.96, 0.9)         # облезлая панель
+	var wall_up := Color(0.80, 0.78, 0.72)      # известка, потемневшая от времени
+	var wall_low := Color(0.34, 0.48, 0.44)     # зелёнка-бирюза, масляная краска
+	var tile_c := Color(0.62, 0.58, 0.52)       # затёртая плитка площадок
+	var panel_c := Color(0.70, 0.68, 0.64)      # серая панель фасада
 	match style:
 		"brezhnev":
-			wall_up = Color(1.0, 1.0, 1.0)
-			wall_low = Color(0.95, 1.05, 1.2)
-			panel_c = Color(0.95, 0.98, 1.0)
+			wall_up = Color(0.82, 0.80, 0.76)
+			wall_low = Color(0.28, 0.42, 0.52)
+			panel_c = Color(0.68, 0.70, 0.72)
 		"courtyard":
-			wall_up = Color(1.0, 0.95, 0.85)
-			wall_low = Color(1.1, 0.95, 0.85)
-			panel_c = Color(1.0, 0.9, 0.8)
+			wall_up = Color(0.80, 0.74, 0.64)
+			wall_low = Color(0.52, 0.42, 0.30)
+			panel_c = Color(0.74, 0.68, 0.58)
 		_:
 			pass
-	_mats["wall"] = _tex_mat("res://assets/textures/wall.png", wall_up, Vector3(0.7, 0.7, 0.7))
-	(_mats["wall"] as StandardMaterial3D).roughness = 0.92
-	_mats["wainscot"] = _tex_mat("res://assets/textures/zelenka.png", wall_low, Vector3(0.95, 0.95, 0.95))
-	(_mats["wainscot"] as StandardMaterial3D).roughness = 0.55  # масляная краска чуть блестит
-	_mats["tile"] = _tex_mat("res://assets/textures/tile_dirty.png", tile_c, Vector3(5.5, 5.5, 5.5))
-	if not (_mats["tile"] as StandardMaterial3D).albedo_texture:
-		_mats["tile"] = _tex_mat("res://assets/textures/tile.png", tile_c, Vector3(5.5, 5.5, 5.5))
-	(_mats["tile"] as StandardMaterial3D).roughness = 0.9
-	_mats["rail"] = _mat(Color(0.18, 0.18, 0.19), 0.65)
-	(_mats["rail"] as StandardMaterial3D).roughness = 0.55
-	_mats["handrail"] = _mat(Color(0.38, 0.14, 0.12), 0.05)  # тёмно-бордовый поручень
-	(_mats["handrail"] as StandardMaterial3D).roughness = 0.62
-	_mats["door"] = _tex_mat("res://assets/textures/door.png", Color(1.0, 1.0, 1.0), Vector3(1, 1, 1))
-	_mats["door_apt"] = _tex_mat("res://assets/textures/door.png", Color(1.1, 1.05, 0.95), Vector3(1, 1, 1))
-	_mats["door_metal"] = _tex_mat("res://assets/textures/metal_door.png", Color(1.0, 1.0, 1.0), Vector3(1, 1, 1))
-	_mats["concrete"] = _tex_mat("res://assets/textures/concrete.png", Color(1.0, 0.96, 0.88), Vector3(2.2, 2.2, 2.2))
-	# Ступени: жёлтый бетон в центре прохода + зелёная краска по краям
-	_mats["step"] = _tex_mat("res://assets/textures/concrete.png", Color(1.15, 1.05, 0.85), Vector3(3.5, 3.5, 3.5))
-	_mats["step_paint"] = _tex_mat("res://assets/textures/stair_paint.png", Color(0.78, 0.68, 0.48), Vector3(1, 1, 1))
-	(_mats["step_paint"] as StandardMaterial3D).roughness = 0.82
-	_mats["panel"] = _tex_mat("res://assets/textures/panel.png", panel_c, Vector3(0.85, 0.85, 0.85))
-	_mats["asphalt"] = _tex_mat("res://assets/textures/asphalt.png", Color(1.05, 1.05, 1.05), Vector3(4.5, 4.5, 4.5))
-	_mats["ice"] = _tex_mat("res://assets/textures/ice.png", Color(0.85, 0.90, 0.95), Vector3(2.5, 2.5, 2.5))
-	(_mats["ice"] as StandardMaterial3D).roughness = 0.22
-	(_mats["ice"] as StandardMaterial3D).metallic = 0.15
-	_mats["dumpster"] = _tex_mat("res://assets/textures/dumpster.png", Color(0.72, 1.05, 0.55), Vector3(1.0, 1.0, 1.0))
-	_mats["dumpster_rust"] = _tex_mat("res://assets/textures/dumpster_rust.png", Color(1.15, 0.85, 0.55), Vector3(1.2, 1.2, 1.2))
-	_mats["mail"] = _tex_mat("res://assets/textures/mail.png", Color(1, 1, 1), Vector3(1, 1, 1))
-	(_mats["mail"] as StandardMaterial3D).roughness = 0.55
-	_mats["metal"] = _mat(Color(0.22, 0.23, 0.24), 0.75)
-	(_mats["metal"] as StandardMaterial3D).roughness = 0.48
-	_mats["glass"] = _mat(Color(0.28, 0.34, 0.38), 0.05)
-	(_mats["glass"] as StandardMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	(_mats["glass"] as StandardMaterial3D).albedo_color.a = 0.45
-	(_mats["glass"] as StandardMaterial3D).roughness = 0.3
-	_mats["mark"] = _mat(Color(0.28, 0.22, 0.12))
-	(_mats["mark"] as StandardMaterial3D).roughness = 0.96
-	_mats["prop"] = _mat(Color(0.26, 0.24, 0.22))
-	_mats["number"] = _mat(Color(0.72, 0.70, 0.58))
-	_mats["wood"] = _mat(Color(0.34, 0.22, 0.12))
-	_mats["paper"] = _tex_mat("res://assets/textures/paper_notice.png", Color(1.0, 0.98, 0.9), Vector3(1, 1, 1))
-	_mats["dirt"] = _mat(Color(0.18, 0.16, 0.12))
-	(_mats["dirt"] as StandardMaterial3D).albedo_color.a = 0.62
-	(_mats["dirt"] as StandardMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_mats["graffiti"] = _tex_mat("res://assets/textures/graffiti.png", Color(1, 1, 1), Vector3(1, 1, 1))
-	(_mats["graffiti"] as StandardMaterial3D).roughness = 0.95
-	_mats["grass"] = _tex_mat("res://assets/textures/grass.png", Color(0.95, 0.92, 0.8), Vector3(3.5, 3.5, 3.5))
-	(_mats["grass"] as StandardMaterial3D).roughness = 0.95
-	_mats["wool"] = _tex_mat("res://assets/textures/wool.png", Color(1, 1, 1), Vector3(2.2, 2.2, 2.2))
-	(_mats["wool"] as StandardMaterial3D).roughness = 0.95
-	_mats["rust"] = _tex_mat("res://assets/textures/dumpster_rust.png", Color(1.0, 0.95, 0.9), Vector3(1.6, 1.6, 1.6))
-	if not (_mats["rust"] as StandardMaterial3D).albedo_texture:
-		_mats["rust"] = _mat(Color(0.42, 0.22, 0.10), 0.35)
-	(_mats["rust"] as StandardMaterial3D).roughness = 0.78
-	_mats["lamp"] = _mat(Color(1.0, 0.88, 0.55))
-	(_mats["lamp"] as StandardMaterial3D).emission_enabled = true
-	(_mats["lamp"] as StandardMaterial3D).emission = Color(1.0, 0.78, 0.35)
-	(_mats["lamp"] as StandardMaterial3D).emission_energy_multiplier = 3.2
-	_mats["window_lit"] = _mat(Color(0.95, 0.85, 0.55))
-	(_mats["window_lit"] as StandardMaterial3D).emission_enabled = true
-	(_mats["window_lit"] as StandardMaterial3D).emission = Color(1.0, 0.82, 0.45)
-	(_mats["window_lit"] as StandardMaterial3D).emission_energy_multiplier = 1.6
-	_mats["curtain"] = _mat(Color(0.45, 0.30, 0.24))
-	(_mats["curtain"] as StandardMaterial3D).roughness = 0.9
-	_mats["balcony"] = _mat(Color(0.72, 0.72, 0.70))
-	(_mats["balcony"] as StandardMaterial3D).roughness = 0.75
-	_mats["puddle"] = _mat(Color(0.22, 0.24, 0.26), 0.25)
-	(_mats["puddle"] as StandardMaterial3D).roughness = 0.28
-	(_mats["puddle"] as StandardMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	(_mats["puddle"] as StandardMaterial3D).albedo_color.a = 0.45
-
-func _mat(c: Color, metallic: float = 0.0) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.albedo_color = c
-	m.roughness = 0.94 - metallic * 0.5
-	m.metallic = metallic
-	return m
-
-func _tex_mat(path: String, fallback: Color, uv_scale: Vector3 = Vector3(2, 2, 2)) -> StandardMaterial3D:
-	var m := _mat(fallback)
-	if ResourceLoader.exists(path):
-		m.albedo_texture = load(path)
-		m.uv1_scale = uv_scale
-		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	var rough_path := path.get_basename() + "_rough.png"
-	if ResourceLoader.exists(rough_path):
-		m.roughness_texture = load(rough_path)
-	var nrm_path := path.get_basename() + "_normal.png"
-	if ResourceLoader.exists(nrm_path):
-		m.normal_enabled = true
-		m.normal_texture = load(nrm_path)
-		m.normal_scale = 0.65
-	return m
+	_mats["wall"] = MaterialLibrary.pbr("plaster_white", {"tint": wall_up, "rough": 1.0, "normal_scale": 0.8, "fallback": wall_up})
+	_mats["wainscot"] = MaterialLibrary.pbr("plaster_paint", {"tint": wall_low, "rough": 0.58, "metal": 0.0, "normal_scale": 0.55, "fallback": wall_low})
+	_mats["tile"] = MaterialLibrary.pbr("tiles_landing", {"tint": tile_c, "rough": 0.95, "tile_m": 1.15, "fallback": tile_c})
+	_mats["concrete"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.74, 0.72, 0.68), "fallback": Color(0.70, 0.68, 0.64)})
+	_mats["step"] = MaterialLibrary.pbr("concrete_floor", {"tint": Color(0.88, 0.82, 0.70), "tile_m": 1.4, "fallback": Color(0.72, 0.68, 0.58)})
+	_mats["step_paint"] = MaterialLibrary.pbr("plaster_paint", {"tint": Color(0.30, 0.38, 0.30), "rough": 0.72, "tile_m": 1.2, "fallback": Color(0.30, 0.38, 0.30)})
+	_mats["panel"] = MaterialLibrary.pbr("concrete_wall", {"tint": panel_c, "tile_m": 2.6, "fallback": panel_c})
+	_mats["bricks"] = MaterialLibrary.pbr("bricks", {"tint": Color(0.82, 0.72, 0.64), "fallback": Color(0.60, 0.42, 0.34)})
+	_mats["asphalt"] = MaterialLibrary.pbr("asphalt", {"tint": Color(0.86, 0.86, 0.86), "fallback": Color(0.20, 0.20, 0.19)})
+	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.90, 0.90, 0.90), "fallback": Color(0.17, 0.17, 0.16)})
+	_mats["gravel"] = MaterialLibrary.pbr("gravel", {"tint": Color(0.88, 0.86, 0.82), "fallback": Color(0.32, 0.31, 0.29)})
+	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.90, 0.86, 0.80), "fallback": Color(0.28, 0.24, 0.18)})
+	_mats["grass"] = MaterialLibrary.pbr("grass", {"tint": Color(0.80, 0.84, 0.62), "tile_m": 1.6, "fallback": Color(0.30, 0.36, 0.16)})
+	_mats["ice"] = MaterialLibrary.pbr("ice", {"tint": Color(0.82, 0.88, 0.92), "rough": 0.85, "fallback": Color(0.72, 0.80, 0.85)})
+	_mats["snow"] = MaterialLibrary.pbr("snow", {"tint": Color(0.95, 0.96, 1.0), "fallback": Color(0.88, 0.90, 0.94)})
+	_mats["carpet"] = MaterialLibrary.pbr("carpet", {"tint": Color(0.52, 0.34, 0.28), "tile_m": 0.8, "fallback": Color(0.42, 0.26, 0.20)})
+	_mats["wool"] = _mats["carpet"]
+	# Металл: крашеный (перила, скобы), ржавый (петли, потёки), сталь (двери)
+	_mats["metal"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.30, 0.31, 0.33), "metal": 0.75, "rough": 0.80, "tile_m": 0.7, "normal_scale": 0.7, "fallback": Color(0.22, 0.23, 0.24)})
+	_mats["rail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.22, 0.23, 0.25), "metal": 0.70, "rough": 0.68, "tile_m": 0.6, "fallback": Color(0.18, 0.18, 0.19)})
+	_mats["handrail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.34, 0.12, 0.10), "metal": 0.15, "rough": 0.52, "tile_m": 0.9, "fallback": Color(0.34, 0.12, 0.10)})
+	_mats["rust"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.58, 0.33, 0.18), "metal": 0.45, "rough": 1.0, "tile_m": 0.8, "fallback": Color(0.42, 0.22, 0.10)})
+	_mats["steel"] = MaterialLibrary.pbr("steel_corrugated", {"tint": Color(0.46, 0.47, 0.48), "metal": 1.0, "rough": 0.85, "tile_m": 1.2, "fallback": Color(0.32, 0.33, 0.34)})
+	_mats["door_metal"] = MaterialLibrary.pbr("steel_corrugated", {"tint": Color(0.34, 0.33, 0.31), "metal": 0.90, "rough": 0.90, "tile_m": 1.0, "fallback": Color(0.26, 0.25, 0.24)})
+	_mats["dumpster"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.26, 0.42, 0.26), "metal": 0.35, "rough": 0.72, "tile_m": 1.1, "fallback": Color(0.20, 0.34, 0.20)})
+	_mats["dumpster_rust"] = _mats["rust"]
+	_mats["mail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.26, 0.34, 0.36), "metal": 0.50, "rough": 0.65, "tile_m": 0.8, "fallback": Color(0.22, 0.30, 0.32)})
+	# Дерево: квартирные двери, лавка, черенок веника
+	_mats["door_apt"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.72, 0.54, 0.36), "rough": 0.75, "tile_m": 1.1, "fallback": Color(0.50, 0.36, 0.22)})
+	_mats["door"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.62, 0.44, 0.30), "rough": 0.80, "tile_m": 1.1, "fallback": Color(0.44, 0.30, 0.18)})
+	_mats["wood"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.48, 0.34, 0.22), "rough": 0.90, "tile_m": 0.9, "fallback": Color(0.34, 0.22, 0.12)})
+	# Рисованные карты — там важен сам рисунок, а не микрорельеф
+	_mats["graffiti"] = MaterialLibrary.painted("res://assets/textures/graffiti.png", Color(1, 1, 1), Vector3.ONE, 0.95)
+	_mats["paper"] = MaterialLibrary.painted("res://assets/textures/paper_notice.png", Color(0.95, 0.93, 0.86), Vector3.ONE, 0.92)
+	_mats["number"] = MaterialLibrary.flat(Color(0.62, 0.60, 0.50), 0.80)
+	# Мелочь и полупрозрачное
+	_mats["glass"] = MaterialLibrary.flat(Color(0.16, 0.20, 0.23), 0.12, 0.35, 0.55)
+	_mats["mark"] = MaterialLibrary.flat(Color(0.20, 0.17, 0.13), 0.98, 0.0, 0.85)
+	_mats["prop"] = MaterialLibrary.flat(Color(0.20, 0.19, 0.17), 0.90)
+	_mats["dirt"] = MaterialLibrary.flat(Color(0.10, 0.09, 0.07), 1.0, 0.0, 0.50)
+	_mats["curtain"] = MaterialLibrary.flat(Color(0.38, 0.26, 0.21), 0.95)
+	_mats["balcony"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.66, 0.65, 0.62), "tile_m": 1.4, "fallback": Color(0.62, 0.62, 0.60)})
+	_mats["puddle"] = MaterialLibrary.flat(Color(0.06, 0.07, 0.08), 0.06, 0.20, 0.72)
+	_mats["lamp"] = MaterialLibrary.emissive(Color(1.0, 0.90, 0.62), 3.0, Color(1.0, 0.76, 0.34))
+	_mats["window_lit"] = MaterialLibrary.emissive(Color(0.95, 0.86, 0.60), 1.5, Color(1.0, 0.82, 0.45))
 
 func _add_world_env(night: bool) -> void:
 	var we := WorldEnvironment.new()
