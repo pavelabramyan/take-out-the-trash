@@ -50,10 +50,12 @@ static func spawn(parent: Node, name: String, pos: Vector3, rot_deg: Vector3 = V
 	node.position = pos
 	return node
 
-## Меш вместе с локальным трансформом узла — для MultiMesh.
+## Меш и локальный трансформ узла — для MultiMesh.
 ## part: подстрока имени узла ("" — первый попавшийся меш).
-static func mesh_of(name: String, part: String = "") -> Array:
-	var key := name + "#" + part
+## В моделях Poly Haven варианты разложены рядом по X, поэтому сдвиг узла
+## отбрасываем: иначе инстансы уезжают на метры от заданной точки.
+static func mesh_of(name: String, part: String = "", keep_origin: bool = false) -> Array:
+	var key := name + "#" + part + ("#o" if keep_origin else "")
 	var hit = _meshes.get(key)
 	if hit != null:
 		return hit
@@ -65,7 +67,10 @@ static func mesh_of(name: String, part: String = "") -> Array:
 		node.free()
 		return []
 	var mi: MeshInstance3D = found[0]
-	var res := [mi.mesh, mi.transform]
+	var local := mi.transform
+	if not keep_origin:
+		local.origin = Vector3.ZERO
+	var res := [mi.mesh, local]
 	_meshes[key] = res
 	node.free()
 	return res

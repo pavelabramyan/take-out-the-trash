@@ -87,9 +87,11 @@ MODELS: dict[str, str] = {
 }
 
 HDRI: dict[str, str] = {
-    "potsdamer_platz": "2k",   # пасмурный городской день
-    "abandoned_parking": "1k",  # день с солнцем
-    "preller_drive": "1k",      # ночь в городе
+    # Только небо: панорамы с узнаваемым городом видны за забором и выдают чужую
+    # локацию, поэтому окружение строим сами, а от HDRI берём свет и облака
+    "overcast_soil_puresky": "2k",  # пасмурный день — основной вид
+    "kloppenheim_02_puresky": "1k",  # день со слабым солнцем
+    "dikhololo_night": "1k",         # ночь
 }
 
 

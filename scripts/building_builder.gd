@@ -87,15 +87,16 @@ func _make_materials() -> void:
 	_mats["wall"] = MaterialLibrary.pbr("plaster_white", {"tint": wall_up, "rough": 1.0, "normal_scale": 0.8, "fallback": wall_up})
 	_mats["wainscot"] = MaterialLibrary.pbr("plaster_paint", {"tint": wall_low, "rough": 0.72, "metal": 0.0, "normal_scale": 0.6, "fallback": wall_low})
 	_mats["tile"] = MaterialLibrary.pbr("tiles_landing", {"tint": tile_c, "rough": 0.95, "tile_m": 1.15, "fallback": tile_c})
-	_mats["concrete"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.58, 0.56, 0.53), "fallback": Color(0.70, 0.68, 0.64)})
-	_mats["step"] = MaterialLibrary.pbr("concrete_floor", {"tint": Color(0.70, 0.66, 0.57), "tile_m": 1.4, "fallback": Color(0.72, 0.68, 0.58)})
+	_mats["concrete"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.40, 0.39, 0.37), "fallback": Color(0.70, 0.68, 0.64)})
+	_mats["step"] = MaterialLibrary.pbr("concrete_floor", {"tint": Color(0.48, 0.46, 0.41), "tile_m": 1.4, "fallback": Color(0.72, 0.68, 0.58)})
 	_mats["step_paint"] = MaterialLibrary.pbr("plaster_paint", {"tint": Color(0.30, 0.38, 0.30), "rough": 0.72, "tile_m": 1.2, "fallback": Color(0.30, 0.38, 0.30)})
 	_mats["panel"] = MaterialLibrary.pbr("concrete_wall", {"tint": panel_c, "tile_m": 2.6, "normal_scale": 0.85, "fallback": panel_c})
 	_mats["bricks"] = MaterialLibrary.pbr("bricks", {"tint": Color(0.82, 0.72, 0.64), "fallback": Color(0.60, 0.42, 0.34)})
-	_mats["asphalt"] = MaterialLibrary.pbr("asphalt", {"tint": Color(0.42, 0.42, 0.42), "fallback": Color(0.20, 0.20, 0.19)})
-	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.46, 0.46, 0.46), "fallback": Color(0.17, 0.17, 0.16)})
+	_mats["asphalt"] = MaterialLibrary.pbr("asphalt", {"tint": Color(0.26, 0.26, 0.26), "fallback": Color(0.20, 0.20, 0.19)})
+	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.30, 0.30, 0.30), "fallback": Color(0.17, 0.17, 0.16)})
 	_mats["gravel"] = MaterialLibrary.pbr("gravel", {"tint": Color(0.66, 0.64, 0.61), "fallback": Color(0.32, 0.31, 0.29)})
-	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.68, 0.64, 0.58), "fallback": Color(0.28, 0.24, 0.18)})
+	_mats["rope"] = MaterialLibrary.flat(Color(0.62, 0.58, 0.48), 0.95, 0.0)
+	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.38, 0.34, 0.28), "tile_m": 0.55, "fallback": Color(0.28, 0.24, 0.18)})
 	_mats["grass"] = MaterialLibrary.pbr("grass", {"tint": Color(0.60, 0.64, 0.46), "tile_m": 1.6, "fallback": Color(0.30, 0.36, 0.16)})
 	_mats["ice"] = MaterialLibrary.pbr("ice", {"tint": Color(0.82, 0.88, 0.92), "rough": 0.85, "fallback": Color(0.72, 0.80, 0.85)})
 	_mats["snow"] = MaterialLibrary.pbr("snow", {"tint": Color(0.95, 0.96, 1.0), "fallback": Color(0.88, 0.90, 0.94)})
@@ -106,8 +107,11 @@ func _make_materials() -> void:
 	_mats["rail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.22, 0.23, 0.25), "metal": 0.70, "rough": 0.68, "tile_m": 0.6, "fallback": Color(0.18, 0.18, 0.19)})
 	_mats["handrail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.34, 0.12, 0.10), "metal": 0.15, "rough": 0.52, "tile_m": 0.9, "fallback": Color(0.34, 0.12, 0.10)})
 	_mats["rust"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.58, 0.33, 0.18), "metal": 0.45, "rough": 1.0, "tile_m": 0.8, "fallback": Color(0.42, 0.22, 0.10)})
-	_mats["steel"] = MaterialLibrary.pbr("steel_corrugated", {"tint": Color(0.46, 0.47, 0.48), "metal": 1.0, "rough": 0.85, "tile_m": 1.2, "fallback": Color(0.32, 0.33, 0.34)})
+	_mats["steel"] = MaterialLibrary.pbr("steel_corrugated", {"tint": Color(0.34, 0.35, 0.36), "metal": 0.9, "rough": 0.88, "tile_m": 0.45, "fallback": Color(0.32, 0.33, 0.34)})
 	_mats["door_metal"] = MaterialLibrary.pbr("steel_corrugated", {"tint": Color(0.34, 0.33, 0.31), "metal": 0.90, "rough": 0.90, "tile_m": 1.0, "fallback": Color(0.26, 0.25, 0.24)})
+	_mats["corrug"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.21, 0.28, 0.23), "metal": 0.30, "rough": 0.86, "tile_m": 0.9, "normal_scale": 0.6, "fallback": Color(0.19, 0.26, 0.21)})
+	_mats["bin_lid"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.16, 0.24, 0.17), "metal": 0.25, "rough": 0.55, "tile_m": 1.0, "fallback": Color(0.14, 0.22, 0.15)})
+	_mats["bark"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.24, 0.20, 0.16), "rough": 1.0, "tile_m": 0.55, "normal_scale": 1.4, "fallback": Color(0.24, 0.20, 0.16)})
 	_mats["dumpster"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.26, 0.42, 0.26), "metal": 0.35, "rough": 0.72, "tile_m": 1.1, "fallback": Color(0.20, 0.34, 0.20)})
 	_mats["dumpster_rust"] = _mats["rust"]
 	_mats["mail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.26, 0.34, 0.36), "metal": 0.50, "rough": 0.65, "tile_m": 0.8, "fallback": Color(0.22, 0.30, 0.32)})
@@ -126,7 +130,7 @@ func _make_materials() -> void:
 	_mats["dirt"] = MaterialLibrary.flat(Color(0.10, 0.09, 0.07), 1.0, 0.0, 0.50)
 	_mats["curtain"] = MaterialLibrary.flat(Color(0.38, 0.26, 0.21), 0.95)
 	_mats["panel_far"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.34, 0.34, 0.35), "tile_m": 3.2, "normal_scale": 0.4, "fallback": Color(0.34, 0.34, 0.35)})
-	_mats["balcony"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.66, 0.65, 0.62), "tile_m": 1.4, "fallback": Color(0.62, 0.62, 0.60)})
+	_mats["balcony"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.44, 0.43, 0.41), "tile_m": 1.4, "fallback": Color(0.62, 0.62, 0.60)})
 	_mats["puddle"] = MaterialLibrary.flat(Color(0.06, 0.07, 0.08), 0.06, 0.20, 0.72)
 	_mats["lamp"] = MaterialLibrary.emissive(Color(1.0, 0.90, 0.62), 3.0, Color(1.0, 0.76, 0.34))
 	_mats["window_lit"] = MaterialLibrary.emissive(Color(0.95, 0.86, 0.60), 1.5, Color(1.0, 0.82, 0.45))
@@ -135,10 +139,10 @@ func _sky_hdri(night: bool) -> String:
 	## Пасмурный городской день — базовый вид панельки; солнце оставлено
 	## дворовым уровням, чтобы серия не выглядела снятой в один час.
 	if night:
-		return "res://assets/hdri/preller_drive_1k.hdr"
+		return "res://assets/hdri/dikhololo_night_1k.hdr"
 	if str(_level.get("style", "")) == "courtyard" and not bool(_level.get("ice", false)):
-		return "res://assets/hdri/abandoned_parking_1k.hdr"
-	return "res://assets/hdri/potsdamer_platz_2k.hdr"
+		return "res://assets/hdri/kloppenheim_02_puresky_1k.hdr"
+	return "res://assets/hdri/overcast_soil_puresky_2k.hdr"
 
 func _add_world_env(night: bool) -> void:
 	var we := WorldEnvironment.new()
@@ -180,8 +184,8 @@ func _add_world_env(night: bool) -> void:
 	env.fog_mode = Environment.FOG_MODE_DEPTH
 	env.fog_light_color = Color(0.10, 0.11, 0.14) if night else Color(0.62, 0.64, 0.66)
 	env.fog_light_energy = 0.7 if night else 1.0
-	env.fog_density = 0.012 if night else 0.004
-	env.fog_sky_affect = 0.25
+	env.fog_density = 0.010 if night else 0.0028
+	env.fog_sky_affect = 0.12
 	env.fog_aerial_perspective = 0.5
 
 	var forward_plus := RenderingServer.get_current_rendering_method() == "forward_plus"
@@ -199,8 +203,8 @@ func _add_world_env(night: bool) -> void:
 		env.ssil_intensity = 1.1
 		env.ssil_normal_rejection = 1.0
 		env.volumetric_fog_enabled = true
-		env.volumetric_fog_density = 0.028 if night else 0.014
-		env.volumetric_fog_albedo = Color(0.82, 0.82, 0.86)
+		env.volumetric_fog_density = 0.020 if night else 0.006
+		env.volumetric_fog_albedo = Color(0.70, 0.71, 0.75)
 		env.volumetric_fog_emission = Color(0.02, 0.02, 0.03)
 		env.volumetric_fog_anisotropy = 0.25
 		env.volumetric_fog_length = 45.0
@@ -742,8 +746,6 @@ func _build_yard(ice: bool, night: bool) -> void:
 	_box(Vector3(0, -0.1, 12.0), Vector3(24.0, 0.3, 18.0), ground)
 	# Бордюр + клок зелёнки у дома
 	_box(Vector3(0, 0.02, 5.4), Vector3(8.0, 0.12, 0.35), "concrete", false)
-	_box(Vector3(-3.5, 0.01, 6.2), Vector3(2.4, 0.06, 1.5), "ground_dirt", false)
-	_box(Vector3(3.8, 0.01, 6.0), Vector3(1.9, 0.06, 1.2), "ground_dirt", false)
 	_box(Vector3(2.2, 0.03, 11.5), Vector3(1.4, 0.02, 0.9), "puddle", false)
 	# Фасад с швами
 	_box(Vector3(-4.2, 8.5, DOOR_Z + 0.25), Vector3(6.6, 17.0, 0.28), "panel")
@@ -799,11 +801,8 @@ func _build_yard(ice: bool, night: bool) -> void:
 	_box(Vector3(1.3, 0.04, 10.6), Vector3(0.7, 0.03, 4.0), "mark", false)
 	_box(Vector3(3.3, 0.04, 13.9), Vector3(2.2, 0.03, 2.6), "mark", false)
 	# Сухая трава у забора
-	_box(Vector3(-6.5, 0.04, 10.0), Vector3(1.7, 0.08, 4.2), "ground_dirt", false)
-	_box(Vector3(7.0, 0.04, 13.0), Vector3(1.4, 0.08, 3.2), "ground_dirt", false)
 	_build_chainlink()
-	# Лавка у входа и урна
-	PropLibrary.spawn(self, "modular_street_seating", Vector3(-4.8, 0.0, 8.2), Vector3(0, 90, 0), 1.0, 0.85)
+	_bench(Vector3(-4.8, 0.0, 8.2))
 	PropLibrary.spawn(self, "metal_trash_can", Vector3(-3.2, 0.0, 7.5), Vector3(0, -20, 0), 1.0, 0.9)
 	# Фонарный столб: модель вместо палки с кубом
 	var lamp_post := PropLibrary.spawn(self, "street_lamp_01", Vector3(-1.8, 0.0, 7.2), Vector3(0, 105, 0), 1.0, 4.6)
@@ -823,11 +822,16 @@ func _build_yard(ice: bool, night: bool) -> void:
 	_hide_mesh(enc_b)
 	_hide_mesh(enc_l)
 	_hide_mesh(enc_r)
+	# Профнастил: лист плюс вертикальные рёбра, иначе гофра читается сеткой
+	var ribs_z: Array = []
 	for sx in [1.45, 5.55]:
-		_vis(Vector3(sx, 0.85, 14.5), Vector3(0.04, 1.7, 3.3), "steel")
+		_vis(Vector3(sx, 0.85, 14.5), Vector3(0.04, 1.7, 3.3), "corrug")
 		_vis(Vector3(sx, 1.74, 14.5), Vector3(0.06, 0.06, 3.34), "rust")
 		for i in range(3):
-			_mesh_at(Geo.pipe(0.032, 1.9), Vector3(sx, 0.95, 13.0 + float(i) * 1.5), "steel")
+			_mesh_at(Geo.pipe(0.032, 1.9), Vector3(sx, 0.95, 13.0 + float(i) * 1.5), "rail")
+		for k in range(22):
+			ribs_z.append(Transform3D(Basis.IDENTITY, Vector3(sx, 0.85, 12.9 + float(k) * 0.152)))
+	_multi(Geo.rounded_box(Vector3(0.05, 1.68, 0.05), 0.008), "corrug", ribs_z)
 	_vis(Vector3(8.2, 14.6, DOOR_Z + 0.9), Vector3(0.55, 0.08, 0.55), "metal")
 	_cyl(Vector3(8.2, 14.85, DOOR_Z + 0.9), 0.28, 0.04, "metal", Vector3(70, 20, 0))
 	_vis(Vector3(-6.4, 6.4, DOOR_Z + 0.55), Vector3(0.55, 0.32, 0.42), "metal")
@@ -871,35 +875,51 @@ func _plant_spots(rng: RandomNumberGenerator, count: int, cx: float, cz: float, 
 func _bare_tree(base: Vector3, height: float, seed_val: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_val
-	var trunk_r := height * 0.045
-	_mesh_at(Geo.pipe(trunk_r, height, 12), base + Vector3(0, height * 0.5, 0), "wood")
-	var count := 11
+	var trunk_r := height * 0.030
+	# Ствол из трёх сужающихся секций
+	_mesh_at(Geo.pipe(trunk_r, height * 0.42, 10), base + Vector3(0, height * 0.21, 0), "bark")
+	_mesh_at(Geo.pipe(trunk_r * 0.74, height * 0.34, 8), base + Vector3(0, height * 0.58, 0), "bark")
+	_mesh_at(Geo.pipe(trunk_r * 0.48, height * 0.26, 8), base + Vector3(0, height * 0.86, 0), "bark")
+	var count := 22
 	for i in range(count):
-		var t := 0.42 + 0.54 * float(i) / float(count)
+		var t := 0.34 + 0.62 * float(i) / float(count)
 		var y := base.y + height * t
-		var yaw := rng.randf_range(0.0, TAU)
-		var tilt := deg_to_rad(rng.randf_range(25.0, 58.0))
-		var len_b: float = height * rng.randf_range(0.16, 0.30) * (1.0 - t * 0.4)
+		# Нижние ветви почти горизонтальны, верхние тянутся вверх
+		var yaw := float(i) * 2.399 + rng.randf_range(-0.35, 0.35)
+		var tilt := deg_to_rad(lerpf(78.0, 34.0, t) + rng.randf_range(-9.0, 9.0))
+		var len_b: float = height * rng.randf_range(0.16, 0.30) * (1.35 - t * 0.75)
 		var dir := Vector3(sin(yaw) * sin(tilt), cos(tilt), cos(yaw) * sin(tilt)).normalized()
 		var start := Vector3(base.x, y, base.z)
 		var mid := start + dir * len_b * 0.5
-		var branch := _mesh_at(Geo.pipe(trunk_r * (0.34 - t * 0.12), len_b, 6), mid, "wood")
+		var branch := _mesh_at(Geo.pipe(trunk_r * (0.58 - t * 0.2), len_b, 6), mid, "bark")
 		branch.rotation = Quaternion(Vector3.UP, dir).get_euler()
-		# Второстепенная веточка от середины основной
-		if i % 2 == 0:
-			var yaw2 := yaw + rng.randf_range(0.6, 1.8)
-			var dir2 := Vector3(sin(yaw2) * 0.8, 0.6, cos(yaw2) * 0.8).normalized()
-			var len2 := len_b * 0.55
-			var twig := _mesh_at(Geo.pipe(trunk_r * 0.14, len2, 5), mid + dir2 * len2 * 0.5, "wood")
+		# Ветви второго порядка от конца основной
+		var tip := start + dir * len_b
+		for k in range(2):
+			var yaw2 := yaw + (0.7 if k == 0 else -0.8) + rng.randf_range(-0.25, 0.25)
+			var tilt2 := deg_to_rad(rng.randf_range(30.0, 62.0))
+			var dir2 := Vector3(sin(yaw2) * sin(tilt2), cos(tilt2), cos(yaw2) * sin(tilt2)).normalized()
+			var len2: float = len_b * rng.randf_range(0.38, 0.62)
+			var twig := _mesh_at(Geo.pipe(trunk_r * 0.16, len2, 5), tip + dir2 * len2 * 0.5, "bark")
 			twig.rotation = Quaternion(Vector3.UP, dir2).get_euler()
 
 ## Соседние панельки за забором: без них небо садится прямо на землю.
 func _background_blocks(night: bool) -> void:
+	# Кольцо кварталов вокруг: иначе за забором видно «землю» панорамы
 	var blocks := [
 		{"pos": Vector3(-22.0, 8.4, 44.0), "size": Vector3(26.0, 16.8, 11.0), "rot": -8.0},
 		{"pos": Vector3(19.0, 10.2, 52.0), "size": Vector3(22.0, 20.4, 11.0), "rot": 6.0},
 		{"pos": Vector3(2.0, 7.2, 68.0), "size": Vector3(34.0, 14.4, 12.0), "rot": 0.0},
+		{"pos": Vector3(-34.0, 9.0, 12.0), "size": Vector3(12.0, 18.0, 30.0), "rot": 4.0},
+		{"pos": Vector3(34.0, 8.4, 6.0), "size": Vector3(12.0, 16.8, 26.0), "rot": -5.0},
+		{"pos": Vector3(-30.0, 7.2, -22.0), "size": Vector3(24.0, 14.4, 12.0), "rot": 12.0},
+		{"pos": Vector3(26.0, 10.2, -28.0), "size": Vector3(28.0, 20.4, 12.0), "rot": -10.0},
+		{"pos": Vector3(-4.0, 8.4, -46.0), "size": Vector3(36.0, 16.8, 12.0), "rot": 3.0},
 	]
+	# Земля до горизонта: у панорамы неба низ тёмный, и без плоскости за забором
+	# получается чёрный обрыв
+	var ground := _mesh_at(Geo.rounded_box(Vector3(320.0, 0.4, 320.0), 0.1), Vector3(0, -0.24, 30.0), "asphalt")
+	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var lit: Array = []
 	var dark: Array = []
 	var rng := RandomNumberGenerator.new()
@@ -910,12 +930,25 @@ func _background_blocks(night: bool) -> void:
 		var mi := _mesh_at(Geo.rounded_box(size, 0.05), pos, "panel_far", Vector3(0, b["rot"], 0))
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var basis := Basis(Vector3.UP, deg_to_rad(float(b["rot"])))
-		var cols := int(size.x / 3.2)
+		# Парапет по краю крыши — плоский срез сразу выдаёт коробку
+		var par := _mesh_at(Geo.rounded_box(Vector3(size.x + 0.3, 0.5, size.z + 0.3), 0.04),
+			pos + Vector3(0, size.y * 0.5 + 0.2, 0), "panel_far", Vector3(0, b["rot"], 0))
+		par.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var rows := int(size.y / 2.8)
+		# Окна ставим на стороне, обращённой ко двору
+		var to_yard := Vector3(0, 0, 10.0) - pos
+		var local_dir := basis.inverse() * to_yard
+		var use_x := absf(local_dir.x) > absf(local_dir.z)
+		var face_w: float = size.z if use_x else size.x
+		var cols := int(face_w / 3.2)
+		var sgn := signf(local_dir.x if use_x else local_dir.z)
 		for r in range(rows):
 			for c in range(cols):
-				var local := Vector3(-size.x * 0.5 + 1.8 + float(c) * 3.2, -size.y * 0.5 + 1.9 + float(r) * 2.8, -size.z * 0.5 - 0.06)
-				var t := Transform3D(basis, pos + basis * local)
+				var along := -face_w * 0.5 + 1.8 + float(c) * 3.2
+				var up := -size.y * 0.5 + 1.9 + float(r) * 2.8
+				var local := Vector3(sgn * (size.x * 0.5 + 0.06), up, along) if use_x \
+					else Vector3(along, up, sgn * (size.z * 0.5 + 0.06))
+				var t := Transform3D(basis.rotated(Vector3.UP, deg_to_rad(90.0)) if use_x else basis, pos + basis * local)
 				if night and rng.randf() < 0.45:
 					lit.append(t)
 				else:
@@ -924,21 +957,147 @@ func _background_blocks(night: bool) -> void:
 	if night and not dark.is_empty():
 		_multi(Geo.rounded_box(Vector3(1.5, 1.3, 0.08), 0.01), "glass", dark)
 
+## Ковровыбивалка: две стойки с перекладиной — приметнее любого забора.
+func _carpet_beater(at: Vector3) -> void:
+	for sx in [-0.95, 0.95]:
+		_mesh_at(Geo.pipe(0.035, 1.62), at + Vector3(sx, 0.81, 0), "rail")
+		_mesh_at(Geo.pipe(0.03, 0.5), at + Vector3(sx * 0.82, 1.35, 0), "rail", Vector3(0, 0, 40.0 * signf(sx)))
+	_mesh_at(Geo.pipe(0.03, 2.05), at + Vector3(0, 1.6, 0), "rail", Vector3(0, 0, 90))
+	_vis(at + Vector3(-0.95, 0.03, 0), Vector3(0.22, 0.06, 0.22), "step")
+	_vis(at + Vector3(0.95, 0.03, 0), Vector3(0.22, 0.06, 0.22), "step")
+
+## Сушилка: два столба и провисающие верёвки.
+func _clothesline(at: Vector3) -> void:
+	for sz in [-1.7, 1.7]:
+		_mesh_at(Geo.pipe(0.04, 2.1), at + Vector3(0, 1.05, sz), "rail")
+		_mesh_at(Geo.pipe(0.025, 0.44), at + Vector3(0, 1.95, sz + 0.2 * signf(sz)), "rail", Vector3(70.0 * signf(sz), 0, 0))
+	# Верёвка ломаной из отрезков — провис делает её живой
+	var seg := 8
+	for line in range(3):
+		var y0 := 1.62 + float(line) * 0.16
+		for i in range(seg):
+			var t0 := float(i) / float(seg)
+			var t1 := float(i + 1) / float(seg)
+			var z0: float = lerpf(-1.7, 1.7, t0)
+			var z1: float = lerpf(-1.7, 1.7, t1)
+			var sag0 := -0.12 * sin(t0 * PI)
+			var sag1 := -0.12 * sin(t1 * PI)
+			var p0 := at + Vector3(0, y0 + sag0, z0)
+			var p1 := at + Vector3(0, y0 + sag1, z1)
+			var mid := (p0 + p1) * 0.5
+			var rope := _mesh_at(Geo.pipe(0.008, p0.distance_to(p1), 4), mid, "rope")
+			rope.rotation = Quaternion(Vector3.UP, (p1 - p0).normalized()).get_euler()
+
+## Дворовая лавка: бетонные боковины и рейки с облезшей краской.
+func _bench(at: Vector3) -> void:
+	for sz in [-0.72, 0.72]:
+		_vis(at + Vector3(0, 0.21, sz), Vector3(0.42, 0.42, 0.10), "step")
+		_vis(at + Vector3(0, 0.60, sz + 0.16), Vector3(0.10, 0.44, 0.08), "step")
+	var slats: Array = []
+	for i in range(4):
+		slats.append(Transform3D(Basis.IDENTITY, at + Vector3(-0.12 + float(i) * 0.115, 0.44, 0.0)))
+	_multi(Geo.rounded_box(Vector3(0.10, 0.035, 1.62), 0.008), "handrail", slats)
+	var backs: Array = []
+	for i in range(3):
+		backs.append(Transform3D(Basis.IDENTITY, at + Vector3(0.17, 0.62 + float(i) * 0.13, 0.0)))
+	_multi(Geo.rounded_box(Vector3(0.035, 0.10, 1.62), 0.008), "handrail", backs)
+
+const LAWNS := [
+	{"c": Vector2(-3.6, 6.4), "s": Vector2(2.6, 1.6)},
+	{"c": Vector2(4.0, 6.2), "s": Vector2(2.0, 1.4)},
+	{"c": Vector2(-6.6, 10.4), "s": Vector2(1.9, 4.4)},
+	{"c": Vector2(7.2, 13.2), "s": Vector2(1.6, 3.4)},
+]
+
+## Газон: земля внутри бордюра, разнотравье и проплешины.
+func _lawns(rng: RandomNumberGenerator, ice: bool) -> void:
+	var kinds := [
+		["grass_medium_01", "tall_a", Vector2(0.8, 1.6)],
+		["grass_medium_01", "mid_b", Vector2(0.9, 1.7)],
+		["grass_medium_01", "small_a", Vector2(0.9, 1.5)],
+		["weed_plant_02", "_c_", Vector2(0.9, 1.6)],
+		["dandelion_01", "_e_", Vector2(0.8, 1.4)],
+		["nettle_plant", "tall_a", Vector2(1.0, 1.9)],
+		["grass_medium_01", "tiny_a", Vector2(1.2, 2.4)],
+		["grass_medium_01", "tiny_c", Vector2(1.2, 2.6)],
+		["grass_medium_01", "tiny_e", Vector2(1.4, 2.6)],
+	]
+	var per_kind: Array = []
+	for _k in kinds:
+		per_kind.append([])
+	for l in LAWNS:
+		var c: Vector2 = l["c"]
+		var s: Vector2 = l["s"]
+		_vis(Vector3(c.x, 0.045, c.y), Vector3(s.x * 2.0, 0.09, s.y * 2.0), "ground_dirt")
+		# Плотность занижена на льду: под снегом трава не торчит
+		var per_m2 := 4.0 if ice else 16.0
+		var total := int(s.x * 2.0 * s.y * 2.0 * per_m2)
+		for i in range(total):
+			var idx := rng.randi_range(0, kinds.size() - 1)
+			var p := Vector3(c.x + rng.randf_range(-s.x + 0.12, s.x - 0.12), 0.085,
+				c.y + rng.randf_range(-s.y + 0.12, s.y - 0.12))
+			(per_kind[idx] as Array).append(p)
+	for i in range(kinds.size()):
+		var spots: Array = per_kind[i]
+		if spots.is_empty():
+			continue
+		var k: Array = kinds[i]
+		_scatter_plants(rng, k[0], k[1], spots, k[2])
+
+## Бордюрный камень по краю газонов — газон без бордюра выглядит наклейкой.
+func _curbs() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 909
+	var stone := Geo.rounded_box(Vector3(0.48, 0.24, 0.13), 0.01)
+	var xf: Array = []
+	for l in LAWNS:
+		var c: Vector2 = l["c"]
+		var s: Vector2 = l["s"]
+		var along_x := int(s.x * 2.0 / 0.5)
+		var along_z := int(s.y * 2.0 / 0.5)
+		for i in range(along_x):
+			var x := c.x - s.x + 0.25 + float(i) * 0.5
+			for sz in [-1.0, 1.0]:
+				var t := Transform3D(Basis.IDENTITY, Vector3(x, 0.06, c.y + sz * s.y))
+				t.basis = t.basis.rotated(Vector3.FORWARD, deg_to_rad(rng.randf_range(-1.8, 1.8)))
+				xf.append(t)
+		for i in range(along_z):
+			var z := c.y - s.y + 0.25 + float(i) * 0.5
+			for sx in [-1.0, 1.0]:
+				var t2 := Transform3D(Basis(Vector3.UP, deg_to_rad(90.0)), Vector3(c.x + sx * s.x, 0.06, z))
+				t2.basis = t2.basis.rotated(Vector3.FORWARD, deg_to_rad(rng.randf_range(-1.8, 1.8)))
+				xf.append(t2)
+	_multi(stone, "step", xf)
+
+## Пятна масла, заплатки и трещины: ровный асфальт выдаёт компьютер.
+func _asphalt_wear() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	var spots: Array = []
+	for _i in range(18):
+		var p := Vector3(rng.randf_range(-8.5, 8.5), 0.012, rng.randf_range(6.0, 18.0))
+		var b := Basis(Vector3.UP, rng.randf_range(0.0, TAU)).scaled(Vector3(rng.randf_range(0.5, 1.8), 1.0, rng.randf_range(0.5, 1.6)))
+		spots.append(Transform3D(b, p))
+	_multi(Geo.rounded_box(Vector3(0.9, 0.01, 0.7), 0.02), "mark", spots)
+	var cracks: Array = []
+	for _i in range(22):
+		var p2 := Vector3(rng.randf_range(-9.0, 9.0), 0.013, rng.randf_range(6.0, 18.5))
+		var b2 := Basis(Vector3.UP, rng.randf_range(0.0, TAU)).scaled(Vector3(1.0, 1.0, rng.randf_range(0.6, 2.4)))
+		cracks.append(Transform3D(b2, p2))
+	_multi(Geo.rounded_box(Vector3(0.04, 0.01, 1.2), 0.005), "dirt", cracks)
+
 func _dress_yard(night: bool, ice: bool) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 777
 	_background_blocks(night)
+	_curbs()
+	_asphalt_wear()
+	_lawns(rng, ice)
 	if not ice:
-		_scatter_plants(rng, "grass_medium_01", "tall_a", _plant_spots(rng, 26, -3.5, 6.2, 1.1, 0.7, 0.02), Vector2(0.8, 1.5))
-		_scatter_plants(rng, "grass_medium_01", "mid_b", _plant_spots(rng, 22, 3.8, 6.0, 0.9, 0.55, 0.02), Vector2(0.9, 1.6))
-		_scatter_plants(rng, "grass_medium_01", "small_a", _plant_spots(rng, 30, -6.5, 10.0, 0.8, 2.0, 0.02), Vector2(0.8, 1.4))
-		_scatter_plants(rng, "weed_plant_02", "_c_", _plant_spots(rng, 18, 7.0, 13.0, 0.7, 1.6, 0.01), Vector2(0.9, 1.5))
-		_scatter_plants(rng, "dandelion_01", "_e_", _plant_spots(rng, 12, -4.0, 8.4, 2.4, 0.5, 0.01), Vector2(0.8, 1.3))
-		_scatter_plants(rng, "nettle_plant", "tall_a", _plant_spots(rng, 14, 9.4, 11.0, 0.5, 4.0, 0.01), Vector2(1.0, 1.8))
 		_bare_tree(Vector3(-7.6, 0.0, 8.4), 7.5, 11)
 		_bare_tree(Vector3(8.6, 0.0, 16.4), 6.2, 27)
-	else:
-		_scatter_plants(rng, "grass_medium_01", "tall_a", _plant_spots(rng, 14, -3.5, 6.2, 1.1, 0.6, 0.02), Vector2(0.6, 1.0))
+	_carpet_beater(Vector3(-6.6, 0.0, 16.2))
+	_clothesline(Vector3(4.6, 0.0, 8.6))
 	# Люк, машина под чехлом, шины
 	PropLibrary.spawn(self, "water_manhole_cover", Vector3(-2.4, 0.0, 11.6), Vector3(0, 12, 0), 1.0, 0.08)
 	PropLibrary.spawn(self, "covered_car", Vector3(-7.2, 0.0, 14.6), Vector3(0, 12, 0), 1.0, 1.55)
@@ -958,17 +1117,19 @@ func _build_chainlink() -> void:
 			_box(Vector3(-9.5 + float(i) * 2.7, 0.7, 19.3), Vector3(0.1, 1.4, 0.1), "metal", false)
 		_box(Vector3(0, 1.35, 19.3), Vector3(20.0, 0.05, 0.05), "metal", false)
 		return
-	var panel_w := 1.91
+	# Дворовая рабица — по грудь, а не тюремные 2.5 м
+	var s := 0.62
+	var panel_w := 1.91 * s
+	var sc := Basis.IDENTITY.scaled(Vector3.ONE * s)
 	var panels: Array = []
 	var posts: Array = []
-	# Дальняя сторона и две боковых; поворот на 90° для боковых линий
-	for i in range(11):
+	for i in range(17):
 		var px := -9.55 + float(i) * panel_w
-		panels.append(Transform3D(Basis.IDENTITY, Vector3(px, 0.0, 19.3)))
-		posts.append(Transform3D(Basis.IDENTITY, Vector3(px - panel_w * 0.5, 0.0, 19.3)))
-	var side_rot := Basis(Vector3.UP, deg_to_rad(90.0))
+		panels.append(Transform3D(sc, Vector3(px, 0.0, 19.3)))
+		posts.append(Transform3D(sc, Vector3(px - panel_w * 0.5, 0.0, 19.3)))
+	var side_rot := Basis(Vector3.UP, deg_to_rad(90.0)).scaled(Vector3.ONE * s)
 	for side in [-10.2, 10.2]:
-		for i in range(7):
+		for i in range(11):
 			var pz := 6.4 + float(i) * panel_w
 			panels.append(Transform3D(side_rot, Vector3(side, 0.0, pz)))
 			posts.append(Transform3D(side_rot, Vector3(side, 0.0, pz - panel_w * 0.5)))
@@ -1047,10 +1208,10 @@ func _euro_bin(center: Vector3, lid_deg: float, tagged: bool) -> void:
 	var ribs: Array = []
 	for k in range(3):
 		ribs.append(Transform3D(Basis.IDENTITY, Vector3(center.x, base_y + 0.62 + float(k) * 0.20, center.z)))
-	_multi(Geo.rounded_box(Vector3(1.01, 0.05, 1.15), 0.008), "dumpster", ribs)
+	_multi(Geo.rounded_box(Vector3(0.995, 0.035, 1.135), 0.006), "dumpster", ribs)
 	# Крышка на петлях, откинута назад
 	var lid := _mesh_at(Geo.rounded_box(Vector3(1.04, 0.07, 1.16), 0.012),
-		Vector3(center.x, base_y + 1.16, center.z + 0.02), "steel")
+		Vector3(center.x, base_y + 1.16, center.z + 0.02), "bin_lid")
 	lid.rotation_degrees.x = lid_deg
 	_mesh_at(Geo.pipe(0.016, 0.98), Vector3(center.x, base_y + 1.14, center.z - 0.56), "rust", Vector3(0, 0, 90))
 	for sx in [-1.0, 1.0]:
@@ -1074,11 +1235,16 @@ func _euro_bin(center: Vector3, lid_deg: float, tagged: bool) -> void:
 func _build_dumpster() -> void:
 	# Площадка: профнастил на стойках вместо решётки из палок
 	for i in range(5):
-		_mesh_at(Geo.pipe(0.035, 1.9), Vector3(1.9 + float(i) * 0.95, 0.95, 15.5), "steel")
-	_vis(Vector3(3.7, 0.95, 15.56), Vector3(4.4, 1.7, 0.04), "steel")
+		_mesh_at(Geo.pipe(0.035, 1.9), Vector3(1.9 + float(i) * 0.95, 0.95, 15.5), "rail")
+	_vis(Vector3(3.7, 0.95, 15.56), Vector3(4.4, 1.7, 0.04), "corrug")
 	_vis(Vector3(3.7, 1.84, 15.5), Vector3(4.5, 0.06, 0.18), "rust")
+	var back_ribs: Array = []
+	for k in range(29):
+		back_ribs.append(Transform3D(Basis.IDENTITY, Vector3(1.55 + float(k) * 0.152, 0.95, 15.53)))
+	_multi(Geo.rounded_box(Vector3(0.05, 1.68, 0.05), 0.008), "corrug", back_ribs)
 	for i in range(3):
-		_euro_bin(Vector3(2.6 + float(i) * 1.15, 0.7, 14.6), -62.0 if i != 2 else -18.0, i == 1)
+		# Две крышки закрыты, третья откинута на заднюю стенку
+		_euro_bin(Vector3(2.6 + float(i) * 1.15, 0.7, 14.6), -4.0 if i != 2 else -104.0, i == 1)
 	_box(Vector3(3.7, 0.03, 13.8), Vector3(2.8, 0.02, 1.2), "puddle", false)
 	_box(Vector3(2.4, 0.08, 13.5), Vector3(0.25, 0.08, 0.2), "dirt", false)
 	_vis(Vector3(3.7, 1.35, 15.53), Vector3(0.9, 0.28, 0.01), "paper")

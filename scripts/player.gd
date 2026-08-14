@@ -66,10 +66,10 @@ func _build_body() -> void:
 	# расстояния и ломает наплыв кадра при переносе груза (cargo_fov).
 	var attrs := CameraAttributesPractical.new()
 	attrs.auto_exposure_enabled = true
-	attrs.auto_exposure_min_sensitivity = 40.0
-	attrs.auto_exposure_max_sensitivity = 640.0
+	attrs.auto_exposure_min_sensitivity = 90.0
+	attrs.auto_exposure_max_sensitivity = 320.0
 	attrs.auto_exposure_speed = 0.6
-	attrs.auto_exposure_scale = 0.38
+	attrs.auto_exposure_scale = 0.26
 	# Слабое размытие дали: подъезд читается как снятый на телефон, а не рендер
 	attrs.dof_blur_far_enabled = true
 	attrs.dof_blur_far_distance = 9.0
