@@ -27,8 +27,13 @@ func _run() -> void:
 		push_error("Builder/bag missing")
 		quit(1)
 		return
+	if bool(builder.bag.held):
+		push_error("Bag should start on the mat, not held")
+		quit(1)
+		return
+	builder.bag.grab(builder.player.hold_point)
 	if not bool(builder.bag.held):
-		push_error("Bag not held")
+		push_error("Bag grab failed")
 		quit(1)
 		return
 	print("TEST_GAMEPLAY_PASS bag_hp=", builder.bag.hp)

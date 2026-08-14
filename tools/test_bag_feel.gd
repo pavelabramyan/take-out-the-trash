@@ -48,6 +48,7 @@ func _run() -> void:
 	assert(bag.tear_stage >= bag.TearStage.HOLES)
 
 	# Shape-cast урон: пакет «в стене»
+	bag._carry_grace = 0.0
 	var desired := Vector3(-2.45, bag.global_position.y, 0.0)
 	var hp_before: float = bag.hp
 	for i in range(20):

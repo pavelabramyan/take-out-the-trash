@@ -121,6 +121,18 @@ func _refresh_texts() -> void:
 		$SettingsPanel/Margin/VBox/Fullscreen.text = Svc.loc().t("fullscreen")
 
 func _build_level_buttons() -> void:
+	if levels_list.get_parent() is VBoxContainer and not (levels_list.get_parent() is ScrollContainer):
+		var host: VBoxContainer = levels_list.get_parent()
+		if not host.has_node("LevelScroll"):
+			var sc := ScrollContainer.new()
+			sc.name = "LevelScroll"
+			sc.custom_minimum_size = Vector2(480, 320)
+			sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			host.remove_child(levels_list)
+			sc.add_child(levels_list)
+			host.add_child(sc)
+			host.move_child(sc, 0)
+			levels_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for c in levels_list.get_children():
 		c.queue_free()
 	var unlocked: int = int(Svc.meta().progress.get("unlocked", 1))
@@ -140,9 +152,16 @@ func _build_level_buttons() -> void:
 		levels_list.add_child(b)
 
 func _on_play_pressed() -> void:
-	var unlocked: int = int(Svc.meta().progress.get("unlocked", 1))
-	Svc.meta().current_level = mini(unlocked - 1, LevelData.count() - 1)
+	Svc.meta().current_level = _first_playable_level()
 	get_tree().change_scene_to_file("res://scenes/game.tscn")
+
+func _first_playable_level() -> int:
+	var unlocked: int = int(Svc.meta().progress.get("unlocked", 1))
+	var times: Dictionary = Svc.meta().progress.get("best_times", {})
+	for i in range(mini(unlocked, LevelData.count())):
+		if times.get(str(i + 1), null) == null:
+			return i
+	return 0
 
 func _on_levels_pressed() -> void:
 	_build_level_buttons()

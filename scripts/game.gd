@@ -24,6 +24,7 @@ var _babushka_listen_t: float = 0.0
 var _babushka_listening: bool = false
 var _mom_yelled: bool = false
 var _music_started: bool = false
+var _hint_hold_t: float = 0.0
 
 @onready var ui: CanvasLayer = $UI
 @onready var hud_label: Label = $UI/HUD/Info
@@ -84,8 +85,6 @@ func _start_level() -> void:
 	builder.player.game = self
 	builder.bag.game = self
 	builder.player.capture_mouse(true)
-	builder.bag.grab(builder.player.hold_point)
-	builder.player.set_cargo_feel(builder.bag.speed_mult(), builder.bag.fov_offset(), builder.bag.yaw_mult())
 	builder.bag.damaged.connect(_on_bag_damaged)
 	builder.bag.burst.connect(_on_bag_burst)
 	if builder.bag.has_signal("hit_hard"):
@@ -119,7 +118,10 @@ func _start_level() -> void:
 	title_label.modulate = Color(0.9, 0.88, 0.8, 0.9)
 	prompt_label.modulate = Color(0.85, 0.82, 0.75, 0.8)
 	prompt_label.text = str(level.get("hint_%s" % Svc.loc().lang, level.get("hint_en", "")))
+	_hint_hold_t = 12.0
 	end_panel.visible = false
+	var next_b: Button = $UI/EndPanel/VBox/Next
+	next_b.visible = true
 	Svc.steam().set_rich_presence(level_index + 1, str(level.get("cargo", "bag")))
 
 func _process(delta: float) -> void:
@@ -129,6 +131,10 @@ func _process(delta: float) -> void:
 		return
 	if state == State.PLAY:
 		elapsed += delta
+		_hint_hold_t = maxf(0.0, _hint_hold_t - delta)
+		if builder.player.global_position.y < -8.0:
+			_fail("fail_fall")
+			return
 		builder.player.on_ice = builder.is_on_ice(builder.player.global_position)
 		builder.bag.careful = builder.player.careful
 		if builder.bag.has_method("apply_wet"):
@@ -209,33 +215,35 @@ func _check_interactions() -> void:
 	var prompt := ""
 
 	if Input.is_action_just_pressed("interact"):
-		# Re-grab bag
 		if not bag.held and not bag.bursted and player.global_position.distance_to(bag.global_position) < 2.4:
 			bag.grab(builder.player.hold_point)
 			builder.player.set_cargo_feel(bag.speed_mult(), bag.fov_offset(), bag.yaw_mult())
 			Svc.audio().play_sfx("pickup")
+			_hint_hold_t = 0.0
 			return
-		# Armful pieces
 		for piece in get_tree().get_nodes_in_group("trash_piece"):
 			if piece.has_method("try_pick") and piece.try_pick(player):
 				armful += 1
 				bag.add_to_armful()
 				break
-		if builder.elevator_area and player.global_position.distance_to(builder.elevator_area.global_position) < 2.0:
-			_try_elevator()
-			return
 		if builder.dumpster and player.global_position.distance_to(builder.dumpster.global_position) < 3.6:
 			_try_dump()
 			return
-		if _babushka_listening:
-			_babushka_listen_t -= 0.0
+		# Лифт только если пакет уже в руках — иначе E у спавна сразу сажает в кабину
+		if bag.held and builder.elevator_area and player.global_position.distance_to(builder.elevator_area.global_position) < 1.35:
+			_try_elevator()
+			return
 
 	if not bag.held and not bag.bursted and player.global_position.distance_to(bag.global_position) < 2.4:
 		prompt = Svc.loc().t("pick_bag")
-	elif builder.dumpster and player.global_position.distance_to(builder.dumpster.global_position) < 4.0:
+		prompt_label.text = prompt
+		return
+	if _hint_hold_t > 0.0:
+		return
+	if builder.dumpster and player.global_position.distance_to(builder.dumpster.global_position) < 4.0:
 		if not bag.bursted or get_tree().get_nodes_in_group("trash_piece").is_empty() or armful > 0:
 			prompt = Svc.loc().t("dumpster")
-	elif builder.elevator_area and player.global_position.distance_to(builder.elevator_area.global_position) < 2.2:
+	elif bag.held and builder.elevator_area and player.global_position.distance_to(builder.elevator_area.global_position) < 1.5:
 		prompt = Svc.loc().t("elevator")
 	elif bag.bursted and get_tree().get_nodes_in_group("trash_piece").size() > 0:
 		prompt = Svc.loc().t("pick_trash")
@@ -360,6 +368,7 @@ func _win(after_burst: bool) -> void:
 		float(Svc.meta().progress["best_times"].get(str(level_index + 1), elapsed)),
 	]
 	end_panel.visible = true
+	$UI/EndPanel/VBox/Next.visible = true
 	if level_index + 1 >= LevelData.count():
 		end_stars.text += "\n\n" + Svc.loc().t("credits")
 		Svc.steam().unlock("all_levels")
@@ -425,6 +434,7 @@ func _fail(reason_key: String) -> void:
 		replay_s = "\n" + Svc.loc().t("replay_hint")
 	end_stars.text = Svc.loc().t("restart") + replay_s
 	end_panel.visible = true
+	$UI/EndPanel/VBox/Next.visible = false
 
 func _on_bag_damaged(hp_left: float, _max_hp: float) -> void:
 	hp_bar.value = hp_left
@@ -440,19 +450,18 @@ func _on_bag_burst() -> void:
 	prompt_label.text = Svc.loc().t("fail_burst") + "\n" + Svc.loc().t("pick_trash")
 
 func _on_spotted(kind: int) -> void:
-	# Бабушка: можно «выслушать» 3 сек вместо мгновенного fail
 	if kind != 1 and bool(level.get("babushka_talk", true)):
-		if not _babushka_listening:
-			_babushka_listening = true
-			_babushka_listen_t = 3.0
-			prompt_label.text = Svc.loc().t("babushka_listen")
-			spotted = true
-			await get_tree().create_timer(3.0).timeout
-			if state == State.PLAY and _babushka_listening:
-				_babushka_listening = false
-				# Отпустили с позором — стелс звезда потеряна, но уровень жив
-				prompt_label.text = Svc.loc().t("babushka_ok")
+		if _babushka_listening:
 			return
+		_babushka_listening = true
+		_babushka_listen_t = 3.0
+		prompt_label.text = Svc.loc().t("babushka_listen")
+		spotted = true
+		await get_tree().create_timer(3.0).timeout
+		if state == State.PLAY and _babushka_listening:
+			_babushka_listening = false
+			prompt_label.text = Svc.loc().t("babushka_ok")
+		return
 	spotted = true
 	if kind == 1:
 		_fail("fail_dog")
@@ -495,6 +504,8 @@ func _toggle_pause() -> void:
 		get_tree().paused = true
 
 func _on_next_pressed() -> void:
+	if state != State.WIN:
+		return
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	if level_index + 1 >= LevelData.count():

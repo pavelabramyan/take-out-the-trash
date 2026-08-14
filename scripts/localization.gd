@@ -50,7 +50,7 @@ const T := {
 	"babushka_listen": {"ru": "Бабушка допрашивает… постой 3 сек", "en": "Babushka interrogates… wait 3s"},
 	"babushka_ok": {"ru": "Отпустила. Стелс ★ потеряна.", "en": "She let you go. Stealth ★ lost."},
 	"replay_hint": {"ru": "(replay буфер записан — перескажи друзьям)", "en": "(fail replay buffer saved — tell your friends)"},
-	"controls_hint": {"ru": "WASD · E поднять · ЛКМ бросок · ПКМ дроп · Alt аккуратно · F фонарь · R рестарт", "en": "WASD · E grab · LMB throw · RMB drop · Alt careful · F light · R restart"},
+	"controls_hint": {"ru": "WASD · E поднять · держи ЛКМ бросок · ПКМ дроп · Alt аккуратно · F фонарь · R рестарт", "en": "WASD · E grab · hold LMB throw · RMB drop · Alt careful · F light · R restart"},
 	"ng_plus": {"ru": "New Game+ (хрупкий пакет)", "en": "New Game+ (fragile bag)"},
 }
 

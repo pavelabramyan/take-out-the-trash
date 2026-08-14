@@ -55,6 +55,7 @@ var wetness: float = 0.0
 var dirt: float = 0.0
 var _step_pulse: float = 0.0
 var _sag: float = 0.0
+var _carry_grace: float = 0.0
 
 const POS_K := 16.0
 const ROT_K := 7.5
@@ -562,6 +563,7 @@ func grab(hold: Node3D) -> void:
 	_hold_target = hold
 	held = true
 	_grab_t = 0.0
+	_carry_grace = 1.5
 	freeze = false
 	gravity_scale = 0.0
 	linear_damp = 12.0
@@ -654,6 +656,7 @@ func _update_rustle(delta: float, speed: float) -> void:
 	_rustle.volume_db = lerpf(_rustle.volume_db, target_db, clampf(10.0 * delta, 0.0, 1.0))
 
 func _carry_follow(delta: float) -> void:
+	_carry_grace = maxf(0.0, _carry_grace - delta)
 	_grab_t = minf(1.0, _grab_t + delta / 0.12)
 	var ease := _grab_t * _grab_t * (3.0 - 2.0 * _grab_t)
 
@@ -722,6 +725,8 @@ func _relax_compress(delta: float) -> void:
 		_body_mi.scale = _body_mi.scale.lerp(_body_base_scale, clampf(8.0 * delta, 0.0, 1.0))
 
 func _carry_shape_cast_damage(delta: float, desired: Vector3) -> int:
+	if _carry_grace > 0.0:
+		return 0
 	var space := get_world_3d().direct_space_state
 	if space == null or _col == null or _col.shape == null:
 		return 0
@@ -738,7 +743,9 @@ func _carry_shape_cast_damage(delta: float, desired: Vector3) -> int:
 			mult = 2.0
 		if careful:
 			mult *= 0.5
-		var dmg := float(hit_n) * (12.0 if not careful else 5.5) * delta * mult
+		if cargo == Cargo.CARPET or cargo == Cargo.FRIDGE:
+			mult *= 0.45
+		var dmg := float(hit_n) * (7.0 if not careful else 3.2) * delta * mult
 		# Углы: если нормаль «острая» — сильнее (эвристика: много хитов)
 		if hit_n >= 3:
 			dmg *= 1.4

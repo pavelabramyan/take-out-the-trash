@@ -16,9 +16,9 @@ const STAIR_X := 0.60            # ±, зазор между маршами ~0.1
 ## Этажная площадка (глубина ~1.65 м — как типовая)
 const LAND_Z0 := -1.25
 const LAND_Z1 := 0.40
-## Промежуточная — не над тамбуром
+## Промежуточная — хватит развернуться с капсулой 0.56 м
 const MID_Z0 := 2.15
-const MID_Z1 := 2.75
+const MID_Z1 := 3.05
 const FLIGHT_Z_A0 := 0.40
 const FLIGHT_Z_A1 := 2.15
 const DOOR_Z := 3.70
@@ -58,6 +58,7 @@ func build(level: Dictionary) -> void:
 		_build_elevator(_floors)
 	if has_basement:
 		_build_basement_props()
+		_build_basement_exit()
 	_spawn_npcs(level)
 	_spawn_player_and_bag(start_floor, level)
 	_build_level_flavor()
@@ -296,8 +297,8 @@ func _build_stairwell(floors: int, basement: bool, has_elevator: bool) -> void:
 
 	_add_entrance_props()
 	_add_ground_mailboxes()
-	# Потолок тамбура (полный рост)
-	_box(Vector3(0, FLOOR_H - 0.14, 3.25), Vector3(CELL_W - 0.1, 0.12, 1.3), "concrete")
+	# Потолок тамбура — не наезжает на промежуточную площадку
+	_box(Vector3(0, FLOOR_H - 0.14, 3.55), Vector3(CELL_W - 0.1, 0.12, 0.7), "concrete")
 
 	for f in range(1, floors + 1):
 		var y := float(f) * FLOOR_H
@@ -397,22 +398,35 @@ func _add_main_landing(y: float, floor_num: int) -> void:
 	if floor_num > 0:
 		var sx := _stair_x(false)  # всегда правый верхний
 		_box(Vector3(sx, y + 0.02, LAND_Z1 - 0.04), Vector3(0.55, 0.03, 0.22), "mark", false)
+		_add_shaft_guard(y)
+
+func _add_shaft_guard(y: float) -> void:
+	## Перила по кромке площадки: проём только у правого марша вниз.
+	var open_x := STAIR_X
+	var open_w := STAIR_W + 0.14
+	var z := LAND_Z1 + 0.03
+	var left_end := open_x - open_w * 0.5
+	var right_start := open_x + open_w * 0.5
+	var left_w := left_end - (-CELL_HALF + 0.08)
+	if left_w > 0.18:
+		_box(Vector3(-CELL_HALF + 0.08 + left_w * 0.5, y + 0.5, z), Vector3(left_w, 1.0, 0.08), "metal", true)
+	var right_w := (CELL_HALF - 0.08) - right_start
+	if right_w > 0.18:
+		_box(Vector3(right_start + right_w * 0.5, y + 0.5, z), Vector3(right_w, 1.0, 0.08), "metal", true)
 
 func _add_mid_landing(y: float) -> void:
 	var depth := MID_Z1 - MID_Z0
 	var zc := (MID_Z0 + MID_Z1) * 0.5
 	_box(Vector3(0, y - 0.1, zc), Vector3(CELL_W - 0.15, 0.2, depth), "tile")
 	_box(Vector3(0, y + 0.05, MID_Z0 - 0.06), Vector3(0.7, 0.1, 0.05), "rail")
-	# Ограждение: поручень + нижняя тяга + стойки
-	_box(Vector3(0, y + 0.9, MID_Z1), Vector3(CELL_W - 0.25, 0.05, 0.05), "metal", false)
-	_box(Vector3(0, y + 0.25, MID_Z1), Vector3(CELL_W - 0.25, 0.03, 0.03), "metal", false)
+	# Ограждение с коллизией — иначе разворот = падение в шахту
+	_box(Vector3(0, y + 0.55, MID_Z1), Vector3(CELL_W - 0.25, 1.05, 0.07), "metal", true)
+	_box(Vector3(0, y + 0.9, MID_Z1), Vector3(CELL_W - 0.25, 0.05, 0.05), "handrail", false)
 	for i in range(6):
 		var rx := -1.15 + float(i) * 0.46
 		_box(Vector3(rx, y + 0.55, MID_Z1), Vector3(0.03, 0.85, 0.03), "metal", false)
-	_box(Vector3(-1.2, y + 0.9, zc), Vector3(0.05, 0.05, depth * 0.85), "metal", false)
-	_box(Vector3(1.2, y + 0.9, zc), Vector3(0.05, 0.05, depth * 0.85), "metal", false)
-	_box(Vector3(-1.2, y + 0.55, zc), Vector3(0.03, 0.8, depth * 0.85), "metal", false)
-	_box(Vector3(1.2, y + 0.55, zc), Vector3(0.03, 0.8, depth * 0.85), "metal", false)
+	_box(Vector3(-1.2, y + 0.55, zc), Vector3(0.08, 1.0, depth * 0.9), "metal", true)
+	_box(Vector3(1.2, y + 0.55, zc), Vector3(0.08, 1.0, depth * 0.9), "metal", true)
 
 func _add_u_flights(from_floor: int, y_top: float, y_bot: float) -> void:
 	var mid_y := y_top - HALF_H
@@ -455,8 +469,8 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 		if i % 2 == 0:
 			_box(Vector3(x + (0.38 if left else -0.38), y + 0.04, z), Vector3(0.14, 0.012, 0.12), "dirt", false)
 
-	_box(Vector3(x, y_top - 0.02, z0 + (0.1 if z1 > z0 else -0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", true)
-	_box(Vector3(x, y_bot + 0.02, z1 + (-0.1 if z1 > z0 else 0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", true)
+	_box(Vector3(x, y_top - 0.02, z0 + (0.1 if z1 > z0 else -0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
+	_box(Vector3(x, y_bot + 0.02, z1 + (-0.1 if z1 > z0 else 0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
 
 	# Перила: тёмный металл + бордовый поручень (реф)
 	var rail_x := x + (STAIR_W * 0.46 if not left else -STAIR_W * 0.46)
@@ -584,7 +598,7 @@ func _add_floor_light(y: float) -> void:
 
 func _build_apartment_door(start_floor: int) -> void:
 	var y := float(start_floor) * FLOOR_H
-	spawn_pos = Vector3(-0.85, y + 0.2, -0.35)
+	spawn_pos = Vector3(-0.85, y + 0.2, -0.55)
 	_box(Vector3(-0.85, y + 1.0, LAND_Z0 + 0.12), Vector3(0.82, 2.0, 0.08), "door", false)
 	_box(Vector3(-0.85, y + 0.02, -0.7), Vector3(0.55, 0.03, 0.4), "prop", false)
 	_box(Vector3(-1.05, y + 1.62, LAND_Z0 + 0.18), Vector3(0.22, 0.14, 0.02), "number", false)
@@ -681,7 +695,7 @@ func _build_yard(ice: bool, night: bool) -> void:
 	yl.light_energy = 2.2 if night else 1.1
 	yl.omni_range = 12.0 if night else 10.0
 	yl.omni_attenuation = 1.4
-	yl.shadow_enabled = night
+	yl.shadow_enabled = false
 	yl.position = Vector3(-1.8, 3.9, 7.7)
 	add_child(yl)
 	if night:
@@ -702,6 +716,33 @@ func _build_detour_path() -> void:
 func _build_basement_props() -> void:
 	_box(Vector3(0.9, -FLOOR_H + 0.35, 1.0), Vector3(0.22, 0.22, 2.0), "metal")
 	_box(Vector3(-0.8, -FLOOR_H + 0.12, 1.8), Vector3(0.9, 0.05, 0.9), "ice")
+
+func _build_basement_exit() -> void:
+	## Коридор + пандус во двор — «через подвал короче» должно быть правдой.
+	_box(Vector3(0, -FLOOR_H - 0.1, 4.4), Vector3(1.7, 0.2, 4.2), "concrete")
+	_box(Vector3(-0.85, -FLOOR_H + 1.1, 4.4), Vector3(0.1, 2.2, 4.0), "concrete")
+	_box(Vector3(0.85, -FLOOR_H + 1.1, 4.4), Vector3(0.1, 2.2, 4.0), "concrete")
+	var run := 5.2
+	var rise := FLOOR_H
+	var length := sqrt(run * run + rise * rise)
+	var angle := atan2(rise, run)
+	var ramp := StaticBody3D.new()
+	ramp.collision_layer = 1
+	var cs := CollisionShape3D.new()
+	var sh := BoxShape3D.new()
+	sh.size = Vector3(1.5, 0.16, length)
+	cs.shape = sh
+	ramp.add_child(cs)
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = sh.size
+	mi.mesh = bm
+	mi.material_override = _mats["concrete"]
+	ramp.add_child(mi)
+	ramp.position = Vector3(0.0, -FLOOR_H * 0.5, 8.8)
+	ramp.rotation.x = -angle
+	add_child(ramp)
+	_box(Vector3(0, 0.02, 11.4), Vector3(1.8, 0.12, 1.6), "asphalt")
 
 func _build_dumpster() -> void:
 	# Контейнерная площадка: 3 бака + низкий забор + мусор вокруг (реф двор)
@@ -761,25 +802,29 @@ func _spawn_npcs(level: Dictionary) -> void:
 	for i in range(int(level.get("babushkas", 0))):
 		var npc = StairNpcScr.new()
 		add_child(npc)
-		npc.setup(0, Vector3(-3.0 + i * 0.7, 0.2, 8.5 + i), Vector3(1.5, 0.2, 12.0 + i), null)
+		npc.setup(0, Vector3(-4.2 + i * 0.8, 0.2, 7.2 + i * 0.4), Vector3(-1.2, 0.2, 10.5 + i * 0.3), null)
 		npcs.append(npc)
 	for i in range(int(level.get("dogs", 0))):
 		var dog = StairNpcScr.new()
 		add_child(dog)
-		dog.setup(1, Vector3(2.0 + i, 0.2, 13.0), Vector3(5.5, 0.2, 15.5), null)
+		# Патруль на коротком пути, не на баках (иначе вынос невозможен)
+		dog.setup(1, Vector3(1.2 + float(i) * 0.6, 0.2, 8.6), Vector3(2.4 + float(i) * 0.4, 0.2, 11.2), null)
 		npcs.append(dog)
 
 func _spawn_player_and_bag(start_floor: int, level: Dictionary) -> void:
 	var p = TrashPlayerScr.new()
 	add_child(p)
 	p.global_position = spawn_pos
-	p.set_look_yaw(PI - 0.35)  # лицом к правому маршу (+Z)
+	# Смотрим на пакет, дальше правый марш — не в шахту
+	var look := Vector3(STAIR_X, spawn_pos.y, LAND_Z1) - spawn_pos
+	p.set_look_yaw(atan2(-look.x, -look.z))
 	player = p
 	var trash = TrashBagScr.new()
 	add_child(trash)
 	trash.setup(str(level.get("cargo", "bag")), float(level.get("bag_hp", 100.0)))
 	trash.wind_force = float(level.get("wind", 0.0))
-	trash.global_position = spawn_pos + Vector3(0.25, 0.55, 0.2)
+	trash.global_position = Vector3(-0.85, float(start_floor) * FLOOR_H + 0.22, -0.62)
+	trash.freeze = true
 	bag = trash
 
 func _build_level_flavor() -> void:
@@ -835,7 +880,9 @@ func guide_hint(player_pos: Vector3) -> String:
 		return "К контейнерам во дворе" if lang == "ru" else "To the yard dumpsters"
 	if player_pos.y < 1.3 and player_pos.z > 2.4:
 		return "На улицу через открытую дверь" if lang == "ru" else "Outside through the open door"
-	var near_mid := player_pos.z > 2.0 and player_pos.z < 2.9 and fmod(player_pos.y + 0.35, FLOOR_H) > HALF_H - 0.55 and fmod(player_pos.y + 0.35, FLOOR_H) < HALF_H + 0.55
+	if player_pos.y < -1.0:
+		return "По пандусу из подвала во двор" if lang == "ru" else "Ramp from basement to the yard"
+	var near_mid := player_pos.z > 2.0 and player_pos.z < 3.2 and fmod(player_pos.y + 0.35, FLOOR_H) > HALF_H - 0.55 and fmod(player_pos.y + 0.35, FLOOR_H) < HALF_H + 0.55
 	if near_mid:
 		return "Разворот — левый марш вниз" if lang == "ru" else "Turn — left flight down"
 	if lang == "ru":

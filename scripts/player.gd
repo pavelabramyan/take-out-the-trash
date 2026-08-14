@@ -38,6 +38,8 @@ var _slip_cd: float = 0.0
 var _air_time: float = 0.0
 var _max_fall_speed: float = 0.0
 var _step_acc: float = 0.0
+var _throw_hold: float = 0.0
+const THROW_HOLD := 0.28
 
 func _ready() -> void:
 	collision_layer = 2
@@ -74,7 +76,7 @@ func _build_body() -> void:
 	flashlight.light_energy = 2.8
 	flashlight.spot_range = 12.0
 	flashlight.spot_angle = 32.0
-	flashlight.shadow_enabled = true
+	flashlight.shadow_enabled = false
 	flashlight.visible = false
 	flashlight.position = Vector3(0.1, -0.05, -0.1)
 	camera.add_child(flashlight)
@@ -228,8 +230,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_flashlight"):
 		flashlight_on = not flashlight_on
 		flashlight.visible = flashlight_on
-	if event.is_action_pressed("throw_bag"):
-		throw_pressed.emit()
 	if event.is_action_pressed("drop_bag"):
 		drop_pressed.emit()
 
@@ -237,6 +237,13 @@ func _physics_process(delta: float) -> void:
 	if not active or camera == null or _col == null:
 		return
 	careful = Input.is_action_pressed("careful")
+	if Input.is_action_pressed("throw_bag"):
+		_throw_hold += delta
+		if _throw_hold >= THROW_HOLD:
+			_throw_hold = -999.0
+			throw_pressed.emit()
+	else:
+		_throw_hold = 0.0
 	_apply_gamepad_look(delta)
 	_slip_cd = maxf(0.0, _slip_cd - delta)
 	var grav := float(ProjectSettings.get_setting("physics/3d/default_gravity", 9.8))
