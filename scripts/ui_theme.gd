@@ -2,9 +2,34 @@ class_name UiTheme
 extends RefCounted
 ## Грязная панелька: не дефолтный серый Godot.
 
+const FONT_BOLD := "res://assets/fonts/PT_Sans-Narrow-Web-Bold.ttf"
+const FONT_TEXT := "res://assets/fonts/PT_Sans-Web-Regular.ttf"
+
+## Узкий гротеск с кириллицей вместо дефолтного шрифта Godot.
+static func _font(path: String) -> FontFile:
+	if not ResourceLoader.exists(path):
+		return null
+	var f: FontFile = load(path)
+	if f:
+		f.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
+		f.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_AUTO
+	return f
+
 static func panelka() -> Theme:
 	var t := Theme.new()
+	var bold := _font(FONT_BOLD)
+	var text := _font(FONT_TEXT)
+	if text:
+		t.default_font = text
+		t.default_font_size = 18
+	if bold:
+		t.set_font("font", "Button", bold)
+		t.set_font_size("font_size", "Button", 20)
 	var font_c := Color(0.88, 0.84, 0.70)
+	t.set_constant("outline_size", "Label", 4)
+	t.set_color("font_outline_color", "Label", Color(0.03, 0.04, 0.03, 0.9))
+	t.set_constant("outline_size", "Button", 3)
+	t.set_color("font_outline_color", "Button", Color(0.03, 0.04, 0.03, 0.85))
 	t.set_color("font_color", "Label", font_c)
 	t.set_color("font_color", "Button", font_c)
 	t.set_color("font_hover_color", "Button", Color(0.96, 0.93, 0.80))
@@ -43,11 +68,17 @@ static func panelka() -> Theme:
 	disabled.bg_color = Color(0.14, 0.14, 0.12)
 	t.set_stylebox("disabled", "Button", disabled)
 
+	# Полоса прочности: тонкая, с рамкой, чтобы не выглядела зелёной простынёй
 	var bar_bg := StyleBoxFlat.new()
-	bar_bg.bg_color = Color(0.10, 0.10, 0.09)
+	bar_bg.bg_color = Color(0.06, 0.07, 0.06, 0.75)
+	bar_bg.border_color = Color(0.32, 0.33, 0.28, 0.8)
+	bar_bg.set_border_width_all(1)
 	bar_bg.set_corner_radius_all(1)
+	bar_bg.content_margin_top = 1
+	bar_bg.content_margin_bottom = 1
 	t.set_stylebox("background", "ProgressBar", bar_bg)
 	var bar_fill := StyleBoxFlat.new()
-	bar_fill.bg_color = Color(0.30, 0.48, 0.28)
+	bar_fill.bg_color = Color(0.44, 0.52, 0.30, 0.92)
+	bar_fill.set_corner_radius_all(1)
 	t.set_stylebox("fill", "ProgressBar", bar_fill)
 	return t

@@ -4,6 +4,7 @@ extends Node3D
 const LevelData = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
 const UiThemeScr = preload("res://scripts/ui_theme.gd")
+const PostFxScr = preload("res://scripts/post_fx.gd")
 
 enum State { PLAY, WIN, FAIL, PAUSE }
 
@@ -11,6 +12,7 @@ var state: State = State.PLAY
 var level_index: int = 0
 var level: Dictionary = {}
 var builder: Node3D
+var _post: CanvasLayer = null
 var elapsed: float = 0.0
 var burst_count: int = 0
 var spotted: bool = false
@@ -106,6 +108,7 @@ func _start_level() -> void:
 		npc.game = self
 		npc.spotted.connect(_on_spotted)
 	builder.set_light_flicker(bool(level.get("night", false)) and float(level.get("light_timer", 0)) > 0.0, maxf(1.0, float(level.get("light_timer", 8.0))))
+	_setup_post_fx(bool(level.get("night", false)))
 	elapsed = 0.0
 	burst_count = 0
 	spotted = false
@@ -123,6 +126,12 @@ func _start_level() -> void:
 	hp_bar.value = hp_bar.max_value
 	# Приглушённый HUD — не неон поверх панельки
 	hp_bar.modulate = Color(0.75, 0.85, 0.7, 0.85)
+	# Полоса во всю ширину экрана выглядела зелёной простынёй
+	hp_bar.show_percentage = false
+	hp_bar.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	hp_bar.custom_minimum_size = Vector2(260, 10)
+	hp_bar.size = Vector2(260, 10)
+	hp_bar.position = Vector2(hp_bar.position.x - 130.0, 16.0)
 	title_label.modulate = Color(0.9, 0.88, 0.8, 0.9)
 	prompt_label.modulate = Color(0.85, 0.82, 0.75, 0.8)
 	prompt_label.text = str(level.get("hint_%s" % Svc.loc().lang, level.get("hint_en", "")))
@@ -169,9 +178,18 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("photo_mode"):
 		_photo_snap()
 
+func _setup_post_fx(night: bool) -> void:
+	if _post == null:
+		_post = PostFxScr.new()
+		add_child(_post)
+	_post.set_night(night)
+
 func _atmosphere_cues() -> void:
 	if builder == null or builder.player == null:
 		return
+	# Подъезд гулкий, двор сухой: реверб переключаем по выходу за дверь
+	var pz: float = builder.player.global_position.z
+	Svc.audio().set_indoor(pz < BuildingBuilderScr.DOOR_Z + 0.6)
 	if not _mom_yelled and builder.player.velocity.length() > 0.55:
 		_mom_yelled = true
 		get_tree().create_timer(2.2).timeout.connect(func() -> void:

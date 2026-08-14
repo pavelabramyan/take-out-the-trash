@@ -146,12 +146,15 @@ func _add_joy_axis(action: String, axis: int, value: float) -> void:
 	InputMap.action_add_event(action, ev)
 
 func _build_hands() -> void:
+	# Рабочие перчатки: реалистичную кисть с кожей в кадре не собрать из
+	# примитивов, а перчатка прощает грубую форму
 	var skin := StandardMaterial3D.new()
-	skin.albedo_color = Color(0.82, 0.62, 0.48)
-	skin.roughness = 0.72
+	skin.albedo_color = Color(0.20, 0.21, 0.24)
+	skin.roughness = 0.88
+	skin.metallic = 0.0
 	var sleeve := StandardMaterial3D.new()
-	sleeve.albedo_color = Color(0.22, 0.28, 0.38)
-	sleeve.roughness = 0.9
+	sleeve.albedo_color = Color(0.16, 0.19, 0.26)
+	sleeve.roughness = 0.94
 	left_hand = _make_hand_rig(skin, sleeve, -1.0)
 	left_hand.position = Vector3(-0.14, -0.28, -0.40)
 	left_hand.rotation_degrees = Vector3(12, 8, -18)
@@ -163,18 +166,27 @@ func _build_hands() -> void:
 
 func _make_hand_rig(skin: Material, sleeve: Material, side: float) -> MeshInstance3D:
 	var palm := MeshInstance3D.new()
-	var pm := BoxMesh.new()
-	pm.size = Vector3(0.078, 0.028, 0.09)
-	palm.mesh = pm
+	palm.mesh = Geo.rounded_box(Vector3(0.082, 0.034, 0.094), 0.014)
 	palm.material_override = skin
 	var thenar := MeshInstance3D.new()
 	var th := SphereMesh.new()
-	th.radius = 0.016
-	th.height = 0.028
+	th.radius = 0.019
+	th.height = 0.032
+	th.radial_segments = 12
+	th.rings = 7
 	thenar.mesh = th
 	thenar.material_override = skin
-	thenar.position = Vector3(side * 0.028, -0.006, 0.012)
+	thenar.position = Vector3(side * 0.028, -0.004, 0.012)
 	palm.add_child(thenar)
+	# Накладка на костяшках и шов по краю ладони
+	var knuckle := MeshInstance3D.new()
+	knuckle.mesh = Geo.rounded_box(Vector3(0.074, 0.012, 0.034), 0.006)
+	var pad := StandardMaterial3D.new()
+	pad.albedo_color = Color(0.13, 0.14, 0.16)
+	pad.roughness = 0.8
+	knuckle.material_override = pad
+	knuckle.position = Vector3(0, 0.019, -0.036)
+	palm.add_child(knuckle)
 	var forearm := MeshInstance3D.new()
 	var fm := CylinderMesh.new()
 	fm.top_radius = 0.028
@@ -186,45 +198,43 @@ func _make_hand_rig(skin: Material, sleeve: Material, side: float) -> MeshInstan
 	forearm.position = Vector3(0, 0.012, 0.12)
 	forearm.rotation_degrees = Vector3(90, 0, 0)
 	palm.add_child(forearm)
+	# Резинка перчатки на запястье
 	var cuff := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius = 0.03
-	cm.bottom_radius = 0.03
-	cm.height = 0.03
-	cuff.mesh = cm
-	cuff.material_override = sleeve
-	cuff.position = Vector3(0, 0.01, 0.042)
+	cuff.mesh = Geo.pipe(0.033, 0.038, 14)
+	var cuff_m := StandardMaterial3D.new()
+	cuff_m.albedo_color = Color(0.30, 0.26, 0.20)
+	cuff_m.roughness = 0.95
+	cuff.material_override = cuff_m
+	cuff.position = Vector3(0, 0.008, 0.044)
 	cuff.rotation_degrees = Vector3(90, 0, 0)
 	palm.add_child(cuff)
 	var thumb := MeshInstance3D.new()
 	var tm := CapsuleMesh.new()
-	tm.radius = 0.009
-	tm.height = 0.042
+	tm.radius = 0.0125
+	tm.height = 0.05
+	tm.radial_segments = 10
 	thumb.mesh = tm
 	thumb.material_override = skin
-	thumb.position = Vector3(side * 0.042, -0.006, -0.008)
-	thumb.rotation_degrees = Vector3(18, side * 38, side * 32)
+	thumb.position = Vector3(side * 0.043, -0.004, -0.010)
+	thumb.rotation_degrees = Vector3(20, side * 38, side * 34)
 	palm.add_child(thumb)
-	var nail_m := StandardMaterial3D.new()
-	nail_m.albedo_color = Color(0.86, 0.72, 0.62)
-	nail_m.roughness = 0.45
 	for i in range(4):
 		var finger := MeshInstance3D.new()
 		var ff := CapsuleMesh.new()
-		ff.radius = 0.0085
-		ff.height = 0.058 - float(i) * 0.004
+		# Перчаточные пальцы толще живых и с ровными кончиками
+		ff.radius = 0.0115 - float(i) * 0.0006
+		ff.height = 0.062 - float(i) * 0.005
+		ff.radial_segments = 10
 		finger.mesh = ff
 		finger.material_override = skin
-		finger.position = Vector3(-0.028 + float(i) * 0.018, 0.004, -0.068)
-		finger.rotation_degrees = Vector3(32, 0, 0)
+		finger.position = Vector3(-0.028 + float(i) * 0.0185, 0.003, -0.070)
+		finger.rotation_degrees = Vector3(34 + float(i) * 2.0, 0, 0)
 		palm.add_child(finger)
-		var nail := MeshInstance3D.new()
-		var nb := BoxMesh.new()
-		nb.size = Vector3(0.008, 0.003, 0.01)
-		nail.mesh = nb
-		nail.material_override = nail_m
-		nail.position = Vector3(0, 0.006, -0.022)
-		finger.add_child(nail)
+		var seam := MeshInstance3D.new()
+		seam.mesh = Geo.rounded_box(Vector3(0.004, 0.004, 0.05), 0.001)
+		seam.material_override = cuff_m
+		seam.position = Vector3(0.0, 0.010, 0.0)
+		finger.add_child(seam)
 	return palm
 
 func capture_mouse(on: bool) -> void:

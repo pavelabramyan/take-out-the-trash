@@ -55,6 +55,7 @@ var wetness: float = 0.0
 var dirt: float = 0.0
 var _step_pulse: float = 0.0
 var _sag: float = 0.0
+var _model_mat: bool = false
 var _carry_grace: float = 0.0
 
 const POS_K := 16.0
@@ -189,11 +190,13 @@ func _build_buckets() -> void:
 	add_child(_visual)
 	if _col == null:
 		_col = CollisionShape3D.new()
+	var pbr := MaterialLibrary.pbr("metal_painted", {"tint": Color(0.42, 0.50, 0.58), "metal": 0.55, "rough": 0.52, "tile_m": 2.2, "fallback": _base_color})
+	if pbr is StandardMaterial3D:
+		_mat = (pbr as StandardMaterial3D).duplicate()
+		_model_mat = true
 	_mat.metallic = 0.55
-	_mat.roughness = 0.45
-	var fill_mat := StandardMaterial3D.new()
-	fill_mat.albedo_color = Color(0.35, 0.28, 0.18)
-	fill_mat.roughness = 0.95
+	_mat.roughness = 0.5
+	var fill_mat := MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.40, 0.32, 0.20), "tile_m": 3.0, "fallback": Color(0.35, 0.28, 0.18)})
 	for side in [-1.0, 1.0]:
 		var cyl := MeshInstance3D.new()
 		var m := CylinderMesh.new()
@@ -247,11 +250,12 @@ func _build_buckets() -> void:
 func _build_carpet() -> void:
 	_visual = Node3D.new()
 	add_child(_visual)
+	var rug := MaterialLibrary.pbr("carpet", {"tint": Color(0.52, 0.24, 0.20), "rough": 0.95, "tile_m": 1.6, "fallback": _base_color})
+	if rug is StandardMaterial3D:
+		_mat = (rug as StandardMaterial3D).duplicate()
+		_model_mat = true
 	_mat.roughness = 0.95
 	_mat.metallic = 0.0
-	if ResourceLoader.exists("res://assets/textures/wool.png"):
-		_mat.albedo_texture = load("res://assets/textures/wool.png")
-		_mat.uv1_scale = Vector3(2.8, 2.8, 2.8)
 	var roll := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
 	cyl.top_radius = 0.15
@@ -289,8 +293,12 @@ func _build_carpet() -> void:
 func _build_fridge() -> void:
 	_visual = Node3D.new()
 	add_child(_visual)
-	_mat.metallic = 0.45
-	_mat.roughness = 0.35
+	var enamel := MaterialLibrary.pbr("metal_painted", {"tint": Color(0.80, 0.82, 0.84), "metal": 0.35, "rough": 0.34, "tile_m": 1.4, "fallback": _base_color})
+	if enamel is StandardMaterial3D:
+		_mat = (enamel as StandardMaterial3D).duplicate()
+		_model_mat = true
+	_mat.metallic = 0.35
+	_mat.roughness = 0.34
 	var body := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(0.62, 1.45, 0.58)
@@ -395,6 +403,53 @@ func _build_plastic_bag() -> void:
 
 	var thin_s := 0.88 if cargo == Cargo.THIN else 1.0
 	var asym := 0.04 if _color_preset != 1 else -0.03
+
+	# Сканированный пакет вместо сферы со складками: силуэт сразу узнаваемый,
+	# а деформация при сжатии по-прежнему живёт в scale этого узла
+	var got := PropLibrary.mesh_of("trashbag")
+	if not got.is_empty():
+		_body_mi = MeshInstance3D.new()
+		_body_mi.mesh = got[0]
+		var model_mat := (got[0] as Mesh).surface_get_material(0)
+		if model_mat is StandardMaterial3D:
+			_mat = (model_mat as StandardMaterial3D).duplicate()
+			_model_mat = true
+			_mat.albedo_color = _base_color
+			if cargo == Cargo.THIN:
+				_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				_mat.albedo_color.a = 0.8
+		_body_mi.material_override = _mat
+		# Модель 0.53×0.57×0.46 м — приводим к нашим 0.36 м по высоте
+		var fit := (0.40 * thin_s) / 0.57
+		_body_base_scale = Vector3.ONE * fit * Vector3(1.0 + asym * 0.4, 1.0, 1.0 - asym * 0.3)
+		_body_mi.scale = _body_base_scale
+		_body_mi.position = Vector3(asym * 0.4, -0.30 * thin_s, 0.0)
+		_body_mi.rotation_degrees = Vector3(0, float(_color_preset) * 47.0, 0)
+		_visual.add_child(_body_mi)
+		_mesh = _body_mi
+		_col = CollisionShape3D.new()
+		var cap0 := CapsuleShape3D.new()
+		cap0.radius = 0.14 * thin_s
+		cap0.height = 0.36 * thin_s
+		_col.shape = cap0
+		_col.position = Vector3(0.0, -0.16, 0.0)
+		add_child(_col)
+		_seam_mi = MeshInstance3D.new()
+		var seam0 := BoxMesh.new()
+		seam0.size = Vector3(0.012, 0.30, 0.02)
+		_seam_mi.mesh = seam0
+		var seam_mat0 := _mat.duplicate() as StandardMaterial3D
+		seam_mat0.albedo_color = _base_color.darkened(0.25)
+		_seam_mi.material_override = seam_mat0
+		_seam_mi.position = Vector3(0.0, -0.22, 0.13)
+		_visual.add_child(_seam_mi)
+		_rag_left = _make_rag(-1.0)
+		_rag_right = _make_rag(1.0)
+		_rag_left.visible = false
+		_rag_right.visible = false
+		_visual.add_child(_rag_left)
+		_visual.add_child(_rag_right)
+		return
 
 	# Брюхо — сплюснутая сфера + складки
 	_body_mi = MeshInstance3D.new()
@@ -841,7 +896,7 @@ func _update_damage_visual() -> void:
 	if cargo == Cargo.THIN:
 		_mat.albedo_color.a = lerpf(0.78, 0.5, t)
 	# Tear map на поздних стадиях
-	if tear_stage >= TearStage.WORN and ResourceLoader.exists("res://assets/textures/bag/bag_tear.png"):
+	if not _model_mat and tear_stage >= TearStage.WORN and ResourceLoader.exists("res://assets/textures/bag/bag_tear.png"):
 		_mat.detail_enabled = true
 		_mat.detail_albedo = load("res://assets/textures/bag/bag_tear.png")
 		_mat.detail_uv_layer = BaseMaterial3D.DETAIL_UV_1

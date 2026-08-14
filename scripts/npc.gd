@@ -118,41 +118,46 @@ func _build() -> void:
 		_build_dog()
 
 func _build_babushka() -> void:
-	var coat := _mat(Color(0.52, 0.22, 0.28), 0.92, true)
-	var skin := _mat(Color(0.78, 0.62, 0.52), 0.78)
-	var hair := _mat(Color(0.55, 0.48, 0.38), 0.95)
-	var scarf := _mat(Color(0.18, 0.42, 0.36), 0.88, true)
-	var boot := _mat(Color(0.12, 0.10, 0.09), 0.7)
-	var bag_m := _mat(Color(0.28, 0.18, 0.12), 0.86)
-	_mesh = _add_cap(self, 0.26, 1.05, coat, Vector3(0, 0.68, 0))
-	_add_cyl(self, 0.28, 0.08, coat, Vector3(0, 0.20, 0))
-	_add_sph(self, 0.13, skin, Vector3(0, 1.22, 0.02))
-	_add_sph(self, 0.07, hair, Vector3(0.0, 1.32, 0.08))
-	_add_box(self, Vector3(0.22, 0.08, 0.16), scarf, Vector3(0, 1.08, 0.04))
-	_add_box(self, Vector3(0.08, 0.22, 0.14), scarf, Vector3(0.04, 0.96, 0.10), Vector3(12, 0, 8))
-	_add_cap(self, 0.045, 0.42, coat, Vector3(-0.22, 0.72, 0.02), Vector3(8, 0, 18))
-	_add_cap(self, 0.045, 0.42, coat, Vector3(0.24, 0.62, 0.06), Vector3(18, -12, -28))
-	_add_box(self, Vector3(0.09, 0.12, 0.16), boot, Vector3(-0.09, 0.07, 0.02))
-	_add_box(self, Vector3(0.09, 0.12, 0.16), boot, Vector3(0.09, 0.07, 0.02))
-	_add_box(self, Vector3(0.16, 0.18, 0.08), bag_m, Vector3(0.28, 0.48, 0.08), Vector3(8, -20, 12))
+	# Лицо из примитивов выдаёт себя мгновенно, поэтому фигура тёмная и
+	# сгорбленная: в полумраке подъезда читается силуэт, а не игрушка
+	var coat := _mat(Color(0.17, 0.15, 0.17), 0.96, true)
+	var skin := _mat(Color(0.42, 0.33, 0.28), 0.85)
+	var scarf := _mat(Color(0.24, 0.21, 0.24), 0.94, true)
+	var boot := _mat(Color(0.08, 0.07, 0.07), 0.72)
+	var bag_m := _mat(Color(0.16, 0.13, 0.10), 0.9)
+	# Корпус наклонён вперёд — узнаваемая согнутая спина
+	_mesh = _add_cap(self, 0.27, 1.0, coat, Vector3(0, 0.64, 0.02), Vector3(9, 0, 0))
+	_add_cap(self, 0.29, 0.34, coat, Vector3(0, 0.28, 0.0))
+	_add_sph(self, 0.115, skin, Vector3(0, 1.16, 0.08))
+	# Платок: две доли и узел под подбородком
+	_add_sph(self, 0.135, scarf, Vector3(0, 1.20, 0.05))
+	_add_cap(self, 0.055, 0.16, scarf, Vector3(0, 1.06, 0.13), Vector3(24, 0, 0))
+	_add_cap(self, 0.10, 0.30, scarf, Vector3(0, 0.99, -0.02), Vector3(-8, 0, 0))
+	_add_cap(self, 0.05, 0.44, coat, Vector3(-0.23, 0.68, 0.06), Vector3(14, 0, 16))
+	_add_cap(self, 0.05, 0.44, coat, Vector3(0.24, 0.60, 0.10), Vector3(22, -12, -26))
+	for sx in [-0.10, 0.10]:
+		_add_cap(self, 0.055, 0.34, boot, Vector3(sx, 0.20, 0.0))
+		_add_cap(self, 0.055, 0.14, boot, Vector3(sx, 0.05, 0.03), Vector3(90, 0, 0))
+	_add_cap(self, 0.09, 0.26, bag_m, Vector3(0.30, 0.44, 0.10), Vector3(6, -18, 10))
 
 func _build_dog() -> void:
-	var fur := _mat(Color(0.38, 0.28, 0.18), 0.94)
-	var dark := _mat(Color(0.18, 0.12, 0.08), 0.9)
-	var pink := _mat(Color(0.55, 0.38, 0.32), 0.75)
-	var collar := _mat(Color(0.55, 0.12, 0.10), 0.65)
-	_mesh = _add_box(self, Vector3(0.22, 0.26, 0.42), fur, Vector3(0, 0.32, 0.04))
-	_add_box(self, Vector3(0.24, 0.24, 0.18), fur, Vector3(0, 0.30, -0.16))
-	_add_box(self, Vector3(0.16, 0.16, 0.16), fur, Vector3(0, 0.40, -0.30))
-	_add_box(self, Vector3(0.10, 0.08, 0.12), pink, Vector3(0, 0.36, -0.40))
-	_add_box(self, Vector3(0.05, 0.10, 0.04), dark, Vector3(-0.06, 0.50, -0.28), Vector3(0, 0, -18))
-	_add_box(self, Vector3(0.05, 0.10, 0.04), dark, Vector3(0.06, 0.50, -0.28), Vector3(0, 0, 18))
-	for lx in [-0.08, 0.08]:
-		for lz in [-0.12, 0.14]:
-			_add_cyl(self, 0.035, 0.22, fur, Vector3(lx, 0.14, lz))
-			_add_box(self, Vector3(0.06, 0.04, 0.08), dark, Vector3(lx, 0.03, lz - 0.02))
-	_add_cap(self, 0.025, 0.22, fur, Vector3(0, 0.36, 0.28), Vector3(55, 0, 0))
-	_add_cyl(self, 0.09, 0.03, collar, Vector3(0, 0.40, -0.22), Vector3(90, 0, 0))
+	# Дворовый пёс: тёмная шерсть и капсулы вместо кубиков
+	var fur := _mat(Color(0.15, 0.13, 0.12), 0.96)
+	var dark := _mat(Color(0.07, 0.06, 0.06), 0.92)
+	var nose := _mat(Color(0.05, 0.05, 0.05), 0.55)
+	_mesh = _add_cap(self, 0.135, 0.52, fur, Vector3(0, 0.34, 0.04), Vector3(90, 0, 0))
+	_add_cap(self, 0.115, 0.34, fur, Vector3(0, 0.36, -0.16), Vector3(80, 0, 0))
+	_add_sph(self, 0.10, fur, Vector3(0, 0.42, -0.30))
+	_add_cap(self, 0.055, 0.20, fur, Vector3(0, 0.38, -0.40), Vector3(84, 0, 0))
+	_add_sph(self, 0.028, nose, Vector3(0, 0.38, -0.49))
+	# Уши висят вдоль головы
+	for ex in [-0.07, 0.07]:
+		_add_cap(self, 0.028, 0.13, dark, Vector3(ex, 0.46, -0.27), Vector3(16, 0, signf(ex) * 28.0))
+	for lx in [-0.075, 0.075]:
+		for lz in [-0.16, 0.16]:
+			_add_cap(self, 0.032, 0.26, fur, Vector3(lx, 0.15, lz), Vector3(signf(lz) * 6.0, 0, 0))
+			_add_cap(self, 0.038, 0.07, dark, Vector3(lx, 0.035, lz - 0.02), Vector3(90, 0, 0))
+	_add_cap(self, 0.022, 0.26, fur, Vector3(0, 0.40, 0.30), Vector3(48, 0, 0))
 
 func set_player(p: Node3D) -> void:
 	_target_player = p
