@@ -167,7 +167,7 @@ func _build_visual() -> void:
 		_:
 			_base_color = [Color(0.12, 0.42, 0.22), Color(0.10, 0.38, 0.20), Color(0.16, 0.46, 0.24)][_color_preset]
 	_mat.albedo_color = _base_color
-	_mat.roughness = 0.82
+	_mat.roughness = 0.88 if cargo != Cargo.THIN else 0.70
 	_mat.metallic = 0.0
 
 	_mesh = MeshInstance3D.new()
@@ -249,6 +249,9 @@ func _build_carpet() -> void:
 	add_child(_visual)
 	_mat.roughness = 0.95
 	_mat.metallic = 0.0
+	if ResourceLoader.exists("res://assets/textures/wool.png"):
+		_mat.albedo_texture = load("res://assets/textures/wool.png")
+		_mat.uv1_scale = Vector3(2.8, 2.8, 2.8)
 	var roll := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
 	cyl.top_radius = 0.15
@@ -367,7 +370,7 @@ func apply_dirt(amount: float = 0.2) -> void:
 func _apply_bag_material() -> void:
 	_mat = StandardMaterial3D.new()
 	_mat.albedo_color = _base_color
-	_mat.roughness = 0.72 if cargo != Cargo.THIN else 0.58
+	_mat.roughness = 0.88 if cargo != Cargo.THIN else 0.70
 	_mat.metallic = 0.0
 	if cargo == Cargo.THIN:
 		_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -407,21 +410,21 @@ func _build_plastic_bag() -> void:
 	_body_mi.position = Vector3(asym * 0.5, -0.22, 0.0)
 	_visual.add_child(_body_mi)
 	# Складки полиэтилена
-	for i in range(5):
+	for i in range(9):
 		var fold := MeshInstance3D.new()
 		var fs := SphereMesh.new()
-		fs.radius = 0.04 + float(i % 2) * 0.015
-		fs.height = 0.12
+		fs.radius = 0.035 + float(i % 3) * 0.012
+		fs.height = 0.11
 		fs.radial_segments = 10
 		fs.rings = 6
 		fold.mesh = fs
 		fold.material_override = _mat
 		fold.position = Vector3(
-			(-0.08 + float(i) * 0.04) + asym,
-			-0.14 - float(i % 3) * 0.03,
-			0.06 - float(i) * 0.02
+			(-0.10 + float(i) * 0.025) + asym,
+			-0.12 - float(i % 4) * 0.028,
+			0.07 - float(i % 5) * 0.018
 		)
-		fold.scale = Vector3(0.55, 1.4, 0.35)
+		fold.scale = Vector3(0.5, 1.55, 0.32)
 		_visual.add_child(fold)
 
 	# Горловина
@@ -435,6 +438,27 @@ func _build_plastic_bag() -> void:
 	_neck_mi.material_override = _mat
 	_neck_mi.position = Vector3(0.0, -0.02, 0.0)
 	_visual.add_child(_neck_mi)
+	var tie_m := StandardMaterial3D.new()
+	tie_m.albedo_color = Color(0.12, 0.12, 0.11)
+	tie_m.roughness = 0.55
+	var tie := MeshInstance3D.new()
+	var tc := CylinderMesh.new()
+	tc.top_radius = 0.006
+	tc.bottom_radius = 0.006
+	tc.height = 0.11
+	tie.mesh = tc
+	tie.material_override = tie_m
+	tie.position = Vector3(0.0, 0.03, 0.0)
+	tie.rotation_degrees = Vector3(0, 0, 90)
+	_visual.add_child(tie)
+	var knot := MeshInstance3D.new()
+	var ks := SphereMesh.new()
+	ks.radius = 0.014
+	ks.height = 0.022
+	knot.mesh = ks
+	knot.material_override = tie_m
+	knot.position = Vector3(0.05, 0.035, 0.0)
+	_visual.add_child(knot)
 
 	# Шов (зона разрыва)
 	_seam_mi = MeshInstance3D.new()
@@ -812,7 +836,7 @@ func _update_damage_visual() -> void:
 	_mat.albedo_color = _base_color.lerp(dirt_c, t * 0.55)
 	_mat.albedo_color = _mat.albedo_color.lerp(Color(0.2, 0.16, 0.12), dirt * 0.45)
 	if wetness > 0.05:
-		_mat.roughness = lerpf(0.72 if cargo != Cargo.THIN else 0.58, 0.28, wetness)
+		_mat.roughness = lerpf(0.88 if cargo != Cargo.THIN else 0.70, 0.28, wetness)
 		_mat.albedo_color = _mat.albedo_color.darkened(wetness * 0.15)
 	if cargo == Cargo.THIN:
 		_mat.albedo_color.a = lerpf(0.78, 0.5, t)

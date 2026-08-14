@@ -71,7 +71,7 @@ func _make_materials() -> void:
 	var style: String = str(_level.get("style", "khrushchev"))
 	var wall_up := Color(1.05, 1.0, 0.92)       # грязно-белый верх (tint на wall.png)
 	var wall_low := Color(1.15, 1.2, 1.1)        # зелёнка уже в zelenka.png
-	var tile_c := Color(0.95, 0.92, 0.88)
+	var tile_c := Color(0.78, 0.72, 0.64)
 	var panel_c := Color(1.0, 0.96, 0.9)         # облезлая панель
 	match style:
 		"brezhnev":
@@ -88,7 +88,9 @@ func _make_materials() -> void:
 	(_mats["wall"] as StandardMaterial3D).roughness = 0.92
 	_mats["wainscot"] = _tex_mat("res://assets/textures/zelenka.png", wall_low, Vector3(0.95, 0.95, 0.95))
 	(_mats["wainscot"] as StandardMaterial3D).roughness = 0.55  # масляная краска чуть блестит
-	_mats["tile"] = _tex_mat("res://assets/textures/tile.png", tile_c, Vector3(5.5, 5.5, 5.5))
+	_mats["tile"] = _tex_mat("res://assets/textures/tile_dirty.png", tile_c, Vector3(5.5, 5.5, 5.5))
+	if not (_mats["tile"] as StandardMaterial3D).albedo_texture:
+		_mats["tile"] = _tex_mat("res://assets/textures/tile.png", tile_c, Vector3(5.5, 5.5, 5.5))
 	(_mats["tile"] as StandardMaterial3D).roughness = 0.9
 	_mats["rail"] = _mat(Color(0.18, 0.18, 0.19), 0.65)
 	(_mats["rail"] as StandardMaterial3D).roughness = 0.55
@@ -100,13 +102,16 @@ func _make_materials() -> void:
 	_mats["concrete"] = _tex_mat("res://assets/textures/concrete.png", Color(1.0, 0.96, 0.88), Vector3(2.2, 2.2, 2.2))
 	# Ступени: жёлтый бетон в центре прохода + зелёная краска по краям
 	_mats["step"] = _tex_mat("res://assets/textures/concrete.png", Color(1.15, 1.05, 0.85), Vector3(3.5, 3.5, 3.5))
-	_mats["step_paint"] = _tex_mat("res://assets/textures/zelenka.png", Color(1.25, 1.35, 1.15), Vector3(2.0, 2.0, 2.0))
-	(_mats["step_paint"] as StandardMaterial3D).roughness = 0.7
+	_mats["step_paint"] = _tex_mat("res://assets/textures/stair_paint.png", Color(0.78, 0.68, 0.48), Vector3(1, 1, 1))
+	(_mats["step_paint"] as StandardMaterial3D).roughness = 0.82
 	_mats["panel"] = _tex_mat("res://assets/textures/panel.png", panel_c, Vector3(0.85, 0.85, 0.85))
 	_mats["asphalt"] = _tex_mat("res://assets/textures/asphalt.png", Color(1.05, 1.05, 1.05), Vector3(4.5, 4.5, 4.5))
-	_mats["ice"] = _mat(Color(0.75, 0.85, 0.95), 0.2)
-	_mats["dumpster"] = _tex_mat("res://assets/textures/dumpster.png", Color(1.15, 1.25, 1.1), Vector3(1.2, 1.2, 1.2))
-	_mats["mail"] = _mat(Color(0.30, 0.28, 0.22), 0.45)
+	_mats["ice"] = _tex_mat("res://assets/textures/ice.png", Color(0.85, 0.90, 0.95), Vector3(2.5, 2.5, 2.5))
+	(_mats["ice"] as StandardMaterial3D).roughness = 0.22
+	(_mats["ice"] as StandardMaterial3D).metallic = 0.15
+	_mats["dumpster"] = _tex_mat("res://assets/textures/dumpster.png", Color(0.72, 1.05, 0.55), Vector3(1.0, 1.0, 1.0))
+	_mats["dumpster_rust"] = _tex_mat("res://assets/textures/dumpster_rust.png", Color(1.15, 0.85, 0.55), Vector3(1.2, 1.2, 1.2))
+	_mats["mail"] = _tex_mat("res://assets/textures/mail.png", Color(1, 1, 1), Vector3(1, 1, 1))
 	(_mats["mail"] as StandardMaterial3D).roughness = 0.55
 	_mats["metal"] = _mat(Color(0.22, 0.23, 0.24), 0.75)
 	(_mats["metal"] as StandardMaterial3D).roughness = 0.48
@@ -119,15 +124,19 @@ func _make_materials() -> void:
 	_mats["prop"] = _mat(Color(0.26, 0.24, 0.22))
 	_mats["number"] = _mat(Color(0.72, 0.70, 0.58))
 	_mats["wood"] = _mat(Color(0.34, 0.22, 0.12))
-	_mats["paper"] = _mat(Color(0.72, 0.68, 0.55))
+	_mats["paper"] = _tex_mat("res://assets/textures/paper_notice.png", Color(1.0, 0.98, 0.9), Vector3(1, 1, 1))
 	_mats["dirt"] = _mat(Color(0.18, 0.16, 0.12))
 	(_mats["dirt"] as StandardMaterial3D).albedo_color.a = 0.62
 	(_mats["dirt"] as StandardMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_mats["graffiti"] = _mat(Color(0.12, 0.12, 0.12))
+	_mats["graffiti"] = _tex_mat("res://assets/textures/graffiti.png", Color(1, 1, 1), Vector3(1, 1, 1))
 	(_mats["graffiti"] as StandardMaterial3D).roughness = 0.95
-	_mats["grass"] = _mat(Color(0.32, 0.30, 0.18))  # сухая дворовая трава
+	_mats["grass"] = _tex_mat("res://assets/textures/grass.png", Color(0.95, 0.92, 0.8), Vector3(3.5, 3.5, 3.5))
 	(_mats["grass"] as StandardMaterial3D).roughness = 0.95
-	_mats["rust"] = _mat(Color(0.42, 0.22, 0.10), 0.35)
+	_mats["wool"] = _tex_mat("res://assets/textures/wool.png", Color(1, 1, 1), Vector3(2.2, 2.2, 2.2))
+	(_mats["wool"] as StandardMaterial3D).roughness = 0.95
+	_mats["rust"] = _tex_mat("res://assets/textures/dumpster_rust.png", Color(1.0, 0.95, 0.9), Vector3(1.6, 1.6, 1.6))
+	if not (_mats["rust"] as StandardMaterial3D).albedo_texture:
+		_mats["rust"] = _mat(Color(0.42, 0.22, 0.10), 0.35)
 	(_mats["rust"] as StandardMaterial3D).roughness = 0.78
 	_mats["lamp"] = _mat(Color(1.0, 0.88, 0.55))
 	(_mats["lamp"] as StandardMaterial3D).emission_enabled = true
@@ -184,10 +193,10 @@ func _add_world_env(night: bool) -> void:
 		sky_mat.sun_angle_max = 2.0
 		sky_mat.sky_energy_multiplier = 0.55
 	else:
-		sky_mat.sky_top_color = Color(0.42, 0.55, 0.72)
-		sky_mat.sky_horizon_color = Color(0.72, 0.68, 0.58)
-		sky_mat.ground_horizon_color = Color(0.45, 0.42, 0.38)
-		sky_mat.ground_bottom_color = Color(0.28, 0.26, 0.24)
+		sky_mat.sky_top_color = Color(0.38, 0.55, 0.78)
+		sky_mat.sky_horizon_color = Color(0.70, 0.76, 0.82)
+		sky_mat.ground_horizon_color = Color(0.42, 0.40, 0.36)
+		sky_mat.ground_bottom_color = Color(0.22, 0.21, 0.18)
 		sky_mat.sun_angle_max = 28.0
 		sky_mat.sky_energy_multiplier = 1.05
 	sky.sky_material = sky_mat
@@ -214,7 +223,7 @@ func _add_world_env(night: bool) -> void:
 	env.adjustment_saturation = 0.92
 	env.adjustment_contrast = 1.04
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES
-	env.tonemap_exposure = 1.12 if night else 1.22
+	env.tonemap_exposure = 1.05 if night else 1.08
 	we.environment = env
 	add_child(we)
 
@@ -262,6 +271,58 @@ func _box(pos: Vector3, size: Vector3, mat_key: String, with_collision: bool = t
 	body.position = pos
 	add_child(body)
 	return body
+
+func _vis(pos: Vector3, size: Vector3, mat_key: String) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	mi.mesh = bm
+	mi.material_override = _mats[mat_key]
+	mi.position = pos
+	add_child(mi)
+	return mi
+
+func _cyl(pos: Vector3, r: float, h: float, mat_key: String, rot: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = r
+	cm.bottom_radius = r
+	cm.height = h
+	cm.radial_segments = 8
+	mi.mesh = cm
+	mi.material_override = _mats[mat_key]
+	mi.position = pos
+	mi.rotation_degrees = rot
+	add_child(mi)
+	return mi
+
+func _sph(pos: Vector3, radius: float, mat_key: String) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = radius
+	sm.height = radius * 2.0
+	sm.radial_segments = 10
+	sm.rings = 6
+	mi.mesh = sm
+	mi.material_override = _mats[mat_key]
+	mi.position = pos
+	add_child(mi)
+	return mi
+
+func _hide_mesh(body: StaticBody3D) -> void:
+	for c in body.get_children():
+		if c is MeshInstance3D:
+			(c as MeshInstance3D).visible = false
+
+func _dress_rail(center: Vector3, width: float, tall: float, along_x: bool) -> void:
+	var n := 6
+	for i in range(n):
+		var t := (float(i) + 0.5) / float(n)
+		var off := lerpf(-width * 0.45, width * 0.45, t)
+		var p := center + (Vector3(off, 0, 0) if along_x else Vector3(0, 0, off))
+		_vis(p, Vector3(0.03, tall, 0.03), "metal")
+	var cap := Vector3(width * 0.92, 0.05, 0.05) if along_x else Vector3(0.05, 0.05, width * 0.92)
+	_vis(center + Vector3(0, tall * 0.42, 0), cap, "handrail")
 
 func _stair_x(left: bool) -> float:
 	return -STAIR_X if left else STAIR_X
@@ -385,7 +446,9 @@ func _add_ground_mailboxes() -> void:
 	for i in range(4):
 		var bx := -1.05 + float(i) * 0.52
 		_box(Vector3(bx, 1.0, LAND_Z0 + 0.08), Vector3(0.46, 0.9, 0.12), "mail", false)
-		_box(Vector3(bx, 1.25, LAND_Z0 + 0.15), Vector3(0.32, 0.07, 0.02), "number", false)
+		_vis(Vector3(bx, 1.18, LAND_Z0 + 0.15), Vector3(0.28, 0.025, 0.02), "metal")
+		_cyl(Vector3(bx + 0.14, 0.82, LAND_Z0 + 0.15), 0.01, 0.03, "metal", Vector3(90, 0, 0))
+		_vis(Vector3(bx - 0.12, 1.28, LAND_Z0 + 0.15), Vector3(0.10, 0.08, 0.01), "paper")
 
 func _add_main_landing(y: float, floor_num: int) -> void:
 	var depth := LAND_Z1 - LAND_Z0
@@ -409,24 +472,29 @@ func _add_shaft_guard(y: float) -> void:
 	var right_start := open_x + open_w * 0.5
 	var left_w := left_end - (-CELL_HALF + 0.08)
 	if left_w > 0.18:
-		_box(Vector3(-CELL_HALF + 0.08 + left_w * 0.5, y + 0.5, z), Vector3(left_w, 1.0, 0.08), "metal", true)
+		var lb := _box(Vector3(-CELL_HALF + 0.08 + left_w * 0.5, y + 0.5, z), Vector3(left_w, 1.0, 0.08), "metal", true)
+		_hide_mesh(lb)
+		_dress_rail(Vector3(-CELL_HALF + 0.08 + left_w * 0.5, y + 0.5, z), left_w, 0.92, true)
 	var right_w := (CELL_HALF - 0.08) - right_start
 	if right_w > 0.18:
-		_box(Vector3(right_start + right_w * 0.5, y + 0.5, z), Vector3(right_w, 1.0, 0.08), "metal", true)
+		var rb := _box(Vector3(right_start + right_w * 0.5, y + 0.5, z), Vector3(right_w, 1.0, 0.08), "metal", true)
+		_hide_mesh(rb)
+		_dress_rail(Vector3(right_start + right_w * 0.5, y + 0.5, z), right_w, 0.92, true)
 
 func _add_mid_landing(y: float) -> void:
 	var depth := MID_Z1 - MID_Z0
 	var zc := (MID_Z0 + MID_Z1) * 0.5
 	_box(Vector3(0, y - 0.1, zc), Vector3(CELL_W - 0.15, 0.2, depth), "tile")
 	_box(Vector3(0, y + 0.05, MID_Z0 - 0.06), Vector3(0.7, 0.1, 0.05), "rail")
-	# Ограждение с коллизией — иначе разворот = падение в шахту
-	_box(Vector3(0, y + 0.55, MID_Z1), Vector3(CELL_W - 0.25, 1.05, 0.07), "metal", true)
-	_box(Vector3(0, y + 0.9, MID_Z1), Vector3(CELL_W - 0.25, 0.05, 0.05), "handrail", false)
-	for i in range(6):
-		var rx := -1.15 + float(i) * 0.46
-		_box(Vector3(rx, y + 0.55, MID_Z1), Vector3(0.03, 0.85, 0.03), "metal", false)
-	_box(Vector3(-1.2, y + 0.55, zc), Vector3(0.08, 1.0, depth * 0.9), "metal", true)
-	_box(Vector3(1.2, y + 0.55, zc), Vector3(0.08, 1.0, depth * 0.9), "metal", true)
+	var front := _box(Vector3(0, y + 0.55, MID_Z1), Vector3(CELL_W - 0.25, 1.05, 0.07), "metal", true)
+	_hide_mesh(front)
+	_dress_rail(Vector3(0, y + 0.55, MID_Z1), CELL_W - 0.25, 0.95, true)
+	var sl := _box(Vector3(-1.2, y + 0.55, zc), Vector3(0.08, 1.0, depth * 0.9), "metal", true)
+	var sr := _box(Vector3(1.2, y + 0.55, zc), Vector3(0.08, 1.0, depth * 0.9), "metal", true)
+	_hide_mesh(sl)
+	_hide_mesh(sr)
+	_dress_rail(Vector3(-1.2, y + 0.55, zc), depth * 0.9, 0.9, false)
+	_dress_rail(Vector3(1.2, y + 0.55, zc), depth * 0.9, 0.9, false)
 
 func _add_u_flights(from_floor: int, y_top: float, y_bot: float) -> void:
 	var mid_y := y_top - HALF_H
@@ -452,29 +520,24 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 	body.rotation.x = angle
 	add_child(body)
 
-	# Реф Нижегородская: зелёная краска по краям, вытертый жёлтый бетон по центру
 	var steps := 9
 	var z_dir := 1.0 if z1 > z0 else -1.0
+	var wall_side := 1.0 if not left else -1.0
 	for i in range(steps):
 		var t := (float(i) + 0.5) / float(steps)
 		var y := lerpf(y_top, y_bot, t)
 		var z := lerpf(z0, z1, t)
 		var tread_w := STAIR_W - 0.08
-		_box(Vector3(x, y, z), Vector3(tread_w, 0.07, 0.22), "step_paint", false)
-		# Вытертая середина (проходом)
-		_box(Vector3(x, y + 0.012, z), Vector3(tread_w * 0.42, 0.02, 0.18), "step", false)
-		_box(Vector3(x, y - 0.055, z - z_dir * 0.05), Vector3(tread_w - 0.02, 0.11, 0.08), "concrete", false)
-		var nz := z + z_dir * 0.1
-		_box(Vector3(x, y + 0.03, nz), Vector3(tread_w - 0.04, 0.015, 0.035), "step", false)
-		if i % 2 == 0:
-			_box(Vector3(x + (0.38 if left else -0.38), y + 0.04, z), Vector3(0.14, 0.012, 0.12), "dirt", false)
+		_vis(Vector3(x, y, z), Vector3(tread_w, 0.07, 0.24), "step_paint")
+		_vis(Vector3(x, y + 0.02, z + z_dir * 0.11), Vector3(tread_w - 0.02, 0.018, 0.03), "dirt")
+		_vis(Vector3(x, y - 0.06, z - z_dir * 0.06), Vector3(tread_w, 0.12, 0.04), "wainscot")
+		_vis(Vector3(x + wall_side * 0.50, y, z), Vector3(0.05, 0.18, 0.22), "concrete")
 
 	_box(Vector3(x, y_top - 0.02, z0 + (0.1 if z1 > z0 else -0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
 	_box(Vector3(x, y_bot + 0.02, z1 + (-0.1 if z1 > z0 else 0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
 
 	# Перила: тёмный металл + бордовый поручень (реф)
 	var rail_x := x + (STAIR_W * 0.46 if not left else -STAIR_W * 0.46)
-	var wall_side := 1.0 if not left else -1.0
 	var rail := StaticBody3D.new()
 	rail.collision_layer = 1
 	var rcs := CollisionShape3D.new()
@@ -504,8 +567,8 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 		var t := (float(i) + 0.5) / 7.0
 		var sy := lerpf(y_top, y_bot, t) + 0.4
 		var sz := lerpf(z0, z1, t)
-		_box(Vector3(rail_x, sy, sz), Vector3(0.026, 0.78, 0.026), "metal", false)
-		_box(Vector3(rail_x + wall_side * 0.12, sy + 0.25, sz), Vector3(0.18, 0.03, 0.03), "metal", false)
+		_cyl(Vector3(rail_x, sy, sz), 0.012, 0.78, "metal")
+		_vis(Vector3(rail_x + wall_side * 0.12, sy + 0.25, sz), Vector3(0.16, 0.025, 0.025), "metal")
 
 	# Низ марша / «под лестницей» — граффити и мусор (реф)
 	var under_y := (y_top + y_bot) * 0.5 - 0.55
@@ -520,8 +583,7 @@ func _add_floor_wainscot(y: float) -> void:
 	_box(Vector3(-CELL_HALF + 0.05, cy, 1.15), Vector3(0.08, h, 4.8), "wainscot", false)
 	_box(Vector3(CELL_HALF - 0.05, cy, 1.15), Vector3(0.08, h, 4.8), "wainscot", false)
 	_box(Vector3(0, cy, LAND_Z0 + 0.05), Vector3(CELL_W - 0.12, h, 0.08), "wainscot", false)
-	# Линия раздела зелёнка / верх + плинтус
-	_box(Vector3(0, y + h, 1.15), Vector3(CELL_W - 0.1, 0.02, 4.7), "dirt", false)
+	_vis(Vector3(0, y + h, 1.15), Vector3(CELL_W - 0.14, 0.035, 4.65), "concrete")
 	_box(Vector3(-CELL_HALF + 0.04, y + 0.04, 1.15), Vector3(0.06, 0.08, 4.6), "concrete", false)
 	_box(Vector3(CELL_HALF - 0.04, y + 0.04, 1.15), Vector3(0.06, 0.08, 4.6), "concrete", false)
 	_box(Vector3(0, y + 0.04, LAND_Z0 + 0.04), Vector3(CELL_W - 0.2, 0.08, 0.06), "concrete", false)
@@ -532,8 +594,10 @@ func _add_floor_props(y: float, floor_num: int, has_elevator: bool) -> void:
 	_apt_door(Vector3(0.85, y + 1.0, LAND_Z0 + 0.1), floor_num * 2, true)
 	# Батарея у боковой стены
 	_box(Vector3(-CELL_HALF + 0.12, y + 0.5, 0.7), Vector3(0.1, 0.5, 0.55), "metal", false)
-	for i in range(4):
-		_box(Vector3(-CELL_HALF + 0.14, y + 0.5, 0.48 + float(i) * 0.12), Vector3(0.12, 0.45, 0.05), "metal", false)
+	for i in range(6):
+		_vis(Vector3(-CELL_HALF + 0.14, y + 0.5, 0.42 + float(i) * 0.10), Vector3(0.12, 0.45, 0.04), "metal")
+	_cyl(Vector3(-CELL_HALF + 0.12, y + 0.18, 0.48), 0.02, 0.36, "metal")
+	_cyl(Vector3(-CELL_HALF + 0.12, y + 0.18, 0.92), 0.02, 0.36, "metal")
 	# Проводка под потолком + табличка этажа
 	_box(Vector3(CELL_HALF - 0.12, y + 2.35, 0.8), Vector3(0.04, 0.04, 3.2), "metal", false)
 	_box(Vector3(CELL_HALF - 0.12, y + 1.7, -0.5), Vector3(0.06, 0.7, 0.06), "metal", false)
@@ -541,8 +605,8 @@ func _add_floor_props(y: float, floor_num: int, has_elevator: bool) -> void:
 	# Грязные углы + потёртости на зелёнке
 	_box(Vector3(-CELL_HALF + 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.28, 0.05, 0.28), "dirt", false)
 	_box(Vector3(CELL_HALF - 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.28, 0.05, 0.28), "dirt", false)
-	_box(Vector3(-CELL_HALF + 0.06, y + 0.55, 1.4), Vector3(0.03, 0.7, 0.9), "dirt", false)
-	_box(Vector3(CELL_HALF - 0.06, y + 0.4, 0.2), Vector3(0.03, 0.5, 0.6), "dirt", false)
+	_vis(Vector3(-CELL_HALF + 0.06, y + 0.45, 1.2), Vector3(0.01, 0.25, 0.35), "dirt")
+	_vis(Vector3(CELL_HALF - 0.06, y + 0.38, 0.35), Vector3(0.01, 0.22, 0.28), "dirt")
 	# Граффити на верхней половине стены
 	_box(Vector3(-CELL_HALF + 0.04, y + 1.85, 0.6), Vector3(0.02, 0.25, 0.4), "graffiti", false)
 	_box(Vector3(CELL_HALF - 0.04, y + 2.0, 1.5), Vector3(0.02, 0.18, 0.3), "graffiti", false)
@@ -566,17 +630,19 @@ func _add_floor_props(y: float, floor_num: int, has_elevator: bool) -> void:
 
 func _apt_door(pos: Vector3, num: int, on_back: bool = false) -> void:
 	if on_back:
+		_vis(pos + Vector3(0.0, 0.0, -0.02), Vector3(0.90, 2.12, 0.10), "concrete")
 		_box(pos, Vector3(0.78, 2.0, 0.07), "door_apt", false)
-		_box(pos + Vector3(0.0, 0.5, 0.05), Vector3(0.07, 0.07, 0.04), "metal", false)
-		_box(pos + Vector3(0.25, 0.0, 0.05), Vector3(0.14, 0.1, 0.04), "metal", false)
-		_box(pos + Vector3(-0.22, 0.62, 0.05), Vector3(0.22, 0.14, 0.02), "number", false)
+		_vis(pos + Vector3(0.28, 0.0, 0.06), Vector3(0.05, 0.08, 0.02), "metal")
+		_cyl(pos + Vector3(0.30, 0.0, 0.08), 0.012, 0.08, "metal", Vector3(90, 0, 0))
+		_cyl(pos + Vector3(0.0, 0.42, 0.06), 0.012, 0.02, "metal", Vector3(90, 0, 0))
+		_vis(pos + Vector3(-0.22, 0.62, 0.05), Vector3(0.22, 0.14, 0.02), "paper")
 	else:
 		_box(pos, Vector3(0.07, 2.0, 0.78), "door_apt", false)
 
 func _add_floor_light(y: float) -> void:
-	# Голая лампочка на проводе — как в живом подъезде
-	_box(Vector3(0.15, y + 2.55, 0.1), Vector3(0.02, 0.25, 0.02), "metal", false)
-	_box(Vector3(0.15, y + 2.38, 0.1), Vector3(0.07, 0.1, 0.07), "lamp", false)
+	_cyl(Vector3(0.15, y + 2.52, 0.1), 0.006, 0.28, "metal")
+	_vis(Vector3(0.15, y + 2.42, 0.1), Vector3(0.04, 0.05, 0.04), "concrete")
+	_sph(Vector3(0.15, y + 2.36, 0.1), 0.04, "lamp")
 	var lamp := OmniLight3D.new()
 	lamp.light_color = Color(1.0, 0.78, 0.42)
 	lamp.light_energy = 1.35
@@ -600,7 +666,7 @@ func _build_apartment_door(start_floor: int) -> void:
 	var y := float(start_floor) * FLOOR_H
 	spawn_pos = Vector3(-0.85, y + 0.2, -0.55)
 	_box(Vector3(-0.85, y + 1.0, LAND_Z0 + 0.12), Vector3(0.82, 2.0, 0.08), "door", false)
-	_box(Vector3(-0.85, y + 0.02, -0.7), Vector3(0.55, 0.03, 0.4), "prop", false)
+	_box(Vector3(-0.85, y + 0.02, -0.7), Vector3(0.55, 0.03, 0.4), "dirt", false)
 	_box(Vector3(-1.05, y + 1.62, LAND_Z0 + 0.18), Vector3(0.22, 0.14, 0.02), "number", false)
 
 func _build_yard(ice: bool, night: bool) -> void:
@@ -638,16 +704,19 @@ func _build_yard(ice: bool, night: bool) -> void:
 				_box(Vector3(wx, wy, DOOR_Z + 0.45), Vector3(1.15, 1.3, 0.05), "curtain", false)
 			else:
 				_box(Vector3(wx, wy, DOOR_Z + 0.45), Vector3(1.15, 1.3, 0.05), "glass", false)
-			# Разные балконы (реф Северодонецк): кто во что горазд
+			_vis(Vector3(wx, wy, DOOR_Z + 0.47), Vector3(1.15, 0.03, 0.02), "metal")
+			_vis(Vector3(wx, wy, DOOR_Z + 0.47), Vector3(0.03, 1.3, 0.02), "metal")
 			if kind == 2:
 				_box(Vector3(wx, wy - 0.15, DOOR_Z + 0.85), Vector3(1.4, 1.1, 0.7), "balcony", false)
 				_box(Vector3(wx, wy + 0.35, DOOR_Z + 0.85), Vector3(1.42, 0.08, 0.72), "metal", false)
+				_vis(Vector3(wx + 0.2, wy + 0.1, DOOR_Z + 1.05), Vector3(0.7, 0.02, 0.25), "paper")
 			elif kind == 3:
 				_box(Vector3(wx, wy - 0.2, DOOR_Z + 0.75), Vector3(1.35, 0.9, 0.55), "wood", false)
 			elif kind == 4:
 				_box(Vector3(wx, wy - 0.35, DOOR_Z + 0.7), Vector3(1.3, 0.08, 0.5), "concrete", false)
 				_box(Vector3(wx - 0.55, wy - 0.05, DOOR_Z + 0.7), Vector3(0.05, 0.7, 0.5), "metal", false)
 				_box(Vector3(wx + 0.55, wy - 0.05, DOOR_Z + 0.7), Vector3(0.05, 0.7, 0.5), "metal", false)
+				_vis(Vector3(wx + 0.35, wy - 0.55, DOOR_Z + 0.72), Vector3(0.35, 0.22, 0.28), "metal")
 	# Провода с крыши (реф)
 	for i in range(5):
 		var wx := -6.0 + float(i) * 3.0
@@ -670,8 +739,13 @@ func _build_yard(ice: bool, night: bool) -> void:
 		_box(Vector3(fx, 0.7, 19.3), Vector3(0.1, 1.4, 0.1), "metal", false)
 	_box(Vector3(0, 1.35, 19.3), Vector3(20.0, 0.05, 0.05), "metal", false)
 	_box(Vector3(0, 0.35, 19.3), Vector3(20.0, 0.05, 0.05), "metal", false)
-	_box(Vector3(-10.0, 0.7, 12.0), Vector3(0.12, 1.4, 16.0), "metal", false)
-	_box(Vector3(10.0, 0.7, 12.0), Vector3(0.12, 1.4, 16.0), "metal", false)
+	for i in range(8):
+		_vis(Vector3(-10.0, 0.7, 6.0 + float(i) * 1.7), Vector3(0.08, 1.4, 0.08), "metal")
+		_vis(Vector3(10.0, 0.7, 6.0 + float(i) * 1.7), Vector3(0.08, 1.4, 0.08), "metal")
+	_vis(Vector3(-10.0, 1.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
+	_vis(Vector3(-10.0, 0.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
+	_vis(Vector3(10.0, 1.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
+	_vis(Vector3(10.0, 0.35, 12.0), Vector3(0.04, 0.04, 16.0), "metal")
 	_box(Vector3(-4.8, 0.3, 8.2), Vector3(1.7, 0.09, 0.4), "wood")
 	_box(Vector3(-5.35, 0.38, 8.2), Vector3(0.09, 0.35, 0.35), "wood")
 	_box(Vector3(-4.25, 0.38, 8.2), Vector3(0.09, 0.35, 0.35), "wood")
@@ -683,9 +757,18 @@ func _build_yard(ice: bool, night: bool) -> void:
 	_box(Vector3(6.8, 1.15, 11.5), Vector3(0.1, 2.2, 0.1), "metal")
 	_box(Vector3(7.55, 1.15, 11.5), Vector3(0.1, 2.2, 0.1), "metal")
 	_box(Vector3(7.15, 2.25, 11.5), Vector3(0.95, 0.07, 0.07), "metal", false)
-	_box(Vector3(3.5, 0.65, 16.1), Vector3(4.3, 1.2, 0.1), "metal")
-	_box(Vector3(1.45, 0.65, 14.5), Vector3(0.1, 1.2, 3.3), "metal")
-	_box(Vector3(5.55, 0.65, 14.5), Vector3(0.1, 1.2, 3.3), "metal")
+	var enc_b := _box(Vector3(3.5, 0.65, 16.1), Vector3(4.3, 1.2, 0.1), "metal")
+	var enc_l := _box(Vector3(1.45, 0.65, 14.5), Vector3(0.1, 1.2, 3.3), "metal")
+	var enc_r := _box(Vector3(5.55, 0.65, 14.5), Vector3(0.1, 1.2, 3.3), "metal")
+	_hide_mesh(enc_b)
+	_hide_mesh(enc_l)
+	_hide_mesh(enc_r)
+	for i in range(8):
+		_vis(Vector3(1.45, 0.18 + float(i) * 0.12, 14.5), Vector3(0.03, 0.04, 3.1), "metal")
+		_vis(Vector3(5.55, 0.18 + float(i) * 0.12, 14.5), Vector3(0.03, 0.04, 3.1), "metal")
+	_vis(Vector3(8.2, 14.6, DOOR_Z + 0.9), Vector3(0.55, 0.08, 0.55), "metal")
+	_cyl(Vector3(8.2, 14.85, DOOR_Z + 0.9), 0.28, 0.04, "metal", Vector3(70, 20, 0))
+	_vis(Vector3(-6.4, 6.4, DOOR_Z + 0.55), Vector3(0.55, 0.32, 0.42), "metal")
 	if ice:
 		_box(Vector3(0, 0.02, 9.0), Vector3(3.0, 0.05, 1.0), "ice")
 		yard_ice_zones.append(Rect2(Vector2(-7, 7), Vector2(14, 10)))
@@ -745,33 +828,29 @@ func _build_basement_exit() -> void:
 	_box(Vector3(0, 0.02, 11.4), Vector3(1.8, 0.12, 1.6), "asphalt")
 
 func _build_dumpster() -> void:
-	# Контейнерная площадка: 3 бака + низкий забор + мусор вокруг (реф двор)
-	_box(Vector3(3.7, 0.55, 15.5), Vector3(4.6, 1.0, 0.08), "metal", false)
-	_box(Vector3(1.5, 0.55, 14.5), Vector3(0.08, 1.0, 2.2), "metal", false)
-	_box(Vector3(5.9, 0.55, 14.5), Vector3(0.08, 1.0, 2.2), "metal", false)
+	for i in range(10):
+		_vis(Vector3(3.7, 0.18 + float(i) * 0.09, 15.5), Vector3(4.4, 0.04, 0.03), "metal")
 	for i in range(5):
-		_box(Vector3(1.9 + float(i) * 0.95, 0.95, 15.5), Vector3(0.05, 0.9, 0.05), "metal", false)
+		_vis(Vector3(1.9 + float(i) * 0.95, 0.95, 15.5), Vector3(0.05, 0.9, 0.05), "metal")
 	for i in range(3):
 		var dx := 2.6 + float(i) * 1.15
 		_box(Vector3(dx, 0.7, 14.6), Vector3(1.0, 1.35, 1.15), "dumpster")
-		_box(Vector3(dx, 0.7, 14.05), Vector3(0.95, 1.2, 0.04), "rust", false)
-		_box(Vector3(dx - 0.48, 0.7, 14.6), Vector3(0.04, 1.2, 1.05), "rust", false)
-		_box(Vector3(dx + 0.48, 0.7, 14.6), Vector3(0.04, 1.2, 1.05), "rust", false)
-		_box(Vector3(dx, 1.42, 14.55), Vector3(1.08, 0.1, 1.22), "metal", false)
-		_box(Vector3(dx + 0.15, 1.48, 14.55), Vector3(0.35, 0.06, 0.2), "rust", false)
-		# Граффити на крышке
+		_vis(Vector3(dx, 0.7, 14.04), Vector3(0.95, 1.18, 0.03), "dumpster_rust")
+		for k in range(7):
+			_vis(Vector3(dx - 0.42 + float(k) * 0.14, 0.7, 14.03), Vector3(0.03, 1.18, 0.025), "metal")
+		var lid := _vis(Vector3(dx, 1.44, 14.52), Vector3(1.08, 0.08, 1.22), "metal")
+		lid.rotation_degrees.x = -28.0
+		_cyl(Vector3(dx, 1.50, 14.40), 0.015, 0.22, "rust", Vector3(0, 0, 90))
 		if i == 1:
-			_box(Vector3(dx, 1.5, 14.4), Vector3(0.4, 0.02, 0.25), "graffiti", false)
-		_box(Vector3(dx - 0.35, 0.1, 15.05), Vector3(0.14, 0.14, 0.08), "metal", false)
-		_box(Vector3(dx + 0.35, 0.1, 15.05), Vector3(0.14, 0.14, 0.08), "metal", false)
-		_box(Vector3(dx - 0.35, 0.1, 14.15), Vector3(0.14, 0.14, 0.08), "metal", false)
-		_box(Vector3(dx + 0.35, 0.1, 14.15), Vector3(0.14, 0.14, 0.08), "metal", false)
+			_vis(Vector3(dx, 1.52, 14.35), Vector3(0.4, 0.02, 0.25), "graffiti")
+		for wz in [-0.45, 0.45]:
+			for wx in [-0.35, 0.35]:
+				_cyl(Vector3(dx + wx, 0.08, 14.6 + wz), 0.07, 0.05, "metal", Vector3(0, 0, 90))
 	_box(Vector3(3.7, 0.03, 13.8), Vector3(2.8, 0.02, 1.2), "puddle", false)
 	_box(Vector3(2.4, 0.08, 13.5), Vector3(0.25, 0.08, 0.2), "dirt", false)
 	_box(Vector3(4.8, 0.1, 15.2), Vector3(0.35, 0.12, 0.25), "prop", false)
 	_box(Vector3(3.2, 0.15, 13.3), Vector3(0.4, 0.2, 0.3), "prop", false)
-	# Табличка на заборе площадки, не «в воздухе»
-	_box(Vector3(3.7, 1.35, 15.55), Vector3(0.9, 0.28, 0.04), "number", false)
+	_vis(Vector3(3.7, 1.35, 15.55), Vector3(0.9, 0.28, 0.04), "paper")
 	dumpster = Area3D.new()
 	dumpster.name = "Dumpster"
 	dumpster.collision_layer = 0

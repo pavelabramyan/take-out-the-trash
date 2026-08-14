@@ -2,6 +2,7 @@ extends Control
 ## Главное меню: уровни, настройки, ачивки, статистика.
 
 const LevelData = preload("res://scripts/level_data.gd")
+const UiThemeScr = preload("res://scripts/ui_theme.gd")
 
 @onready var title: Label = $Center/VBox/Title
 @onready var tagline: Label = $Center/VBox/Tagline
@@ -21,6 +22,9 @@ var _ach_panel: PanelContainer
 var _stats_label: Label
 
 func _ready() -> void:
+	theme = UiThemeScr.panelka()
+	$BG.color = Color(0.08, 0.09, 0.07)
+	title.modulate = Color(0.90, 0.86, 0.70)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_ensure_extra_buttons()
 	_refresh_texts()

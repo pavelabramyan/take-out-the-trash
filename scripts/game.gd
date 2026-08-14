@@ -3,6 +3,7 @@ extends Node3D
 
 const LevelData = preload("res://scripts/level_data.gd")
 const BuildingBuilderScr = preload("res://scripts/building_builder.gd")
+const UiThemeScr = preload("res://scripts/ui_theme.gd")
 
 enum State { PLAY, WIN, FAIL, PAUSE }
 
@@ -39,6 +40,13 @@ var _hint_hold_t: float = 0.0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	ui.process_mode = Node.PROCESS_MODE_ALWAYS
+	var theme := UiThemeScr.panelka()
+	$UI/HUD.theme = theme
+	end_panel.theme = theme
+	pause_panel.theme = theme
+	var cross: Label = $UI/HUD/Crosshair
+	cross.text = "·"
+	cross.modulate = Color(0.75, 0.72, 0.60, 0.45)
 	level_index = Svc.meta().current_level
 	level = LevelData.get_level(level_index)
 	if level.is_empty():
