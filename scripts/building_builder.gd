@@ -261,12 +261,11 @@ func _box(pos: Vector3, size: Vector3, mat_key: String, with_collision: bool = t
 	body.collision_layer = 1 if with_collision else 0
 	body.collision_mask = 0
 	var mi := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = size
-	mi.mesh = bm
+	mi.mesh = Geo.rounded_box(size)
 	mi.material_override = _mats[mat_key]
 	body.add_child(mi)
 	if with_collision:
+		# Коллизия остаётся честным боксом исходного размера — фаска только визуал
 		var cs := CollisionShape3D.new()
 		var sh := BoxShape3D.new()
 		sh.size = size
@@ -278,40 +277,46 @@ func _box(pos: Vector3, size: Vector3, mat_key: String, with_collision: bool = t
 
 func _vis(pos: Vector3, size: Vector3, mat_key: String) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = size
-	mi.mesh = bm
+	mi.mesh = Geo.rounded_box(size)
 	mi.material_override = _mats[mat_key]
 	mi.position = pos
+	add_child(mi)
+	return mi
+
+func _mesh_at(mesh: Mesh, pos: Vector3, mat_key: String, rot_deg: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = _mats[mat_key]
+	mi.position = pos
+	mi.rotation_degrees = rot_deg
 	add_child(mi)
 	return mi
 
 func _cyl(pos: Vector3, r: float, h: float, mat_key: String, rot: Vector3 = Vector3.ZERO) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius = r
-	cm.bottom_radius = r
-	cm.height = h
-	cm.radial_segments = 8
-	mi.mesh = cm
-	mi.material_override = _mats[mat_key]
-	mi.position = pos
-	mi.rotation_degrees = rot
-	add_child(mi)
-	return mi
+	return _mesh_at(Geo.pipe(r, h), pos, mat_key, rot)
+
+## Пачка одинаковых мелких деталей одним вызовом отрисовки: прутья, балясины,
+## рёбра радиатора. На Forward+ с тенями это заметно дешевле, чем N инстансов.
+func _multi(mesh: Mesh, mat_key: String, xforms: Array) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = xforms.size()
+	for i in range(xforms.size()):
+		mm.set_instance_transform(i, xforms[i])
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.material_override = _mats[mat_key]
+	add_child(mmi)
+	return mmi
 
 func _sph(pos: Vector3, radius: float, mat_key: String) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
 	var sm := SphereMesh.new()
 	sm.radius = radius
 	sm.height = radius * 2.0
-	sm.radial_segments = 10
-	sm.rings = 6
-	mi.mesh = sm
-	mi.material_override = _mats[mat_key]
-	mi.position = pos
-	add_child(mi)
-	return mi
+	sm.radial_segments = 16
+	sm.rings = 8
+	return _mesh_at(sm, pos, mat_key)
 
 func _hide_mesh(body: StaticBody3D) -> void:
 	for c in body.get_children():
@@ -319,14 +324,16 @@ func _hide_mesh(body: StaticBody3D) -> void:
 			(c as MeshInstance3D).visible = false
 
 func _dress_rail(center: Vector3, width: float, tall: float, along_x: bool) -> void:
-	var n := 6
+	var n := 7
+	var posts: Array = []
 	for i in range(n):
 		var t := (float(i) + 0.5) / float(n)
 		var off := lerpf(-width * 0.45, width * 0.45, t)
-		var p := center + (Vector3(off, 0, 0) if along_x else Vector3(0, 0, off))
-		_vis(p, Vector3(0.03, tall, 0.03), "metal")
-	var cap := Vector3(width * 0.92, 0.05, 0.05) if along_x else Vector3(0.05, 0.05, width * 0.92)
-	_vis(center + Vector3(0, tall * 0.42, 0), cap, "handrail")
+		posts.append(Transform3D(Basis.IDENTITY, center + (Vector3(off, 0, 0) if along_x else Vector3(0, 0, off))))
+	_multi(Geo.pipe(0.015, tall, 10), "rail", posts)
+	var rot := Vector3(0, 0, 90) if along_x else Vector3(90, 0, 0)
+	_mesh_at(Geo.pipe(0.024, width * 0.96), center + Vector3(0, tall * 0.42, 0), "handrail", rot)
+	_mesh_at(Geo.pipe(0.012, width * 0.94), center + Vector3(0, -tall * 0.12, 0), "rail", rot)
 
 func _stair_x(left: bool) -> float:
 	return -STAIR_X if left else STAIR_X
@@ -405,10 +412,16 @@ func _build_entrance_facade(floors: int, top: float) -> void:
 		_box(Vector3(0, 2.8 + uh * 0.5, DOOR_Z - 0.1), Vector3(CELL_W + 0.15, uh, 0.14), "panel")
 	for f in range(1, floors + 1):
 		var mid_y := float(f) * FLOOR_H - HALF_H
-		_box(Vector3(0, mid_y + 1.1, DOOR_Z - 0.02), Vector3(0.95, 1.15, 0.04), "glass", false)
-		_box(Vector3(0, mid_y + 1.1, DOOR_Z - 0.08), Vector3(1.05, 1.25, 0.04), "metal", false)
-		_box(Vector3(0, mid_y + 0.48, DOOR_Z - 0.14), Vector3(1.1, 0.07, 0.2), "concrete", false)
-		_box(Vector3(-0.3, mid_y + 1.15, DOOR_Z), Vector3(0.22, 0.85, 0.02), "paper", false)
+		var wy := mid_y + 1.1
+		# Проём с откосами, подоконником и отливом — окно перестаёт быть наклейкой
+		_mesh_at(Geo.window_reveal(0.95, 1.15, 0.16, 0.16), Vector3(0, wy, DOOR_Z - 0.06), "concrete")
+		_box(Vector3(0, wy, DOOR_Z - 0.03), Vector3(0.95, 1.15, 0.02), "glass", false)
+		# Деревянный переплёт: две створки с форточкой
+		_vis(Vector3(0, wy, DOOR_Z - 0.05), Vector3(0.045, 1.15, 0.05), "wood")
+		_vis(Vector3(0, wy + 0.32, DOOR_Z - 0.05), Vector3(0.95, 0.04, 0.05), "wood")
+		_vis(Vector3(0, wy - 0.575, DOOR_Z - 0.05), Vector3(0.99, 0.05, 0.06), "wood")
+		_vis(Vector3(0, wy + 0.575, DOOR_Z - 0.05), Vector3(0.99, 0.05, 0.06), "wood")
+		_box(Vector3(-0.3, wy + 0.05, DOOR_Z + 0.01), Vector3(0.22, 0.3, 0.01), "paper", false)
 
 func _add_entrance_props() -> void:
 	# Открытая дверь + рама / ручка / доводчик
@@ -528,20 +541,35 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 	var steps := 9
 	var z_dir := 1.0 if z1 > z0 else -1.0
 	var wall_side := 1.0 if not left else -1.0
+	var tread_w := STAIR_W - 0.08
+	var tread_d := run / float(steps)
+	var riser := rise / float(steps)
+	var step_mesh := Geo.stair_step(tread_w, tread_d, riser + 0.02)
+	var paint_x: Array = []
+	var dirt_x: Array = []
 	for i in range(steps):
 		var t := (float(i) + 0.5) / float(steps)
 		var y := lerpf(y_top, y_bot, t)
 		var z := lerpf(z0, z1, t)
-		var tread_w := STAIR_W - 0.08
-		_vis(Vector3(x, y, z), Vector3(tread_w, 0.07, 0.24), "step_paint")
-		_vis(Vector3(x, y + 0.02, z + z_dir * 0.11), Vector3(tread_w - 0.02, 0.018, 0.03), "dirt")
-		_vis(Vector3(x, y - 0.06, z - z_dir * 0.06), Vector3(tread_w, 0.12, 0.04), "wainscot")
-		_vis(Vector3(x + wall_side * 0.50, y, z), Vector3(0.05, 0.18, 0.22), "concrete")
+		# Ступень одним мешем: проступь со свесом + подступёнок, фаска по кромке
+		var mi := _mesh_at(step_mesh, Vector3(x, y, z), "step")
+		mi.rotation_degrees.y = 0.0 if z_dir > 0.0 else 180.0
+		# Затёртая до бетона середина и остатки краски по краям — как в подъезде
+		dirt_x.append(Transform3D(Basis.IDENTITY, Vector3(x, y + riser * 0.5 - 0.021, z - z_dir * 0.01)))
+		paint_x.append(Transform3D(Basis.IDENTITY, Vector3(x + tread_w * 0.5 - 0.07, y + riser * 0.5 - 0.022, z)))
+		paint_x.append(Transform3D(Basis.IDENTITY, Vector3(x - tread_w * 0.5 + 0.07, y + riser * 0.5 - 0.022, z)))
+	_multi(Geo.rounded_box(Vector3(0.13, 0.008, tread_d * 0.92), 0.003), "step_paint", paint_x)
+	_multi(Geo.rounded_box(Vector3(tread_w * 0.55, 0.006, tread_d * 0.6), 0.002), "dirt", dirt_x)
+	# Косоур: крашеная боковина марша вдоль стены
+	var side_len := length
+	var side := _mesh_at(Geo.rounded_box(Vector3(0.06, 0.34, side_len), 0.008),
+		Vector3(x + wall_side * (tread_w * 0.5 + 0.03), (y_top + y_bot) * 0.5 - 0.12, (z0 + z1) * 0.5), "step_paint")
+	side.rotation.x = angle
 
 	_box(Vector3(x, y_top - 0.02, z0 + (0.1 if z1 > z0 else -0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
 	_box(Vector3(x, y_bot + 0.02, z1 + (-0.1 if z1 > z0 else 0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
 
-	# Перила: тёмный металл + бордовый поручень (реф)
+	# Перила: круглый бордовый поручень на трубчатых стойках
 	var rail_x := x + (STAIR_W * 0.46 if not left else -STAIR_W * 0.46)
 	var rail := StaticBody3D.new()
 	rail.collision_layer = 1
@@ -551,29 +579,31 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 	rcs.shape = rsh
 	rail.add_child(rcs)
 	var rmi := MeshInstance3D.new()
-	var rbm := BoxMesh.new()
-	rbm.size = Vector3(0.055, 0.045, length * 0.92)
-	rmi.mesh = rbm
+	rmi.mesh = Geo.pipe(0.024, length * 0.92)
 	rmi.material_override = _mats["handrail"]
 	rmi.position.y = 0.44
+	rmi.rotation_degrees.x = 90.0
 	rail.add_child(rmi)
 	var low := MeshInstance3D.new()
-	var lbm := BoxMesh.new()
-	lbm.size = Vector3(0.03, 0.03, length * 0.9)
-	low.mesh = lbm
+	low.mesh = Geo.pipe(0.014, length * 0.9)
 	low.material_override = _mats["metal"]
-	low.position.y = -0.05
+	low.position.y = -0.06
+	low.rotation_degrees.x = 90.0
 	rail.add_child(low)
 	rail.position = Vector3(rail_x, (y_top + y_bot) * 0.5 + 0.42, (z0 + z1) * 0.5)
 	rail.rotation.x = angle
 	add_child(rail)
 
+	var balusters: Array = []
+	var brackets: Array = []
 	for i in range(7):
 		var t := (float(i) + 0.5) / 7.0
 		var sy := lerpf(y_top, y_bot, t) + 0.4
 		var sz := lerpf(z0, z1, t)
-		_cyl(Vector3(rail_x, sy, sz), 0.012, 0.78, "metal")
-		_vis(Vector3(rail_x + wall_side * 0.12, sy + 0.25, sz), Vector3(0.16, 0.025, 0.025), "metal")
+		balusters.append(Transform3D(Basis.IDENTITY, Vector3(rail_x, sy, sz)))
+		brackets.append(Transform3D(Basis.IDENTITY, Vector3(rail_x + wall_side * 0.11, sy + 0.25, sz)))
+	_multi(Geo.pipe(0.013, 0.78, 10), "rail", balusters)
+	_multi(Geo.rounded_box(Vector3(0.15, 0.022, 0.022), 0.004), "rail", brackets)
 
 	# Низ марша / «под лестницей» — граффити и мусор (реф)
 	var under_y := (y_top + y_bot) * 0.5 - 0.55
@@ -635,12 +665,20 @@ func _add_floor_props(y: float, floor_num: int, has_elevator: bool) -> void:
 
 func _apt_door(pos: Vector3, num: int, on_back: bool = false) -> void:
 	if on_back:
-		_vis(pos + Vector3(0.0, 0.0, -0.02), Vector3(0.90, 2.12, 0.10), "concrete")
-		_box(pos, Vector3(0.78, 2.0, 0.07), "door_apt", false)
-		_vis(pos + Vector3(0.28, 0.0, 0.06), Vector3(0.05, 0.08, 0.02), "metal")
-		_cyl(pos + Vector3(0.30, 0.0, 0.08), 0.012, 0.08, "metal", Vector3(90, 0, 0))
-		_cyl(pos + Vector3(0.0, 0.42, 0.06), 0.012, 0.02, "metal", Vector3(90, 0, 0))
-		_vis(pos + Vector3(-0.22, 0.62, 0.05), Vector3(0.22, 0.14, 0.02), "paper")
+		# Откос проёма, полотно с филёнками, наличник, порог и фурнитура
+		_vis(pos + Vector3(0.0, 0.0, -0.03), Vector3(0.94, 2.16, 0.10), "concrete")
+		_mesh_at(Geo.door_leaf(0.78, 2.0, 0.06), pos + Vector3(0, 0, 0.02), "door_apt")
+		for sx in [-1.0, 1.0]:
+			_vis(pos + Vector3(sx * 0.43, 0.0, 0.03), Vector3(0.07, 2.12, 0.03), "wood")
+		_vis(pos + Vector3(0.0, 1.06, 0.03), Vector3(0.93, 0.07, 0.03), "wood")
+		_vis(pos + Vector3(0.0, -1.02, 0.05), Vector3(0.80, 0.04, 0.10), "metal")
+		# Ручка-скоба и накладка замка
+		_mesh_at(Geo.pipe(0.011, 0.14), pos + Vector3(0.29, 0.0, 0.10), "metal", Vector3(0, 0, 0))
+		_vis(pos + Vector3(0.29, 0.07, 0.07), Vector3(0.02, 0.02, 0.05), "metal")
+		_vis(pos + Vector3(0.29, -0.07, 0.07), Vector3(0.02, 0.02, 0.05), "metal")
+		_vis(pos + Vector3(0.30, -0.16, 0.06), Vector3(0.05, 0.09, 0.02), "metal")
+		_mesh_at(Geo.pipe(0.014, 0.03), pos + Vector3(0.0, 0.44, 0.05), "metal", Vector3(90, 0, 0))
+		_vis(pos + Vector3(-0.22, 0.62, 0.055), Vector3(0.22, 0.14, 0.01), "paper")
 	else:
 		_box(pos, Vector3(0.07, 2.0, 0.78), "door_apt", false)
 
@@ -716,8 +754,8 @@ func _build_yard(ice: bool, night: bool) -> void:
 				continue
 			var wy := 1.5 + float(row) * FLOOR_H
 			var kind := (row * 3 + col) % 5
+			_mesh_at(Geo.window_reveal(1.28, 1.42, 0.22, 0.2), Vector3(wx, wy, DOOR_Z + 0.30), "panel")
 			_box(Vector3(wx, wy, DOOR_Z + 0.38), Vector3(1.28, 1.42, 0.05), "metal", false)
-			_box(Vector3(wx, wy - 0.72, DOOR_Z + 0.5), Vector3(1.35, 0.08, 0.22), "concrete", false)
 			if kind == 0 and night:
 				_box(Vector3(wx, wy, DOOR_Z + 0.45), Vector3(1.15, 1.3, 0.05), "window_lit", false)
 			elif kind == 1:
