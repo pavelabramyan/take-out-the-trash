@@ -45,7 +45,7 @@ func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 1
 	invert_y = bool(Svc.meta().settings.get("invert_y", false))
-	base_fov = float(Svc.meta().settings.get("fov", 75.0))
+	base_fov = float(Svc.meta().settings.get("fov", 68.0))
 	_ensure_gamepad_bindings()
 	_build_body()
 
@@ -61,6 +61,21 @@ func _build_body() -> void:
 	camera = Camera3D.new()
 	camera.fov = base_fov
 	camera.position = Vector3(0, 1.55, 0)
+	camera.near = 0.04
+	# Practical, а не Physical: физический вариант пересчитывает FOV из фокусного
+	# расстояния и ломает наплыв кадра при переносе груза (cargo_fov).
+	var attrs := CameraAttributesPractical.new()
+	attrs.auto_exposure_enabled = true
+	attrs.auto_exposure_min_sensitivity = 40.0
+	attrs.auto_exposure_max_sensitivity = 640.0
+	attrs.auto_exposure_speed = 0.6
+	attrs.auto_exposure_scale = 0.38
+	# Слабое размытие дали: подъезд читается как снятый на телефон, а не рендер
+	attrs.dof_blur_far_enabled = true
+	attrs.dof_blur_far_distance = 9.0
+	attrs.dof_blur_far_transition = 7.0
+	attrs.dof_blur_amount = 0.06
+	camera.attributes = attrs
 	add_child(camera)
 
 	hold_point = Node3D.new()
@@ -76,7 +91,8 @@ func _build_body() -> void:
 	flashlight.light_energy = 2.8
 	flashlight.spot_range = 12.0
 	flashlight.spot_angle = 32.0
-	flashlight.shadow_enabled = false
+	flashlight.shadow_enabled = true
+	flashlight.shadow_bias = 0.03
 	flashlight.visible = false
 	flashlight.position = Vector3(0.1, -0.05, -0.1)
 	camera.add_child(flashlight)

@@ -69,34 +69,34 @@ func _make_materials() -> void:
 	## PBR из assets/pbr (ambientCG, CC0). Цвет задаётся тинтом поверх серой
 	## albedo: краска по штукатурке, грязь по плитке, зелень по контейнерам.
 	var style: String = str(_level.get("style", "khrushchev"))
-	var wall_up := Color(0.80, 0.78, 0.72)      # известка, потемневшая от времени
-	var wall_low := Color(0.34, 0.48, 0.44)     # зелёнка-бирюза, масляная краска
-	var tile_c := Color(0.62, 0.58, 0.52)       # затёртая плитка площадок
-	var panel_c := Color(0.70, 0.68, 0.64)      # серая панель фасада
+	var wall_up := Color(0.66, 0.64, 0.58)      # известка, потемневшая от времени
+	var wall_low := Color(0.25, 0.37, 0.34)     # зелёнка-бирюза, масляная краска
+	var tile_c := Color(0.48, 0.45, 0.41)       # затёртая плитка площадок
+	var panel_c := Color(0.58, 0.56, 0.53)      # серая панель фасада
 	match style:
 		"brezhnev":
-			wall_up = Color(0.82, 0.80, 0.76)
-			wall_low = Color(0.28, 0.42, 0.52)
-			panel_c = Color(0.68, 0.70, 0.72)
+			wall_up = Color(0.68, 0.66, 0.63)
+			wall_low = Color(0.21, 0.32, 0.40)
+			panel_c = Color(0.56, 0.58, 0.60)
 		"courtyard":
-			wall_up = Color(0.80, 0.74, 0.64)
-			wall_low = Color(0.52, 0.42, 0.30)
-			panel_c = Color(0.74, 0.68, 0.58)
+			wall_up = Color(0.66, 0.61, 0.53)
+			wall_low = Color(0.40, 0.32, 0.23)
+			panel_c = Color(0.62, 0.57, 0.48)
 		_:
 			pass
 	_mats["wall"] = MaterialLibrary.pbr("plaster_white", {"tint": wall_up, "rough": 1.0, "normal_scale": 0.8, "fallback": wall_up})
-	_mats["wainscot"] = MaterialLibrary.pbr("plaster_paint", {"tint": wall_low, "rough": 0.58, "metal": 0.0, "normal_scale": 0.55, "fallback": wall_low})
+	_mats["wainscot"] = MaterialLibrary.pbr("plaster_paint", {"tint": wall_low, "rough": 0.72, "metal": 0.0, "normal_scale": 0.6, "fallback": wall_low})
 	_mats["tile"] = MaterialLibrary.pbr("tiles_landing", {"tint": tile_c, "rough": 0.95, "tile_m": 1.15, "fallback": tile_c})
-	_mats["concrete"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.74, 0.72, 0.68), "fallback": Color(0.70, 0.68, 0.64)})
-	_mats["step"] = MaterialLibrary.pbr("concrete_floor", {"tint": Color(0.88, 0.82, 0.70), "tile_m": 1.4, "fallback": Color(0.72, 0.68, 0.58)})
+	_mats["concrete"] = MaterialLibrary.pbr("concrete_wall", {"tint": Color(0.58, 0.56, 0.53), "fallback": Color(0.70, 0.68, 0.64)})
+	_mats["step"] = MaterialLibrary.pbr("concrete_floor", {"tint": Color(0.70, 0.66, 0.57), "tile_m": 1.4, "fallback": Color(0.72, 0.68, 0.58)})
 	_mats["step_paint"] = MaterialLibrary.pbr("plaster_paint", {"tint": Color(0.30, 0.38, 0.30), "rough": 0.72, "tile_m": 1.2, "fallback": Color(0.30, 0.38, 0.30)})
-	_mats["panel"] = MaterialLibrary.pbr("concrete_wall", {"tint": panel_c, "tile_m": 2.6, "fallback": panel_c})
+	_mats["panel"] = MaterialLibrary.pbr("concrete_wall", {"tint": panel_c, "tile_m": 2.6, "normal_scale": 0.85, "fallback": panel_c})
 	_mats["bricks"] = MaterialLibrary.pbr("bricks", {"tint": Color(0.82, 0.72, 0.64), "fallback": Color(0.60, 0.42, 0.34)})
-	_mats["asphalt"] = MaterialLibrary.pbr("asphalt", {"tint": Color(0.86, 0.86, 0.86), "fallback": Color(0.20, 0.20, 0.19)})
-	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.90, 0.90, 0.90), "fallback": Color(0.17, 0.17, 0.16)})
-	_mats["gravel"] = MaterialLibrary.pbr("gravel", {"tint": Color(0.88, 0.86, 0.82), "fallback": Color(0.32, 0.31, 0.29)})
-	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.90, 0.86, 0.80), "fallback": Color(0.28, 0.24, 0.18)})
-	_mats["grass"] = MaterialLibrary.pbr("grass", {"tint": Color(0.80, 0.84, 0.62), "tile_m": 1.6, "fallback": Color(0.30, 0.36, 0.16)})
+	_mats["asphalt"] = MaterialLibrary.pbr("asphalt", {"tint": Color(0.58, 0.58, 0.58), "fallback": Color(0.20, 0.20, 0.19)})
+	_mats["road"] = MaterialLibrary.pbr("road", {"tint": Color(0.62, 0.62, 0.62), "fallback": Color(0.17, 0.17, 0.16)})
+	_mats["gravel"] = MaterialLibrary.pbr("gravel", {"tint": Color(0.66, 0.64, 0.61), "fallback": Color(0.32, 0.31, 0.29)})
+	_mats["ground_dirt"] = MaterialLibrary.pbr("ground_dirt", {"tint": Color(0.68, 0.64, 0.58), "fallback": Color(0.28, 0.24, 0.18)})
+	_mats["grass"] = MaterialLibrary.pbr("grass", {"tint": Color(0.60, 0.64, 0.46), "tile_m": 1.6, "fallback": Color(0.30, 0.36, 0.16)})
 	_mats["ice"] = MaterialLibrary.pbr("ice", {"tint": Color(0.82, 0.88, 0.92), "rough": 0.85, "fallback": Color(0.72, 0.80, 0.85)})
 	_mats["snow"] = MaterialLibrary.pbr("snow", {"tint": Color(0.95, 0.96, 1.0), "fallback": Color(0.88, 0.90, 0.94)})
 	_mats["carpet"] = MaterialLibrary.pbr("carpet", {"tint": Color(0.52, 0.34, 0.28), "tile_m": 0.8, "fallback": Color(0.42, 0.26, 0.20)})
@@ -112,9 +112,9 @@ func _make_materials() -> void:
 	_mats["dumpster_rust"] = _mats["rust"]
 	_mats["mail"] = MaterialLibrary.pbr("metal_painted", {"tint": Color(0.26, 0.34, 0.36), "metal": 0.50, "rough": 0.65, "tile_m": 0.8, "fallback": Color(0.22, 0.30, 0.32)})
 	# Дерево: квартирные двери, лавка, черенок веника
-	_mats["door_apt"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.72, 0.54, 0.36), "rough": 0.75, "tile_m": 1.1, "fallback": Color(0.50, 0.36, 0.22)})
-	_mats["door"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.62, 0.44, 0.30), "rough": 0.80, "tile_m": 1.1, "fallback": Color(0.44, 0.30, 0.18)})
-	_mats["wood"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.48, 0.34, 0.22), "rough": 0.90, "tile_m": 0.9, "fallback": Color(0.34, 0.22, 0.12)})
+	_mats["door_apt"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.44, 0.30, 0.19), "rough": 0.75, "tile_m": 1.1, "fallback": Color(0.50, 0.36, 0.22)})
+	_mats["door"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.38, 0.26, 0.17), "rough": 0.80, "tile_m": 1.1, "fallback": Color(0.44, 0.30, 0.18)})
+	_mats["wood"] = MaterialLibrary.pbr("wood_door", {"tint": Color(0.34, 0.24, 0.15), "rough": 0.90, "tile_m": 0.9, "fallback": Color(0.34, 0.22, 0.12)})
 	# Рисованные карты — там важен сам рисунок, а не микрорельеф
 	_mats["graffiti"] = MaterialLibrary.painted("res://assets/textures/graffiti.png", Color(1, 1, 1), Vector3.ONE, 0.95)
 	_mats["paper"] = MaterialLibrary.painted("res://assets/textures/paper_notice.png", Color(0.95, 0.93, 0.86), Vector3.ONE, 0.92)
@@ -130,78 +130,130 @@ func _make_materials() -> void:
 	_mats["lamp"] = MaterialLibrary.emissive(Color(1.0, 0.90, 0.62), 3.0, Color(1.0, 0.76, 0.34))
 	_mats["window_lit"] = MaterialLibrary.emissive(Color(0.95, 0.86, 0.60), 1.5, Color(1.0, 0.82, 0.45))
 
+func _sky_hdri(night: bool) -> String:
+	## Пасмурный городской день — базовый вид панельки; солнце оставлено
+	## дворовым уровням, чтобы серия не выглядела снятой в один час.
+	if night:
+		return "res://assets/hdri/preller_drive_1k.hdr"
+	if str(_level.get("style", "")) == "courtyard" and not bool(_level.get("ice", false)):
+		return "res://assets/hdri/abandoned_parking_1k.hdr"
+	return "res://assets/hdri/potsdamer_platz_2k.hdr"
+
 func _add_world_env(night: bool) -> void:
 	var we := WorldEnvironment.new()
 	var env := Environment.new()
-	# Небо с горизонтом — не плоская заливка
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
-	var sky_mat := ProceduralSkyMaterial.new()
-	if night:
-		sky_mat.sky_top_color = Color(0.04, 0.05, 0.09)
-		sky_mat.sky_horizon_color = Color(0.12, 0.11, 0.14)
-		sky_mat.ground_horizon_color = Color(0.08, 0.07, 0.07)
-		sky_mat.ground_bottom_color = Color(0.05, 0.05, 0.05)
-		sky_mat.sun_angle_max = 2.0
-		sky_mat.sky_energy_multiplier = 0.55
+	sky.radiance_size = Sky.RADIANCE_SIZE_128
+	var hdri := _sky_hdri(night)
+	if ResourceLoader.exists(hdri):
+		# HDRI даёт и небо, и заполняющий свет с настоящим распределением яркости
+		var pano := PanoramaSkyMaterial.new()
+		pano.panorama = load(hdri)
+		pano.energy_multiplier = 0.7 if night else 1.0
+		sky.sky_material = pano
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+		env.ambient_light_sky_contribution = 1.0
+		env.ambient_light_energy = 0.28 if night else 0.42
+		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	else:
-		sky_mat.sky_top_color = Color(0.38, 0.55, 0.78)
-		sky_mat.sky_horizon_color = Color(0.70, 0.76, 0.82)
-		sky_mat.ground_horizon_color = Color(0.42, 0.40, 0.36)
-		sky_mat.ground_bottom_color = Color(0.22, 0.21, 0.18)
-		sky_mat.sun_angle_max = 28.0
-		sky_mat.sky_energy_multiplier = 1.05
-	sky.sky_material = sky_mat
+		var sky_mat := ProceduralSkyMaterial.new()
+		if night:
+			sky_mat.sky_top_color = Color(0.04, 0.05, 0.09)
+			sky_mat.sky_horizon_color = Color(0.12, 0.11, 0.14)
+			sky_mat.ground_horizon_color = Color(0.08, 0.07, 0.07)
+			sky_mat.sky_energy_multiplier = 0.55
+		else:
+			sky_mat.sky_top_color = Color(0.38, 0.55, 0.78)
+			sky_mat.sky_horizon_color = Color(0.70, 0.76, 0.82)
+			sky_mat.ground_horizon_color = Color(0.42, 0.40, 0.36)
+			sky_mat.sky_energy_multiplier = 1.05
+		sky.sky_material = sky_mat
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+		env.ambient_light_color = Color(0.32, 0.30, 0.26) if night else Color(0.55, 0.52, 0.46)
+		env.ambient_light_energy = 0.45 if night else 0.58
 	env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	# Ambient: мрачно, но зелёнка должна читаться (не «чёрная студия»)
-	env.ambient_light_color = Color(0.32, 0.30, 0.26) if night else Color(0.55, 0.52, 0.46)
-	env.ambient_light_energy = 0.45 if night else 0.58
+	env.sky_rotation = Vector3(0, deg_to_rad(-115.0), 0)
+
 	env.fog_enabled = true
-	env.fog_light_color = Color(0.12, 0.12, 0.14) if night else Color(0.55, 0.52, 0.48)
-	env.fog_density = 0.01 if night else 0.003
-	# Compatibility/OpenGL: SSAO/SSR/SDFGI недоступны; glow тоже часто роняет AMD
+	env.fog_mode = Environment.FOG_MODE_DEPTH
+	env.fog_light_color = Color(0.10, 0.11, 0.14) if night else Color(0.62, 0.64, 0.66)
+	env.fog_light_energy = 0.7 if night else 1.0
+	env.fog_density = 0.012 if night else 0.004
+	env.fog_sky_affect = 0.25
+	env.fog_aerial_perspective = 0.5
+
 	var forward_plus := RenderingServer.get_current_rendering_method() == "forward_plus"
-	env.ssao_enabled = forward_plus
-	env.ssao_radius = 0.55
-	env.ssao_intensity = 1.1
-	env.glow_enabled = forward_plus
-	env.glow_intensity = 0.2
-	env.glow_strength = 0.55
-	env.glow_bloom = 0.04
+	if forward_plus:
+		# Контактные тени и переотражённый цвет: без них PBR читается как наклейки
+		env.ssao_enabled = true
+		env.ssao_radius = 1.1
+		env.ssao_intensity = 2.6
+		env.ssao_power = 1.6
+		env.ssao_detail = 0.6
+		env.ssao_light_affect = 0.15
+		env.ssao_ao_channel_affect = 0.35
+		env.ssil_enabled = true
+		env.ssil_radius = 3.5
+		env.ssil_intensity = 1.1
+		env.ssil_normal_rejection = 1.0
+		env.volumetric_fog_enabled = true
+		env.volumetric_fog_density = 0.028 if night else 0.014
+		env.volumetric_fog_albedo = Color(0.82, 0.82, 0.86)
+		env.volumetric_fog_emission = Color(0.02, 0.02, 0.03)
+		env.volumetric_fog_anisotropy = 0.25
+		env.volumetric_fog_length = 45.0
+		env.volumetric_fog_gi_inject = 0.6
+		env.volumetric_fog_ambient_inject = 0.35
+		env.glow_enabled = true
+		env.glow_intensity = 0.35
+		env.glow_strength = 0.9
+		env.glow_bloom = 0.05
+		env.glow_hdr_threshold = 1.1
+		env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	env.sdfgi_enabled = false
 	env.ssr_enabled = false
 	env.adjustment_enabled = true
-	env.adjustment_saturation = 0.92
-	env.adjustment_contrast = 1.04
-	env.tonemap_mode = Environment.TONE_MAPPER_ACES
-	env.tonemap_exposure = 1.05 if night else 1.08
+	env.adjustment_saturation = 0.94
+	env.adjustment_contrast = 1.05
+	# AgX держит пересветы окна и лампы, не выжигая их в белое пятно
+	env.tonemap_mode = Environment.TONE_MAPPER_AGX
+	env.tonemap_exposure = 1.1 if night else 0.95
+	env.tonemap_white = 6.0
 	we.environment = env
 	add_child(we)
 
 	var sun := DirectionalLight3D.new()
-	sun.light_energy = 0.4 if night else 1.05
-	sun.light_color = Color(0.55, 0.62, 0.85) if night else Color(1.0, 0.95, 0.85)
-	# Одна directional-тень — omni-shadows на MoltenVK/AMD валят процесс
+	sun.light_energy = 0.25 if night else 1.35
+	sun.light_color = Color(0.62, 0.70, 0.92) if night else Color(1.0, 0.96, 0.88)
 	sun.shadow_enabled = true
-	sun.shadow_blur = 1.0
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	sun.directional_shadow_max_distance = 40.0
+	sun.shadow_blur = 1.2
+	sun.shadow_bias = 0.04
+	sun.shadow_normal_bias = 1.6
+	# Угловой размер источника: пасмурное небо = широкая мягкая тень
+	sun.light_angular_distance = 3.5 if night else 1.6
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	sun.directional_shadow_max_distance = 55.0
+	sun.directional_shadow_split_1 = 0.06
+	sun.directional_shadow_split_2 = 0.18
+	sun.directional_shadow_split_3 = 0.48
 	sun.rotation_degrees = Vector3(-32, 42, 0) if night else Vector3(-38, 55, 0)
 	add_child(sun)
 
-	# ReflectionProbe на Mac OpenGL/AMD часто тяжёлый — только Forward+
 	if forward_plus:
 		var rp_cell := ReflectionProbe.new()
 		rp_cell.size = Vector3(4.2, 12.0, 6.5)
 		rp_cell.position = Vector3(0, 4.0, 1.2)
 		rp_cell.update_mode = ReflectionProbe.UPDATE_ONCE
 		rp_cell.ambient_mode = ReflectionProbe.AMBIENT_ENVIRONMENT
+		rp_cell.box_projection = true
+		rp_cell.intensity = 0.8
 		add_child(rp_cell)
 		var rp_yard := ReflectionProbe.new()
 		rp_yard.size = Vector3(18.0, 8.0, 16.0)
 		rp_yard.position = Vector3(0, 2.5, 10.0)
 		rp_yard.update_mode = ReflectionProbe.UPDATE_ONCE
+		rp_yard.box_projection = true
 		add_child(rp_yard)
 
 func _box(pos: Vector3, size: Vector3, mat_key: String, with_collision: bool = true) -> StaticBody3D:
@@ -375,22 +427,23 @@ func _add_entrance_props() -> void:
 	_box(Vector3(0, 0.02, DOOR_Z + 0.35), Vector3(1.6, 0.04, 0.5), "concrete", false)
 	# Свет с улицы в тамбур
 	var slit := OmniLight3D.new()
-	slit.light_color = Color(0.85, 0.9, 1.0)
-	slit.light_energy = 1.35
-	slit.omni_range = 3.2
+	slit.light_color = Color(0.82, 0.88, 1.0)
+	slit.light_energy = 1.5
+	slit.omni_range = 3.6
 	slit.omni_attenuation = 1.5
 	slit.position = Vector3(0.15, 1.1, DOOR_Z + 0.35)
+	_tune_light(slit, false, 16.0)
 	add_child(slit)
 	# Плафон под козырьком
 	_box(Vector3(0, 2.35, DOOR_Z + 0.55), Vector3(0.35, 0.08, 0.35), "metal", false)
 	_box(Vector3(0, 2.30, DOOR_Z + 0.55), Vector3(0.22, 0.04, 0.22), "lamp", false)
 	var el := OmniLight3D.new()
-	el.light_color = Color(1.0, 0.82, 0.48)
-	el.light_energy = 1.35
-	el.omni_range = 4.5
+	el.light_color = Color(1.0, 0.78, 0.44)
+	el.light_energy = 1.5
+	el.omni_range = 5.0
 	el.omni_attenuation = 1.8
-	el.shadow_enabled = false
 	el.position = Vector3(0, 2.25, DOOR_Z + 0.55)
+	_tune_light(el, true, 14.0)
 	add_child(el)
 	lights.append(el)
 
@@ -591,26 +644,41 @@ func _apt_door(pos: Vector3, num: int, on_back: bool = false) -> void:
 	else:
 		_box(pos, Vector3(0.07, 2.0, 0.78), "door_apt", false)
 
+func _tune_light(l: OmniLight3D, shadow: bool, fade_begin: float = 14.0) -> void:
+	## Тени от ламп подъезда включены, но гаснут по дистанции: иначе десяток
+	## омни-теней на девятиэтажке съедает и атлас теней, и кадр.
+	l.shadow_enabled = shadow
+	if shadow:
+		l.shadow_bias = 0.05
+		l.shadow_normal_bias = 1.4
+		l.shadow_opacity = 0.92
+	l.distance_fade_enabled = true
+	l.distance_fade_begin = fade_begin
+	l.distance_fade_shadow = fade_begin * 0.55
+	l.distance_fade_length = 5.0
+
 func _add_floor_light(y: float) -> void:
 	_cyl(Vector3(0.15, y + 2.52, 0.1), 0.006, 0.28, "metal")
 	_vis(Vector3(0.15, y + 2.42, 0.1), Vector3(0.04, 0.05, 0.04), "concrete")
 	_sph(Vector3(0.15, y + 2.36, 0.1), 0.04, "lamp")
 	var lamp := OmniLight3D.new()
-	lamp.light_color = Color(1.0, 0.78, 0.42)
-	lamp.light_energy = 1.35
-	lamp.omni_range = 4.6
-	lamp.omni_attenuation = 2.0
-	lamp.shadow_enabled = false
+	# 2700K накаливания против 6500K из окна — контраст тёплого и холодного
+	lamp.light_color = Color(1.0, 0.72, 0.36)
+	lamp.light_energy = 1.5
+	lamp.omni_range = 5.0
+	lamp.omni_attenuation = 1.8
 	lamp.position = Vector3(0.15, y + 2.35, 0.1)
+	_tune_light(lamp, true, 11.0)
 	add_child(lamp)
 	lights.append(lamp)
-	# Дневной свет от окна на mid — жёстче, с бликом
+	# Свет, входящий через окно промежуточной площадки
 	var ml := OmniLight3D.new()
-	ml.light_color = Color(0.92, 0.94, 1.0)
-	ml.light_energy = 1.55
-	ml.omni_range = 4.0
-	ml.omni_attenuation = 1.35
+	ml.light_color = Color(0.80, 0.87, 1.0)
+	ml.light_energy = 1.7
+	ml.omni_range = 4.6
+	ml.omni_attenuation = 1.3
 	ml.position = Vector3(0, y - HALF_H + 1.9, 2.55)
+	_tune_light(ml, true, 12.0)
 	add_child(ml)
 	lights.append(ml)
 
@@ -726,23 +794,15 @@ func _build_yard(ice: bool, night: bool) -> void:
 		yard_ice_zones.append(Rect2(Vector2(-7, 7), Vector2(14, 10)))
 	# Дневной fill у помойки + ночной фонарь
 	var yl := OmniLight3D.new()
-	yl.light_color = Color(1.0, 0.82, 0.5) if night else Color(0.95, 0.94, 0.9)
-	yl.light_energy = 2.2 if night else 1.1
-	yl.omni_range = 12.0 if night else 10.0
+	yl.light_color = Color(1.0, 0.76, 0.42) if night else Color(0.95, 0.94, 0.9)
+	yl.light_energy = 3.2 if night else 0.5
+	yl.omni_range = 14.0 if night else 10.0
 	yl.omni_attenuation = 1.4
-	yl.shadow_enabled = false
 	yl.position = Vector3(-1.8, 3.9, 7.7)
+	_tune_light(yl, night, 22.0)
 	add_child(yl)
 	if night:
 		lights.append(yl)
-	if not night:
-		var dump_fill := OmniLight3D.new()
-		dump_fill.light_color = Color(0.95, 0.93, 0.88)
-		dump_fill.light_energy = 0.85
-		dump_fill.omni_range = 7.0
-		dump_fill.omni_attenuation = 1.2
-		dump_fill.position = Vector3(3.7, 3.2, 13.5)
-		add_child(dump_fill)
 
 func _build_detour_path() -> void:
 	_box(Vector3(-7.0, -0.05, 11.0), Vector3(2.2, 0.12, 10.0), "asphalt")
