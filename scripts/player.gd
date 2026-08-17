@@ -167,71 +167,83 @@ func _build_hands() -> void:
 
 func _make_hand_rig(skin: Material, sleeve: Material, side: float) -> MeshInstance3D:
 	var palm := MeshInstance3D.new()
-	palm.mesh = Geo.rounded_box(Vector3(0.082, 0.034, 0.094), 0.014)
+	palm.mesh = Geo.rounded_box(Vector3(0.078, 0.032, 0.088), 0.012)
 	palm.material_override = skin
 	var thenar := MeshInstance3D.new()
 	var th := SphereMesh.new()
-	th.radius = 0.019
-	th.height = 0.032
+	th.radius = 0.018
+	th.height = 0.030
 	th.radial_segments = 12
 	th.rings = 7
 	thenar.mesh = th
 	thenar.material_override = skin
-	thenar.position = Vector3(side * 0.028, -0.004, 0.012)
+	thenar.position = Vector3(side * 0.026, -0.006, 0.010)
 	palm.add_child(thenar)
-	# Накладка на костяшках и шов по краю ладони
-	var knuckle := MeshInstance3D.new()
-	knuckle.mesh = Geo.rounded_box(Vector3(0.074, 0.012, 0.034), 0.006)
 	var pad := StandardMaterial3D.new()
-	pad.albedo_color = Color(0.05, 0.05, 0.055)
-	pad.roughness = 0.8
-	knuckle.material_override = pad
-	knuckle.position = Vector3(0, 0.019, -0.036)
-	palm.add_child(knuckle)
+	pad.albedo_color = Color(0.045, 0.045, 0.05)
+	pad.roughness = 0.78
+	# Четыре костяшки вместо одной плашки — иначе ладонь читается кирпичом
+	for k in range(4):
+		var knuckle := MeshInstance3D.new()
+		knuckle.mesh = Geo.rounded_box(Vector3(0.016, 0.010, 0.018), 0.004)
+		knuckle.material_override = pad
+		knuckle.position = Vector3(-0.027 + float(k) * 0.018, 0.016, -0.034)
+		palm.add_child(knuckle)
 	var forearm := MeshInstance3D.new()
 	var fm := CylinderMesh.new()
-	fm.top_radius = 0.028
-	fm.bottom_radius = 0.032
+	fm.top_radius = 0.026
+	fm.bottom_radius = 0.031
 	fm.height = 0.18
-	fm.radial_segments = 8
+	fm.radial_segments = 10
 	forearm.mesh = fm
 	forearm.material_override = sleeve
-	forearm.position = Vector3(0, 0.012, 0.12)
+	forearm.position = Vector3(0, 0.010, 0.12)
 	forearm.rotation_degrees = Vector3(90, 0, 0)
 	palm.add_child(forearm)
-	# Резинка перчатки на запястье
 	var cuff := MeshInstance3D.new()
-	cuff.mesh = Geo.pipe(0.033, 0.038, 14)
+	cuff.mesh = Geo.pipe(0.031, 0.036, 14)
 	var cuff_m := StandardMaterial3D.new()
-	cuff_m.albedo_color = Color(0.13, 0.11, 0.08)
+	cuff_m.albedo_color = Color(0.12, 0.10, 0.08)
 	cuff_m.roughness = 0.95
 	cuff.material_override = cuff_m
-	cuff.position = Vector3(0, 0.008, 0.044)
+	cuff.position = Vector3(0, 0.006, 0.042)
 	cuff.rotation_degrees = Vector3(90, 0, 0)
 	palm.add_child(cuff)
-	var thumb := MeshInstance3D.new()
-	var tm := CapsuleMesh.new()
-	tm.radius = 0.0125
-	tm.height = 0.05
-	tm.radial_segments = 10
-	thumb.mesh = tm
-	thumb.material_override = skin
-	thumb.position = Vector3(side * 0.043, -0.004, -0.010)
-	thumb.rotation_degrees = Vector3(20, side * 38, side * 34)
-	palm.add_child(thumb)
+	# Капсула Godot стоит вдоль Y: крутим на 90°, дети идут по локальной −Y
+	var thumb_root := _glove_bone(skin, 0.012, 0.028)
+	thumb_root.position = Vector3(side * 0.040, -0.006, 0.002)
+	thumb_root.rotation_degrees = Vector3(108, side * 42, side * 28)
+	palm.add_child(thumb_root)
+	var thumb_tip := _glove_bone(skin, 0.011, 0.022)
+	thumb_tip.position = Vector3(0, -0.022, 0)
+	thumb_tip.rotation_degrees = Vector3(22, 0, 0)
+	thumb_root.add_child(thumb_tip)
+	var lengths := [0.026, 0.024, 0.022, 0.018]
+	var radii := [0.0105, 0.0100, 0.0094, 0.0084]
 	for i in range(4):
-		var finger := MeshInstance3D.new()
-		var ff := CapsuleMesh.new()
-		# Перчаточные пальцы толще живых и с ровными кончиками
-		ff.radius = 0.0115 - float(i) * 0.0006
-		ff.height = 0.062 - float(i) * 0.005
-		ff.radial_segments = 10
-		finger.mesh = ff
-		finger.material_override = skin
-		finger.position = Vector3(-0.028 + float(i) * 0.0185, -0.004, -0.058)
-		finger.rotation_degrees = Vector3(58 + float(i) * 3.0, 0, side * (2.0 - float(i)))
-		palm.add_child(finger)
+		var root := _glove_bone(skin, radii[i], lengths[i])
+		root.position = Vector3(-0.027 + float(i) * 0.018, 0.001, -0.046)
+		root.rotation_degrees = Vector3(132 + float(i) * 4.0, side * (1.5 - float(i) * 0.8), 0)
+		palm.add_child(root)
+		var mid := _glove_bone(skin, radii[i] * 0.92, lengths[i] * 0.78)
+		mid.position = Vector3(0, -lengths[i] * 0.78, 0)
+		mid.rotation_degrees = Vector3(28 + float(i) * 3.0, 0, 0)
+		root.add_child(mid)
+		var tip := _glove_bone(skin, radii[i] * 0.82, lengths[i] * 0.58)
+		tip.position = Vector3(0, -lengths[i] * 0.62, 0)
+		tip.rotation_degrees = Vector3(22, 0, 0)
+		mid.add_child(tip)
 	return palm
+
+func _glove_bone(mat: Material, radius: float, length: float) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var cap := CapsuleMesh.new()
+	cap.radius = radius
+	cap.height = length
+	cap.radial_segments = 10
+	mi.mesh = cap
+	mi.material_override = mat
+	return mi
 
 func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE

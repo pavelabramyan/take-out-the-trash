@@ -101,14 +101,15 @@ func _run() -> void:
 		builder.bag.global_position = p.camera.global_position + p.camera.global_transform.basis * Vector3(0.05, -0.25, -0.45)
 	await _shot("02_bag_closeup")
 
-	await _place(p, Vector3(sx, H * 2.0 + 0.05, 0.3), 0.0, -35.0)
+	# yaw=180 смотрит в +Z, вниз по правому маршу; yaw=0 — в −Z, к дверям
+	await _place(p, Vector3(sx, H * 2.0 + 0.05, 0.22), 180.0, -38.0)
 	await _shot("03_stairs_top_down")
 
-	# Смотрим на лестницу + зелёнку боковой стены (не в лифт)
-	await _place(p, Vector3(0.15, H * 2.0 - HH + 0.05, 2.2), 35.0, -18.0)
+	await _place(p, Vector3(0.15, H * 2.0 - HH + 0.05, 2.2), 200.0, -16.0)
 	await _shot("04_mid_landing")
 
-	await _place(p, Vector3(sx, H + 1.35, 1.35), 10.0, -28.0)
+	# Середина марша: если плита ещё в проёме — здесь это сразу видно
+	await _place(p, Vector3(sx, H * 2.0 - 0.55, 1.05), 180.0, -28.0)
 	await _shot("05_on_stairs")
 
 	await _place(p, Vector3(0.0, 0.05, 1.8), 180.0, -6.0)

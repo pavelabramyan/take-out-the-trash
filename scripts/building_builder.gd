@@ -338,6 +338,12 @@ func _dress_rail(center: Vector3, width: float, tall: float, along_x: bool) -> v
 	var rot := Vector3(0, 0, 90) if along_x else Vector3(90, 0, 0)
 	_mesh_at(Geo.pipe(0.024, width * 0.96), center + Vector3(0, tall * 0.42, 0), "handrail", rot)
 	_mesh_at(Geo.pipe(0.012, width * 0.94), center + Vector3(0, -tall * 0.12, 0), "rail", rot)
+	# Тумбы по краям секции — стык поручня больше не обрывается
+	var end := width * 0.47
+	for s in [-1.0, 1.0]:
+		var p := center + (Vector3(s * end, 0, 0) if along_x else Vector3(0, 0, s * end))
+		_cyl(p, 0.020, tall + 0.04, "rail")
+		_sph(p + Vector3(0, tall * 0.52, 0), 0.026, "handrail")
 
 func _stair_x(left: bool) -> float:
 	return -STAIR_X if left else STAIR_X
@@ -366,9 +372,11 @@ func _build_stairwell(floors: int, basement: bool, has_elevator: bool) -> void:
 		add_child(bl)
 	else:
 		_add_main_landing(0.0, 0)
-		_box(Vector3(0, -0.1, 1.4), Vector3(CELL_W - 0.1, 0.2, 1.9), "tile")
+		# Пол тамбура только за шахтой: сплошная плита на z=1.4 перекрывала
+		# последний марш, и спуск на первый этаж шёл «сквозь пол»
 		_box(Vector3(0, -0.1, (LOBBY_Z0 + DOOR_Z) * 0.5), Vector3(CELL_W - 0.1, 0.2, 1.2), "tile")
-		# потёртость у входа — не неон
+		# Под маршами — пол, чтобы выйти к двери, не падая в шахту
+		_add_ground_under_stairs()
 		_box(Vector3(0, 0.02, 3.2), Vector3(0.55, 0.03, 0.5), "mark", false)
 
 	_add_entrance_props()
@@ -391,15 +399,24 @@ func _build_stairwell(floors: int, basement: bool, has_elevator: bool) -> void:
 	_add_dirt_stains(0.0)
 	_box(Vector3(0, top + 2.45, 1.15), Vector3(CELL_W + 0.3, 0.22, 5.1), "concrete")
 
+func _add_ground_under_stairs() -> void:
+	## На нуле под маршами нужен пол до двери, но не под самой кромкой спуска:
+	## иначе последняя ступень тонет в плите.
+	var z0 := LAND_Z1
+	var z1 := LOBBY_Z0
+	var zc := (z0 + z1) * 0.5
+	var depth := z1 - z0
+	if depth > 0.2:
+		_box(Vector3(0, -0.1, zc), Vector3(CELL_W - 0.12, 0.2, depth), "tile")
+
 func _add_floor_ceiling(y: float) -> void:
-	## Перекрытие над этажной площадкой — без него клетка «без потолка»
-	var cy := y + FLOOR_H - 0.14
-	var depth := LAND_Z1 - LAND_Z0
-	var zc := (LAND_Z0 + LAND_Z1) * 0.5
-	_box(Vector3(0, cy, zc), Vector3(CELL_W - 0.1, 0.12, depth), "concrete")
-	# Боковые полосы над шахтой (отверстие под марши)
-	_box(Vector3(-CELL_HALF + 0.22, cy, 1.35), Vector3(0.4, 0.12, 1.8), "concrete")
-	_box(Vector3(CELL_HALF - 0.22, cy, 1.35), Vector3(0.4, 0.12, 1.8), "concrete")
+	## Потолок площадки — это низ плиты этажа выше. Второй бокс на той же
+	## отметке давал z-fight, а «боковины шахты» торчали в проёме марша
+	## и выглядели полом, сквозь который идёшь.
+	var cy := y + FLOOR_H - 0.22
+	# Узкий карниз вдоль стен, не доходящий до ступеней
+	_vis(Vector3(-CELL_HALF + 0.09, cy, 1.27), Vector3(0.14, 0.06, 1.65), "concrete")
+	_vis(Vector3(CELL_HALF - 0.09, cy, 1.27), Vector3(0.14, 0.06, 1.65), "concrete")
 
 func _add_dirt_stains(y: float) -> void:
 	_box(Vector3(-CELL_HALF + 0.02, y + 0.4, 0.3), Vector3(0.02, 0.5, 0.7), "dirt", false)
@@ -482,14 +499,32 @@ func _add_main_landing(y: float, floor_num: int) -> void:
 	var depth := LAND_Z1 - LAND_Z0
 	var zc := (LAND_Z0 + LAND_Z1) * 0.5
 	_box(Vector3(0, y - 0.1, zc), Vector3(CELL_W - 0.12, 0.2, depth), "tile")
-	# Узкие боковины шахты
-	_box(Vector3(-CELL_HALF + 0.28, y - 0.1, 1.25), Vector3(0.5, 0.2, 1.6), "tile")
-	_box(Vector3(CELL_HALF - 0.28, y - 0.1, 1.25), Vector3(0.5, 0.2, 1.6), "tile")
+	# Торцы плиты: шахта открыта, кромка читается как перекрытие, а не как
+	# бумажный пол, в который проваливаешься
+	_add_landing_well_edge(y, floor_num)
 	_box(Vector3(0, y + 0.01, LAND_Z0 + 0.06), Vector3(CELL_W - 0.2, 0.025, 0.05), "wainscot", false)
 	if floor_num > 0:
-		var sx := _stair_x(false)  # всегда правый верхний
+		var sx := _stair_x(false)
 		_box(Vector3(sx, y + 0.02, LAND_Z1 - 0.04), Vector3(0.55, 0.03, 0.22), "mark", false)
 		_add_shaft_guard(y)
+
+func _add_landing_well_edge(y: float, floor_num: int) -> void:
+	## Бетонный торец плиты по линии LAND_Z1, с вырезом под правый марш вниз.
+	var open_x := STAIR_X if floor_num > 0 else 0.0
+	var open_w := STAIR_W + 0.08 if floor_num > 0 else 0.0
+	var z := LAND_Z1 + 0.012
+	var left_end := open_x - open_w * 0.5
+	var right_start := open_x + open_w * 0.5
+	var left_w := left_end - (-CELL_HALF + 0.06)
+	if left_w > 0.12:
+		_vis(Vector3(-CELL_HALF + 0.06 + left_w * 0.5, y - 0.1, z), Vector3(left_w, 0.2, 0.04), "concrete")
+	var right_w := (CELL_HALF - 0.06) - right_start
+	if right_w > 0.12:
+		_vis(Vector3(right_start + right_w * 0.5, y - 0.1, z), Vector3(right_w, 0.2, 0.04), "concrete")
+	if floor_num > 0:
+		# Щёки проёма — чтобы вырез не был «дыркой в текстуре»
+		for sx in [-1.0, 1.0]:
+			_vis(Vector3(open_x + sx * open_w * 0.5, y - 0.1, LAND_Z1 + 0.08), Vector3(0.04, 0.2, 0.16), "concrete")
 
 func _add_shaft_guard(y: float) -> void:
 	## Перила по кромке площадки: проём только у правого марша вниз.
@@ -513,6 +548,8 @@ func _add_mid_landing(y: float) -> void:
 	var depth := MID_Z1 - MID_Z0
 	var zc := (MID_Z0 + MID_Z1) * 0.5
 	_box(Vector3(0, y - 0.1, zc), Vector3(CELL_W - 0.15, 0.2, depth), "tile")
+	# Торец плиты со стороны маршей — площадка не сливается со ступенями
+	_vis(Vector3(0, y - 0.1, MID_Z0 - 0.012), Vector3(CELL_W - 0.15, 0.2, 0.04), "concrete")
 	_box(Vector3(0, y + 0.05, MID_Z0 - 0.06), Vector3(0.7, 0.1, 0.05), "rail")
 	var front := _box(Vector3(0, y + 0.55, MID_Z1), Vector3(CELL_W - 0.25, 1.05, 0.07), "metal", true)
 	_hide_mesh(front)
@@ -571,14 +608,21 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 		paint_x.append(Transform3D(Basis.IDENTITY, Vector3(x - tread_w * 0.5 + 0.07, top_y, z)))
 	_multi(Geo.rounded_box(Vector3(0.13, 0.008, tread_d * 0.92), 0.003), "step_paint", paint_x)
 	_multi(Geo.rounded_box(Vector3(tread_w * 0.55, 0.006, tread_d * 0.6), 0.002), "dirt", dirt_x)
+	# Алюминиевый угол на носу ступени — в кадре спуска это первое, что видишь
+	var nose_x: Array = []
+	for i in range(steps):
+		var t := (float(i) + 0.5) / float(steps)
+		var y := lerpf(y_top, y_bot, t)
+		var z := lerpf(z0, z1, t)
+		var top_y := y + (riser + 0.02) * 0.5 + 0.006
+		var b := Basis.IDENTITY.rotated(Vector3.UP, 0.0 if z_dir > 0.0 else PI)
+		nose_x.append(Transform3D(b, Vector3(x, top_y, z + z_dir * (tread_d * 0.42))))
+	_multi(Geo.rounded_box(Vector3(tread_w * 0.96, 0.007, 0.018), 0.002), "metal", nose_x)
 	# Косоур: крашеная боковина марша вдоль стены
 	var side_len := length
 	var side := _mesh_at(Geo.rounded_box(Vector3(0.06, 0.34, side_len), 0.008),
 		Vector3(x + wall_side * (tread_w * 0.5 + 0.03), (y_top + y_bot) * 0.5 - 0.12, (z0 + z1) * 0.5), "step_paint")
 	side.rotation.x = angle
-
-	_box(Vector3(x, y_top - 0.02, z0 + (0.1 if z1 > z0 else -0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
-	_box(Vector3(x, y_bot + 0.02, z1 + (-0.1 if z1 > z0 else 0.1)), Vector3(STAIR_W - 0.06, 0.09, 0.28), "concrete", false)
 
 	# Перила: круглый бордовый поручень на трубчатых стойках
 	var rail_x := x + (STAIR_W * 0.46 if not left else -STAIR_W * 0.46)
@@ -615,6 +659,11 @@ func _add_flight_segment(x: float, y_top: float, y_bot: float, z0: float, z1: fl
 		brackets.append(Transform3D(Basis.IDENTITY, Vector3(rail_x + wall_side * 0.11, sy + 0.25, sz)))
 	_multi(Geo.pipe(0.013, 0.78, 10), "rail", balusters)
 	_multi(Geo.rounded_box(Vector3(0.15, 0.022, 0.022), 0.004), "rail", brackets)
+	# Столбики-тумбы на концах марша: иначе поручень «висит в воздухе»
+	_cyl(Vector3(rail_x, y_top + 0.46, z0 + z_dir * 0.04), 0.022, 0.92, "rail")
+	_cyl(Vector3(rail_x, y_bot + 0.46, z1 - z_dir * 0.04), 0.022, 0.92, "rail")
+	_sph(Vector3(rail_x, y_top + 0.93, z0 + z_dir * 0.04), 0.028, "handrail")
+	_sph(Vector3(rail_x, y_bot + 0.93, z1 - z_dir * 0.04), 0.028, "handrail")
 
 	# Низ марша / «под лестницей» — граффити и мусор (реф)
 	var under_y := (y_top + y_bot) * 0.5 - 0.55
@@ -629,7 +678,10 @@ func _add_floor_wainscot(y: float) -> void:
 	_box(Vector3(-CELL_HALF + 0.05, cy, 1.15), Vector3(0.08, h, 4.8), "wainscot", false)
 	_box(Vector3(CELL_HALF - 0.05, cy, 1.15), Vector3(0.08, h, 4.8), "wainscot", false)
 	_box(Vector3(0, cy, LAND_Z0 + 0.05), Vector3(CELL_W - 0.12, h, 0.08), "wainscot", false)
-	_vis(Vector3(0, y + h, 1.15), Vector3(CELL_W - 0.14, 0.035, 4.65), "concrete")
+	# Отбойник только по стенам: раньше это была плита через шахту
+	_vis(Vector3(-CELL_HALF + 0.05, y + h, 1.15), Vector3(0.08, 0.035, 4.65), "concrete")
+	_vis(Vector3(CELL_HALF - 0.05, y + h, 1.15), Vector3(0.08, 0.035, 4.65), "concrete")
+	_vis(Vector3(0, y + h, LAND_Z0 + 0.05), Vector3(CELL_W - 0.14, 0.035, 0.08), "concrete")
 	_box(Vector3(-CELL_HALF + 0.04, y + 0.04, 1.15), Vector3(0.06, 0.08, 4.6), "concrete", false)
 	_box(Vector3(CELL_HALF - 0.04, y + 0.04, 1.15), Vector3(0.06, 0.08, 4.6), "concrete", false)
 	_box(Vector3(0, y + 0.04, LAND_Z0 + 0.04), Vector3(CELL_W - 0.2, 0.08, 0.06), "concrete", false)
@@ -648,6 +700,15 @@ func _add_floor_props(y: float, floor_num: int, has_elevator: bool) -> void:
 	_box(Vector3(CELL_HALF - 0.12, y + 2.35, 0.8), Vector3(0.04, 0.04, 3.2), "metal", false)
 	_box(Vector3(CELL_HALF - 0.12, y + 1.7, -0.5), Vector3(0.06, 0.7, 0.06), "metal", false)
 	_box(Vector3(0.0, y + 1.9, LAND_Z0 + 0.06), Vector3(0.22, 0.28, 0.03), "number", false)
+	var fl := Label3D.new()
+	fl.text = str(floor_num)
+	fl.font_size = 48
+	fl.pixel_size = 0.004
+	fl.modulate = Color(0.18, 0.16, 0.12)
+	fl.position = Vector3(0.0, y + 1.9, LAND_Z0 + 0.09)
+	fl.rotation_degrees.y = 180.0
+	fl.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	add_child(fl)
 	# Грязные углы + потёртости на зелёнке
 	_box(Vector3(-CELL_HALF + 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.28, 0.05, 0.28), "dirt", false)
 	_box(Vector3(CELL_HALF - 0.15, y + 0.03, LAND_Z0 + 0.2), Vector3(0.28, 0.05, 0.28), "dirt", false)
@@ -706,24 +767,33 @@ func _tune_light(l: OmniLight3D, shadow: bool, fade_begin: float = 14.0) -> void
 	l.distance_fade_shadow = fade_begin * 0.55
 	l.distance_fade_length = 5.0
 
+func _add_light_switch(pos: Vector3) -> void:
+	_vis(pos, Vector3(0.012, 0.10, 0.07), "number")
+	_vis(pos + Vector3(0.012, 0.0, 0.0), Vector3(0.016, 0.034, 0.022), "metal")
+	_vis(pos + Vector3(0.008, -0.032, 0.0), Vector3(0.006, 0.008, 0.008), "metal")
+
 func _add_floor_light(y: float) -> void:
 	# Плафон в решётке — типовой подъездный светильник
 	var shade := PropLibrary.spawn(self, "caged_hanging_light", Vector3(0.15, y + 2.32, 0.1), Vector3(0, 0, 0), 1.0, 0.30)
 	if shade == null:
 		_cyl(Vector3(0.15, y + 2.52, 0.1), 0.006, 0.28, "metal")
 		_vis(Vector3(0.15, y + 2.42, 0.1), Vector3(0.04, 0.05, 0.04), "concrete")
-	_sph(Vector3(0.15, y + 2.30, 0.1), 0.035, "lamp")
+	# Патрон, колба и тёплый накал — без этого «лампочка» была точкой
+	_cyl(Vector3(0.15, y + 2.355, 0.1), 0.012, 0.03, "metal")
+	_sph(Vector3(0.15, y + 2.30, 0.1), 0.038, "lamp")
+	_vis(Vector3(0.15, y + 2.318, 0.1), Vector3(0.016, 0.012, 0.016), "metal")
+	# Провод к стене и распаячная коробка
+	_cyl(Vector3(CELL_HALF * 0.5 + 0.08, y + 2.50, 0.1), 0.004, CELL_HALF - 0.12, "metal", Vector3(0, 0, 90))
+	_vis(Vector3(CELL_HALF - 0.10, y + 2.50, 0.1), Vector3(0.08, 0.06, 0.08), "metal")
 	var lamp := OmniLight3D.new()
-	# 2700K накаливания против 6500K из окна — контраст тёплого и холодного
 	lamp.light_color = Color(1.0, 0.72, 0.36)
 	lamp.light_energy = 1.5
 	lamp.omni_range = 5.0
 	lamp.omni_attenuation = 1.8
-	lamp.position = Vector3(0.15, y + 2.35, 0.1)
+	lamp.position = Vector3(0.15, y + 2.32, 0.1)
 	_tune_light(lamp, true, 8.5)
 	add_child(lamp)
 	lights.append(lamp)
-	# Свет, входящий через окно промежуточной площадки
 	var ml := OmniLight3D.new()
 	ml.light_color = Color(0.80, 0.87, 1.0)
 	ml.light_energy = 1.7
@@ -733,6 +803,8 @@ func _add_floor_light(y: float) -> void:
 	_tune_light(ml, false, 10.0)
 	add_child(ml)
 	lights.append(ml)
+	# Выключатель у двери — рука всегда на этом уровне
+	_add_light_switch(Vector3(-CELL_HALF + 0.07, y + 1.35, LAND_Z0 + 0.55))
 
 func _build_apartment_door(start_floor: int) -> void:
 	var y := float(start_floor) * FLOOR_H

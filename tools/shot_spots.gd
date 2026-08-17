@@ -14,6 +14,10 @@ const SHOTS := [
 	{"name": "tree", "pos": Vector3(-5.4, 1.6, 8.6), "look": Vector3(-8.0, 3.4, 12.0)},
 	{"name": "yard_wide", "pos": Vector3(0.0, 2.4, 6.0), "look": Vector3(2.0, 1.0, 15.0)},
 	{"name": "facade_back", "pos": Vector3(2.0, 1.7, 16.0), "look": Vector3(0.0, 7.0, -2.0)},
+	{"name": "stair_well", "pos": Vector3(0.60, 6.95, 0.15), "look": Vector3(0.60, 4.4, 2.0)},
+	{"name": "stair_down", "pos": Vector3(0.60, 6.2, 0.9), "look": Vector3(0.60, 4.6, 2.1)},
+	{"name": "landing_edge", "pos": Vector3(0.0, 6.95, -0.4), "look": Vector3(0.6, 5.4, 1.2)},
+	{"name": "hands_idle", "pos": Vector3(-0.85, 6.0, -0.2), "look": Vector3(-0.85, 5.4, -0.7)},
 ]
 
 func _initialize() -> void:
