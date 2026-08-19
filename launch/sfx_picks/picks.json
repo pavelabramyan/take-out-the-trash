@@ -1,0 +1,18 @@
+{
+  "dump": 2,
+  "step": 1,
+  "rustle": 1,
+  "bag_grab": 5,
+  "bag_drop": 1,
+  "wall_rub": 3,
+  "pickup": 5,
+  "slip": 3,
+  "elevator": 5,
+  "bark": 3,
+  "babushka": 4,
+  "mom": 4,
+  "fail": 5,
+  "menu_loop": 2,
+  "game_loop": 4,
+  "danger_loop": 5
+}

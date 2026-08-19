@@ -490,7 +490,7 @@ def variants_fail() -> list[tuple[str, np.ndarray]]:
     ]
 
 
-def _music_preview(kind: str, idx: int) -> np.ndarray:
+def _music_preview(kind: str, idx: int, dur: float = 6.0) -> np.ndarray:
     g.rng = np.random.default_rng(7000 + idx * 97 + (sum(ord(c) for c in kind) % 1000))
     g._IR = None
     roots = {
@@ -500,27 +500,29 @@ def _music_preview(kind: str, idx: int) -> np.ndarray:
         "ambient": [0.0, 0.0, 0.0, 0.0, 0.0],
     }
     if kind == "ambient":
+        if idx == 0:
+            body = g.make_ambient_hall()
+            return fade(g.loopable(body[: g.n_samples(dur)] if dur < 11.5 else body, 0.7), 0.05, 0.05)
         styles = [
-            lambda: g.make_ambient_hall()[: g.n_samples(6.0)],
-            lambda: g.loopable(g.lp(g.noise(6.0), 240) * 0.45 + np.sin(2 * np.pi * 100 * g.t_axis(6.0)) * 0.04, 0.8),
-            lambda: g.loopable(g.bp(g.noise(6.0), 90, 0.6) * 0.5 + g.lp(g.noise(6.0), 500) * 0.15, 0.8),
-            lambda: g.loopable(g.lp(g.noise(6.0), 180) * 0.35 + np.sin(2 * np.pi * 47 * g.t_axis(6.0)) * 0.06, 0.8),
-            lambda: g.loopable(g.hp(g.lp(g.noise(6.0), 800), 200) * (0.25 + 0.1 * np.sin(2 * np.pi * 0.15 * g.t_axis(6.0))), 0.8),
+            lambda: g.loopable(g.lp(g.noise(dur), 240) * 0.45 + np.sin(2 * np.pi * 100 * g.t_axis(dur)) * 0.04, 0.8),
+            lambda: g.loopable(g.bp(g.noise(dur), 90, 0.6) * 0.5 + g.lp(g.noise(dur), 500) * 0.15, 0.8),
+            lambda: g.loopable(g.lp(g.noise(dur), 180) * 0.35 + np.sin(2 * np.pi * 47 * g.t_axis(dur)) * 0.06, 0.8),
+            lambda: g.loopable(g.hp(g.lp(g.noise(dur), 800), 200) * (0.25 + 0.1 * np.sin(2 * np.pi * 0.15 * g.t_axis(dur))), 0.8),
         ]
-        return fade(g.loopable(room(styles[idx](), 0.35), 0.7), 0.05, 0.05)
+        return fade(g.loopable(room(styles[idx - 1](), 0.35), 0.7), 0.05, 0.05)
     root = roots[kind][idx]
     if kind == "menu":
-        body = g._drone(6.0, root, [(1, 0.30, 0.004), (2, 0.16, 0.005), (3, 0.08, 0.003), (5, 0.04, 0.006)], 0.08, 0.05, 200 + idx * 40)
+        body = g._drone(dur, root, [(1, 0.30, 0.004), (2, 0.16, 0.005), (3, 0.08, 0.003), (5, 0.04, 0.006)], 0.08, 0.05, 200 + idx * 40)
     elif kind == "game":
-        body = g._drone(6.0, root, [(1, 0.28, 0.003), (1.5, 0.12, 0.004), (2, 0.14, 0.005), (4, 0.05, 0.004)], 0.05, 0.04, 160 + idx * 30)
-        t = g.t_axis(6.0)
+        body = g._drone(dur, root, [(1, 0.28, 0.003), (1.5, 0.12, 0.004), (2, 0.14, 0.005), (4, 0.05, 0.004)], 0.05, 0.04, 160 + idx * 30)
+        t = g.t_axis(dur)
         pulse = (np.sin(2 * np.pi * (0.4 + idx * 0.12) * t) > 0.96).astype(float)
         body += g.lp(pulse * g.rng.standard_normal(len(t)), 110, 1.1) * (0.18 + idx * 0.03)
     else:
-        body = g._drone(6.0, root, [(1, 0.34, 0.006), (2, 0.14, 0.008), (3, 0.07, 0.005)], 0.7 + idx * 0.15, 0.07, 280 + idx * 40)
-        beat = np.zeros_like(g.t_axis(6.0))
+        body = g._drone(dur, root, [(1, 0.34, 0.006), (2, 0.14, 0.008), (3, 0.07, 0.005)], 0.7 + idx * 0.15, 0.07, 280 + idx * 40)
+        beat = np.zeros_like(g.t_axis(dur))
         pos, bpm = 0.0, 88.0 + idx * 10
-        while pos < 6.0:
+        while pos < dur:
             i = int(pos * SR)
             hit = g.modal(0.16, [50, 76], [0.06, 0.04], [1.0, 0.4]) * g.env_exp(0.16, 0.002, 0.05)
             beat[i : i + len(hit)] += hit[: max(0, min(len(hit), len(beat) - i))]
