@@ -139,6 +139,10 @@ def crackle(dur: float, rate: float, f_lo: float, f_hi: float, sharp: float = 0.
         d = rng.uniform(sharp * 0.4, sharp * 2.0)
         seg = noise(d) * env_exp(d, 0.0004, d * 0.4)
         seg = bp(seg, float(rng.uniform(f_lo, f_hi)), 2.5)
+        room = len(out) - pos
+        if room <= 0:
+            continue
+        seg = seg[:room]
         out[pos:pos + len(seg)] += seg * rng.uniform(0.3, 1.0)
     return out
 

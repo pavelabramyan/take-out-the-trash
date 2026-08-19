@@ -70,6 +70,13 @@ PT Sans и PT Sans Narrow, ParaType. Источник: https://github.com/google
 - `assets/fonts/PT_Sans-Narrow-Web-Regular.ttf`
 - `assets/fonts/PT_Sans-Narrow-Web-Bold.ttf`
 
+## Аудио-кандидаты — Kenney (CC0)
+
+Пакеты Impact Sounds, RPG Audio, Interface Sounds, Music Jingles
+(https://kenney.nl, CC0 1.0). Используются как исходники для вариантов
+в `launch/sfx_picks/` (`tools/gen_sfx_variants.py`). В игру попадает
+только то, что выбрано и скопировано в `assets/sfx` / `assets/music`.
+
 ## Собственные ассеты
 
 Всё в `assets/textures`, `assets/sfx`, `assets/music` сгенерировано скриптами

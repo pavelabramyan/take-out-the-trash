@@ -1,0 +1,704 @@
+{
+  "sounds": [
+    {
+      "id": "dump",
+      "title": "Мешок в бак",
+      "hint": "Главный звук игры",
+      "group": "sfx",
+      "now": "../../assets/sfx/dump.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Тяжёлый железный бак",
+          "file": "dump/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Тонкая жесть, дребезг",
+          "file": "dump/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Пластиковый контейнер",
+          "file": "dump/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Далёкий двор, эхо",
+          "file": "dump/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Мокрый мешок + бутылки",
+          "file": "dump/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "burst",
+      "title": "Пакет порвался",
+      "hint": "Проигрыш / дыра в пакете",
+      "group": "sfx",
+      "now": "../../assets/sfx/burst.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Резкий разрыв и стекло",
+          "file": "burst/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Мокрый хлопок",
+          "file": "burst/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Медленный надрыв",
+          "file": "burst/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Жесть и банки",
+          "file": "burst/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Тихий хлопок",
+          "file": "burst/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "step",
+      "title": "Шаги",
+      "hint": "Бетон, плитка, двор",
+      "group": "sfx",
+      "now": "../../assets/sfx/step.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Бетон подъезда",
+          "file": "step/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Кафель / дерево",
+          "file": "step/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Наледь во дворе",
+          "file": "step/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Трава / грунт",
+          "file": "step/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Ковёр / тихо",
+          "file": "step/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "rustle",
+      "title": "Шорох пакета",
+      "hint": "Петля, пока несёшь",
+      "group": "sfx",
+      "now": "../../assets/sfx/rustle.wav",
+      "loop": true,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Тонкий магазинный пакет",
+          "file": "rustle/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Толстый мусорный мешок",
+          "file": "rustle/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Бумага и картон",
+          "file": "rustle/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Мокрый пакет",
+          "file": "rustle/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Почти тихий шорох",
+          "file": "rustle/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "bag_grab",
+      "title": "Хват пакета",
+      "hint": "Поднял мешок",
+      "group": "sfx",
+      "now": "../../assets/sfx/bag_grab.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Хруст плёнки",
+          "file": "bag_grab/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Ручка пакета",
+          "file": "bag_grab/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Тканевая сумка",
+          "file": "bag_grab/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Тяжёлый рывок",
+          "file": "bag_grab/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Короткий щипок",
+          "file": "bag_grab/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "bag_drop",
+      "title": "Пакет на пол",
+      "hint": "Поставил / бросил",
+      "group": "sfx",
+      "now": "../../assets/sfx/bag_drop.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Мягко на пол",
+          "file": "bag_drop/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Тяжёлый удар",
+          "file": "bag_drop/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Бутылки внутри",
+          "file": "bag_drop/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Картонная коробка",
+          "file": "bag_drop/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Пластик с отскоком",
+          "file": "bag_drop/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "impact",
+      "title": "Удар пакета",
+      "hint": "Стена, перила, ступеньки",
+      "group": "sfx",
+      "now": "../../assets/sfx/impact.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Глухой мешок",
+          "file": "impact/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Стекло внутри",
+          "file": "impact/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Жесть о перила",
+          "file": "impact/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Косяк / дерево",
+          "file": "impact/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Лёгкий шлёп",
+          "file": "impact/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "wall_rub",
+      "title": "Трение о стену",
+      "hint": "Пакет трётся в подъезде",
+      "group": "sfx",
+      "now": "../../assets/sfx/wall_rub.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Плёнка о краску",
+          "file": "wall_rub/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Ткань по стене",
+          "file": "wall_rub/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Мешок о бетон",
+          "file": "wall_rub/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Резина / писк",
+          "file": "wall_rub/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Короткое шарканье",
+          "file": "wall_rub/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "pickup",
+      "title": "Подбор мусора",
+      "hint": "Кусок в охапку",
+      "group": "sfx",
+      "now": "../../assets/sfx/pickup.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Мягкий клик",
+          "file": "pickup/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Бумага",
+          "file": "pickup/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Пластиковая крышка",
+          "file": "pickup/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Мелочь / жесть",
+          "file": "pickup/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Ткань в охапку",
+          "file": "pickup/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "slip",
+      "title": "Поскользнулся",
+      "hint": "Лёд и мокрый пол",
+      "group": "sfx",
+      "now": "../../assets/sfx/slip.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Резина по плитке",
+          "file": "slip/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Лёд",
+          "file": "slip/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Мокрый след",
+          "file": "slip/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Визг и срыв",
+          "file": "slip/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Короткий подскок",
+          "file": "slip/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "elevator",
+      "title": "Лифт",
+      "hint": "Двери и шахта",
+      "group": "sfx",
+      "now": "../../assets/sfx/elevator.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Советское реле и мотор",
+          "file": "elevator/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Двери лифта",
+          "file": "elevator/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Скрипучая шахта",
+          "file": "elevator/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Короткий хлопок дверей",
+          "file": "elevator/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Гул шахты",
+          "file": "elevator/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "bark",
+      "title": "Собака",
+      "hint": "Двор, если поймали",
+      "group": "sfx",
+      "now": "../../assets/sfx/bark.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Близкий тявк",
+          "file": "bark/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Крупный пёс",
+          "file": "bark/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Двойной гав",
+          "file": "bark/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Двор, далеко",
+          "file": "bark/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Предупреждающий рык",
+          "file": "bark/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "babushka",
+      "title": "Бабушка",
+      "hint": "Допрос на площадке",
+      "group": "sfx",
+      "now": "../../assets/sfx/babushka.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Ворчание: «куда пошёл»",
+          "file": "babushka/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Оклик с площадки",
+          "file": "babushka/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Подозрительный вопрос",
+          "file": "babushka/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Нудящая жалоба",
+          "file": "babushka/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Короткое «стой»",
+          "file": "babushka/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "mom",
+      "title": "Крик мамы",
+      "hint": "Старт уровня",
+      "group": "sfx",
+      "now": "../../assets/sfx/mom.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Резкий крик",
+          "file": "mom/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Из-за двери, длинный",
+          "file": "mom/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Далёкий, из квартиры",
+          "file": "mom/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Злая, быстрее",
+          "file": "mom/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Короткий ор",
+          "file": "mom/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "win",
+      "title": "Победа",
+      "hint": "Вынес — джингл",
+      "group": "sfx",
+      "now": "../../assets/sfx/win.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Тёплый аккорд",
+          "file": "win/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Сталь / бокал",
+          "file": "win/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Пиццикато",
+          "file": "win/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Ударный джингл",
+          "file": "win/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Короткое подтверждение",
+          "file": "win/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "fail",
+      "title": "Поражение",
+      "hint": "Пакет / поймали",
+      "group": "sfx",
+      "now": "../../assets/sfx/fail.wav",
+      "loop": false,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Нисходящий гул",
+          "file": "fail/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Ошибка UI",
+          "file": "fail/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Тупой удар",
+          "file": "fail/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Грустный хит",
+          "file": "fail/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Сакс, не вышло",
+          "file": "fail/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "menu_loop",
+      "title": "Музыка меню",
+      "hint": "Превью 6 сек",
+      "group": "music",
+      "now": "../../assets/music/menu_loop.wav",
+      "loop": true,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Тёмный дрон",
+          "file": "menu_loop/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Ниже и теплее",
+          "file": "menu_loop/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Почти тишина",
+          "file": "menu_loop/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Выше, ночь",
+          "file": "menu_loop/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Холодный гул",
+          "file": "menu_loop/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "game_loop",
+      "title": "Музыка игры",
+      "hint": "Превью 6 сек",
+      "group": "music",
+      "now": "../../assets/music/game_loop.wav",
+      "loop": true,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Низкий шаг",
+          "file": "game_loop/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Чуть быстрее пульс",
+          "file": "game_loop/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Светлее",
+          "file": "game_loop/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Глухой",
+          "file": "game_loop/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Нервный тик",
+          "file": "game_loop/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "danger_loop",
+      "title": "Музыка опасности",
+      "hint": "Превью 6 сек",
+      "group": "music",
+      "now": "../../assets/music/danger_loop.wav",
+      "loop": true,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Сердце",
+          "file": "danger_loop/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Ниже и злее",
+          "file": "danger_loop/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Быстрее",
+          "file": "danger_loop/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Диссонанс",
+          "file": "danger_loop/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Тревожный стук",
+          "file": "danger_loop/5.wav"
+        }
+      ]
+    },
+    {
+      "id": "ambient_hall",
+      "title": "Гудение подъезда",
+      "hint": "Превью 6 сек",
+      "group": "music",
+      "now": "../../assets/music/ambient_hall.wav",
+      "loop": true,
+      "variants": [
+        {
+          "n": 1,
+          "label": "Подъезд как сейчас",
+          "file": "ambient_hall/1.wav"
+        },
+        {
+          "n": 2,
+          "label": "Лампа и гул",
+          "file": "ambient_hall/2.wav"
+        },
+        {
+          "n": 3,
+          "label": "Двор за окном",
+          "file": "ambient_hall/3.wav"
+        },
+        {
+          "n": 4,
+          "label": "Пустая шахта",
+          "file": "ambient_hall/4.wav"
+        },
+        {
+          "n": 5,
+          "label": "Воздух в лестнице",
+          "file": "ambient_hall/5.wav"
+        }
+      ]
+    }
+  ]
+}

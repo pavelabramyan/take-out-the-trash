@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Выбор звуков — Вынеси мусор</title>
+  <style>
+    :root {
+      --bg: #121410;
+      --panel: #21231c;
+      --line: #385c56;
+      --text: #e0d6b2;
+      --muted: #9a9178;
+      --accent: #c4a35a;
+      --pick: #3d6b4a;
+      --now: #4a3d28;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 "PT Sans", "Segoe UI", sans-serif; }
+    header {
+      position: sticky; top: 0; z-index: 5;
+      background: #181a14ee; border-bottom: 6px solid var(--line);
+      padding: 14px 20px 12px;
+    }
+    h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .02em; }
+    .sub { color: var(--muted); margin: 0 0 8px; }
+    .bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .progress { color: var(--accent); font-weight: 700; }
+    button, .chip {
+      background: #2a3026; color: var(--text); border: 1px solid #3a4638;
+      border-radius: 2px; padding: 8px 12px; cursor: pointer; font: inherit;
+    }
+    button:hover { background: #354033; }
+    main { max-width: 980px; margin: 0 auto; padding: 16px 16px 160px; }
+    h2 { color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: .12em; margin: 28px 0 8px; }
+    .card {
+      background: var(--panel); border: 2px solid var(--line); border-top-width: 6px;
+      padding: 14px; margin: 0 0 14px;
+    }
+    .card h3 { margin: 0; font-size: 18px; }
+    .hint { color: var(--muted); font-size: 13px; margin: 2px 0 10px; }
+    .row { display: grid; grid-template-columns: 110px repeat(5, 1fr); gap: 8px; }
+    @media (max-width: 800px) { .row { grid-template-columns: 1fr 1fr; } }
+    .v {
+      background: #191b16; border: 1px solid #33382c; padding: 10px 8px;
+      min-height: 92px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .v.now { border-color: #6a5430; background: var(--now); }
+    .v.sel { border-color: #6dbe7a; background: var(--pick); }
+    .v b { font-size: 13px; }
+    .v span { color: var(--muted); font-size: 12px; min-height: 2.4em; }
+    .v button { width: 100%; }
+    footer {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: #181a14f2; border-top: 2px solid var(--line);
+      padding: 10px 16px 14px;
+    }
+    textarea {
+      width: 100%; height: 64px; background: #11130e; color: var(--text);
+      border: 1px solid #333; font: 13px/1.35 ui-monospace, Menlo, monospace; padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Вынеси мусор — выбор звуков</h1>
+    <p class="sub">Сначала «сейчас», потом пять характеров. Клик по карточке выбирает. Напиши мне номера.</p>
+    <div class="bar">
+      <div class="progress">Выбрано <span id="count">0</span> / <span id="total">0</span></div>
+      <button type="button" id="copy">Скопировать выбор</button>
+      <button type="button" id="clear">Сбросить</button>
+    </div>
+  </header>
+  <main id="list"></main>
+  <footer>
+    <textarea id="out" readonly placeholder="Здесь появится список: dump 3, step 1…"></textarea>
+  </footer>
+  <script>
+    const picks = JSON.parse(localStorage.getItem("sfx_picks") || "{}");
+    let catalog = { sounds: [] };
+    let lastAudio = null;
+
+    function stop() {
+      if (lastAudio) { lastAudio.pause(); lastAudio.currentTime = 0; lastAudio = null; }
+    }
+    function play(src, loop) {
+      stop();
+      const a = new Audio(src);
+      a.loop = !!loop;
+      lastAudio = a;
+      a.play().catch(() => {});
+    }
+    function renderOut() {
+      const lines = catalog.sounds
+        .filter((s) => picks[s.id])
+        .map((s) => `${s.id} ${picks[s.id]}  — ${s.variants[picks[s.id] - 1].label}`);
+      document.getElementById("out").value = lines.join("\n");
+      document.getElementById("count").textContent = String(lines.length);
+    }
+    function select(id, n) {
+      picks[id] = n;
+      localStorage.setItem("sfx_picks", JSON.stringify(picks));
+      document.querySelectorAll(`[data-sid="${id}"]`).forEach((el) => {
+        el.classList.toggle("sel", Number(el.dataset.n) === n);
+      });
+      renderOut();
+    }
+    function card(sound) {
+      const wrap = document.createElement("article");
+      wrap.className = "card";
+      wrap.innerHTML = `<h3>${sound.title}</h3><p class="hint">${sound.hint}${sound.loop ? " · петля" : ""}</p>`;
+      const row = document.createElement("div");
+      row.className = "row";
+      const now = document.createElement("div");
+      now.className = "v now";
+      now.innerHTML = `<b>Сейчас</b><span>то, что в игре</span>`;
+      const nowBtn = document.createElement("button");
+      nowBtn.type = "button";
+      nowBtn.textContent = "▶ сейчас";
+      nowBtn.onclick = () => play(sound.now, sound.loop);
+      now.appendChild(nowBtn);
+      row.appendChild(now);
+      sound.variants.forEach((v) => {
+        const el = document.createElement("div");
+        el.className = "v" + (picks[sound.id] === v.n ? " sel" : "");
+        el.dataset.sid = sound.id;
+        el.dataset.n = String(v.n);
+        el.innerHTML = `<b>${v.n}</b><span>${v.label}</span>`;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "▶ слушать";
+        btn.onclick = (ev) => { ev.stopPropagation(); play(v.file, sound.loop); };
+        el.appendChild(btn);
+        el.onclick = () => select(sound.id, v.n);
+        row.appendChild(el);
+      });
+      wrap.appendChild(row);
+      return wrap;
+    }
+    async function main() {
+      catalog = await (await fetch("catalog.json")).json();
+      document.getElementById("total").textContent = String(catalog.sounds.length);
+      const list = document.getElementById("list");
+      const groups = [
+        ["sfx", "Звуки игры"],
+        ["music", "Музыка и гудение"],
+      ];
+      groups.forEach(([g, title]) => {
+        const h = document.createElement("h2");
+        h.textContent = title;
+        list.appendChild(h);
+        catalog.sounds.filter((s) => s.group === g).forEach((s) => list.appendChild(card(s)));
+      });
+      renderOut();
+      document.getElementById("copy").onclick = async () => {
+        await navigator.clipboard.writeText(document.getElementById("out").value);
+        document.getElementById("copy").textContent = "Скопировано";
+        setTimeout(() => { document.getElementById("copy").textContent = "Скопировать выбор"; }, 1200);
+      };
+      document.getElementById("clear").onclick = () => {
+        Object.keys(picks).forEach((k) => delete picks[k]);
+        localStorage.removeItem("sfx_picks");
+        document.querySelectorAll(".v.sel").forEach((el) => el.classList.remove("sel"));
+        stop();
+        renderOut();
+      };
+    }
+    main();
+  </script>
+</body>
+</html>
