@@ -85,10 +85,10 @@
     }
     function play(src, loop) {
       stop();
-      const a = new Audio(src);
+      const a = new Audio(src + (src.includes("?") ? "&" : "?") + "v=2");
       a.loop = !!loop;
       lastAudio = a;
-      a.play().catch(() => {});
+      a.play().catch((err) => { console.error(src, err); });
     }
     function renderOut() {
       const lines = catalog.sounds

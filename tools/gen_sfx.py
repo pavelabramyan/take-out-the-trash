@@ -29,7 +29,9 @@ rng = np.random.default_rng(20260814)
 def write(path: Path, x: np.ndarray, peak: float = 0.9) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     x = np.nan_to_num(x)
-    m = float(np.max(np.abs(x))) or 1.0
+    m = float(np.max(np.abs(x))) or 0.0
+    if m < 1e-6:
+        raise RuntimeError(f"тишина в {path.name}: пик={m}")
     x = x / m * peak
     data = (np.clip(x, -1.0, 1.0) * 32767.0).astype("<i2")
     with wave.open(str(path), "w") as w:

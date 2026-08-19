@@ -29,7 +29,9 @@ try:
     from scipy.signal import lfilter
 
     def _biquad(x, b, a):
-        return lfilter(b, a, x)
+        # gen_sfx уже делит b/a на a0 и в ручном цикле не использует a[0].
+        # scipy.lfilter иначе считает a[0] заново и уходит в NaN.
+        return lfilter(b, (1.0, a[1], a[2]), x)
 
     g.biquad = _biquad
 except ImportError:
